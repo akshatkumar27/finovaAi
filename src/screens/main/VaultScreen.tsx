@@ -73,7 +73,7 @@ export const VaultScreen: React.FC = () => {
                         <>
                             <StatCard label="AVAILABLE TO INVEST" value={`${currencySymbol}4.2L`} />
                             <View style={styles.statGap} />
-                            <StatCard label="MONTHLY YIELD" value={`${currencySymbol}8,420`} valueColor="#f59e0b" />
+                            <StatCard label="MONTHLY YIELD" value={`${currencySymbol}8,420`} valueColor={colors.warningText} />
                         </>
                     ) : (
                         <>
@@ -105,7 +105,7 @@ export const VaultScreen: React.FC = () => {
                             subtitle={viewMode === 'consolidated' ? '•••• 5829' : 'UPDATED 2 DAYS AGO'}
                             amount={`${currencySymbol}8,24,500`}
                             badge={viewMode === 'consolidated' ? 'GPAY LINKED' : 'UPDATE'}
-                            badgeColor={viewMode === 'consolidated' ? '#22c55e' : '#f59e0b'}
+                            badgeColor={viewMode === 'consolidated' ? colors.gain : colors.warning}
                         />
 
                         <AccountRow
@@ -114,7 +114,7 @@ export const VaultScreen: React.FC = () => {
                             subtitle={viewMode === 'consolidated' ? '•••• 0042' : 'UPDATED 12 DAYS AGO'}
                             amount={viewMode === 'consolidated' ? `${currencySymbol}3,12,000` : `${currencySymbol}12,000`}
                             badge={viewMode === 'consolidated' ? 'LOW INTEREST' : 'UPDATE'}
-                            badgeColor={viewMode === 'consolidated' ? '#ef4444' : '#f59e0b'}
+                            badgeColor={viewMode === 'consolidated' ? colors.loss : colors.warning}
                         />
 
                         <AccountRow
@@ -123,7 +123,7 @@ export const VaultScreen: React.FC = () => {
                             subtitle={viewMode === 'consolidated' ? 'Mobile Wallet' : 'UPDATED TODAY'}
                             amount={`${currencySymbol}9,100`}
                             badge={viewMode === 'consolidated' ? 'GPAY LINKED' : 'UPDATE'}
-                            badgeColor={viewMode === 'consolidated' ? '#22c55e' : '#f59e0b'}
+                            badgeColor={viewMode === 'consolidated' ? colors.gain : colors.warning}
                         />
                     </Card>
                 </View>
@@ -147,17 +147,17 @@ export const VaultScreen: React.FC = () => {
                             </View>
                             <View style={styles.chartLegend}>
                                 <View style={styles.legendItem}>
-                                    <View style={[styles.legendDot, { backgroundColor: '#22c55e' }]} />
+                                    <View style={[styles.legendDot, { backgroundColor: colors.gain }]} />
                                     <Text style={styles.legendLabel}>Shopping</Text>
                                     <Text style={styles.legendValue}>35%</Text>
                                 </View>
                                 <View style={styles.legendItem}>
-                                    <View style={[styles.legendDot, { backgroundColor: '#3b82f6' }]} />
+                                    <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
                                     <Text style={styles.legendLabel}>Bills</Text>
                                     <Text style={styles.legendValue}>30%</Text>
                                 </View>
                                 <View style={styles.legendItem}>
-                                    <View style={[styles.legendDot, { backgroundColor: '#f59e0b' }]} />
+                                    <View style={[styles.legendDot, { backgroundColor: colors.warning }]} />
                                     <Text style={styles.legendLabel}>Food</Text>
                                     <Text style={styles.legendValue}>35%</Text>
                                 </View>
@@ -272,9 +272,9 @@ const styles = StyleSheet.create({
         marginBottom: spacing.lg,
     },
     balanceLabel: {
-        color: colors.textMuted,
+        color: colors.textSecondary,
         fontSize: typography.caption,
-        letterSpacing: 1,
+        letterSpacing: 0.3,
         marginBottom: spacing.xs,
     },
     balanceRow: {
@@ -286,16 +286,19 @@ const styles = StyleSheet.create({
         fontSize: typography.h1,
         fontWeight: typography.bold,
         marginRight: 4,
+        fontVariant: ['tabular-nums'],
     },
     balanceValue: {
         color: colors.textPrimary,
-        fontSize: 36,
+        fontSize: typography.display,
         fontWeight: typography.bold,
+        fontVariant: ['tabular-nums'],
     },
     balanceDecimal: {
-        color: colors.textMuted,
+        color: colors.textTertiary,
         fontSize: typography.h3,
         fontWeight: typography.medium,
+        fontVariant: ['tabular-nums'],
     },
     statsRow: {
         flexDirection: 'row',
@@ -306,19 +309,21 @@ const styles = StyleSheet.create({
     },
     lastUpdateBadge: {
         flex: 1,
-        backgroundColor: '#22c55e',
+        backgroundColor: colors.gainDim,
         borderRadius: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(0,200,150,0.25)',
         padding: spacing.sm,
         alignItems: 'center',
         justifyContent: 'center',
     },
     lastUpdateLabel: {
-        color: colors.textPrimary,
-        fontSize: 10,
-        opacity: 0.8,
+        color: colors.textSecondary,
+        fontSize: typography.caption,
+        letterSpacing: 0.3,
     },
     lastUpdateValue: {
-        color: colors.textPrimary,
+        color: colors.gainText,
         fontSize: typography.body,
         fontWeight: typography.semibold,
     },

@@ -44,24 +44,25 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     label: {
-        color: colors.textSecondary,
+        color: colors.textTertiary,
         fontSize: typography.caption,
         fontWeight: typography.medium,
         marginBottom: 8,
         textTransform: 'uppercase',
-        letterSpacing: 1,
+        letterSpacing: 0.3,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: colors.inputBackground,
-        borderRadius: 12,
+        borderRadius: 14,
         borderWidth: 1,
         borderColor: colors.border,
         paddingHorizontal: 16,
+        minHeight: 52,
     },
     inputError: {
-        borderColor: colors.error,
+        borderColor: colors.lossText,
     },
     iconContainer: {
         marginRight: 12,
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
     },
     errorText: {
-        color: colors.error,
+        color: colors.lossText,
         fontSize: typography.caption,
         marginTop: 4,
     },

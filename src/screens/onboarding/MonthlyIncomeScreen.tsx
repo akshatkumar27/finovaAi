@@ -143,8 +143,9 @@ const styles = StyleSheet.create({
         marginBottom: spacing.xs,
     },
     progressLabel: {
-        color: colors.textMuted,
+        color: colors.textSecondary,
         fontSize: typography.caption,
+        letterSpacing: 0.3,
     },
     progressPercent: {
         color: colors.primary,
@@ -152,15 +153,15 @@ const styles = StyleSheet.create({
         fontWeight: typography.medium,
     },
     progressBar: {
-        height: 4,
+        height: 8,
         backgroundColor: colors.border,
-        borderRadius: 2,
+        borderRadius: 99,
         marginBottom: spacing.xl,
     },
     progressFill: {
         height: '100%',
         backgroundColor: colors.primary,
-        borderRadius: 2,
+        borderRadius: 99,
     },
     illustrationContainer: {
         alignItems: 'center',
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
     },
     amountInput: {
         color: colors.textPrimary,
-        fontSize: 48,
+        fontSize: typography.display,
         fontWeight: typography.bold,
         minWidth: 20,
         maxWidth: 280,
@@ -205,6 +206,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 2,
         borderBottomColor: colors.primary,
         paddingBottom: spacing.sm,
+        fontVariant: ['tabular-nums'],
     },
     footer: {
         paddingHorizontal: spacing.lg,

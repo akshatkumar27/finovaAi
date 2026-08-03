@@ -55,10 +55,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: colors.cardBackground,
-        borderRadius: 16,
+        borderRadius: 20,
         padding: spacing.md,
         marginBottom: spacing.md,
-        borderWidth: 2,
+        borderWidth: 1,
         borderColor: colors.border,
     },
     cardSelected: {
@@ -97,12 +97,12 @@ const styles = StyleSheet.create({
         marginBottom: spacing.xs,
     },
     amountBadge: {
-        backgroundColor: 'rgba(45, 127, 249, 0.1)',
+        backgroundColor: colors.primaryDim,
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 8,
         borderWidth: 1,
-        borderColor: 'rgba(45, 127, 249, 0.2)',
+        borderColor: 'rgba(61,142,248,0.25)',
     },
     amountText: {
         color: colors.primary,

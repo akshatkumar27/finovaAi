@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finova AI — Screen Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080811; --surface: #0f0f1c; --elevated: #161628; --input: #1a1a2e;
+  --primary: #3d8ef8; --primary-dim: rgba(61,142,248,0.12); --primary-dark: #1a6ed4;
+  --t1: #f0f0fa; --t2: #8b8b9e; --t3: #55556a;
+  --border: #252538; --border-strong: #363650;
+  --gain: #00c896; --gain-t: #00e8b0; --gain-dim: rgba(0,200,150,0.12);
+  --loss: #ff5252; --loss-t: #ff7272; --loss-dim: rgba(255,82,82,0.12);
+  --warn: #f59e0b; --warn-t: #fbbf24; --warn-dim: rgba(245,158,11,0.12);
+  --ach: #a855f7; --ach-dim: rgba(168,85,247,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#030307;font-family:'Inter',-apple-system,sans-serif;color:var(--t1);padding:48px 32px}
+h1{font-size:28px;font-weight:700;color:var(--t1);margin-bottom:6px}
+.subtitle{color:var(--t2);font-size:14px;margin-bottom:40px}
+.group-label{color:var(--t3);font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.group{margin-bottom:64px}
+.row{display:flex;gap:28px;flex-wrap:wrap}
+.phone-wrap{display:flex;flex-direction:column;align-items:center}
+.phone-name{color:var(--t3);font-size:11px;font-weight:500;margin-top:14px;letter-spacing:.4px}
+.phone{width:375px;height:812px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;border:1px solid #1c1c2e;box-shadow:0 48px 96px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.04);flex-shrink:0}
+.screen{width:100%;height:100%;overflow-y:auto;overflow-x:hidden;padding:54px 20px 32px}
+.screen::-webkit-scrollbar{display:none}
+/* status bar */
+.sb{position:absolute;top:0;left:0;right:0;height:48px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 28px 8px;z-index:5}
+.sb-time{font-size:13px;font-weight:600}
+.sb-icons{font-size:12px;display:flex;gap:5px;align-items:center}
+/* notch */
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:126px;height:32px;background:#030307;border-radius:0 0 20px 20px;z-index:10}
+/* base components */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px}
+.card-elevated{background:var(--elevated);border:1px solid var(--border-strong);border-radius:20px;padding:20px}
+.btn{height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;cursor:pointer;border:none;width:100%}
+.btn-p{background:var(--primary);color:var(--t1);box-shadow:0 4px 12px rgba(61,142,248,.38)}
+.btn-s{background:var(--primary-dim);color:var(--primary);border:1px solid rgba(61,142,248,.25)}
+.btn-g{background:transparent;color:var(--t2);border:1px solid var(--border)}
+.btn-d{background:var(--loss-dim);color:var(--loss-t);border:1px solid rgba(255,82,82,.25)}
+.inp{background:var(--input);border:1px solid var(--border);border-radius:14px;height:52px;padding:0 16px;color:var(--t1);font-size:15px;width:100%;display:flex;align-items:center;gap:8px}
+.inp.focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(61,142,248,.10)}
+.inp.err{border-color:var(--loss)}
+.badge{border-radius:99px;padding:3px 10px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;font-variant-numeric:tabular-nums}
+.badge-g{background:var(--gain-dim);color:var(--gain-t)}
+.badge-l{background:var(--loss-dim);color:var(--loss-t)}
+.badge-w{background:var(--warn-dim);color:var(--warn-t)}
+.badge-a{background:var(--ach-dim);color:var(--ach)}
+.badge-p{background:var(--primary-dim);color:var(--primary)}
+.prog-track{background:var(--border);border-radius:99px;height:8px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px}
+.sec-lbl{color:var(--t2);font-size:13px;font-weight:600;letter-spacing:.3px;margin-bottom:12px}
+.back-btn{width:40px;height:40px;border:1px solid var(--border);border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center;color:var(--t2);font-size:20px;flex-shrink:0}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--elevated);border:1px solid rgba(61,142,248,.3);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.user-head{width:12px;height:12px;border-radius:50%;background:var(--t1);margin-bottom:2px}
+.user-body{width:20px;height:10px;border-radius:10px 10px 0 0;background:var(--t1)}
+.fab{position:absolute;bottom:28px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:300;color:#fff;box-shadow:0 4px 16px rgba(61,142,248,.45)}
+.divider{height:1px;background:var(--border);margin:12px 0}
+.t1{color:var(--t1)}.t2{color:var(--t2)}.t3{color:var(--t3)}
+.tg{color:var(--gain-t);font-variant-numeric:tabular-nums}
+.tl{color:var(--loss-t);font-variant-numeric:tabular-nums}
+.tw{color:var(--warn-t)}
+.tp{color:var(--primary)}
+.tab{font-variant-numeric:tabular-nums}
+.logo-img{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--ach));display:flex;align-items:center;justify-content:center;font-size:18px}
+.mascot{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--ach));display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto}
+.mascot-sm{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--ach));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.chip{padding:6px 14px;border-radius:99px;background:var(--elevated);border:1px solid var(--border);color:var(--t2);font-size:12px;font-weight:500;display:inline-flex}
+.chip.on{background:var(--primary-dim);border-color:var(--primary);color:var(--primary)}
+.otp-row{display:flex;gap:8px;justify-content:center;margin:24px 0}
+.otp-box{width:46px;height:54px;background:var(--input);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700}
+.otp-box.f{border-color:var(--primary)}
+.otp-box.cur{border-color:var(--primary);box-shadow:0 0 0 3px rgba(61,142,248,.15)}
+.goal-sel-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.goal-sel-card.on{border-color:var(--primary);background:rgba(61,142,248,.06)}
+.emoji-box{width:46px;height:46px;border-radius:14px;background:var(--elevated);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.acc-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.acc-row:last-child{border-bottom:none}
+.acc-icon{width:40px;height:40px;border-radius:10px;background:var(--elevated);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.asset-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.asset-row:last-child{border-bottom:none}
+.asset-icon{width:44px;height:44px;border-radius:12px;background:var(--elevated);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.notif-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.notif-item:last-child{border-bottom:none}
+.notif-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.menu-item{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.stat-card{background:var(--elevated);border-radius:14px;padding:12px 14px;flex:1}
+.toggle-pill{background:var(--elevated);border-radius:99px;padding:4px;display:flex;gap:2px;margin-bottom:20px}
+.toggle-opt{flex:1;padding:7px 0;text-align:center;font-size:12px;font-weight:500;border-radius:99px;color:var(--t3)}
+.toggle-opt.on{background:var(--surface);color:var(--t1);border:1px solid var(--border)}
+.tl-item{display:flex;gap:14px;margin-bottom:16px}
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--primary);margin-top:4px;flex-shrink:0}
+.tl-paid .tl-dot{background:var(--gain-t)}
+.tl-line{width:2px;background:var(--border);margin:6px 4px 0;flex-shrink:0}
+.inp-label{color:var(--t3);font-size:11px;font-weight:500;margin-bottom:6px;letter-spacing:.3px;text-transform:uppercase}
+.onb-bar{height:4px;background:var(--border);border-radius:99px;margin-bottom:36px}
+.onb-fill{height:100%;background:var(--primary);border-radius:99px}
+</style>
+</head>
+<body>
+
+<h1>Finova AI — Screen Preview</h1>
+<p class="subtitle">Redesigned with the Phase 2 design system · All 23 screens · Dark theme</p>
+
+<!-- ═══════════════════ AUTH ═══════════════════ -->
+<div class="group">
+<div class="group-label">Auth</div>
+<div class="row">
+
+<!-- LOGIN -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px;display:flex;flex-direction:column">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:0">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+        <div class="logo-img">🐾</div>
+        <div>
+          <div style="font-size:15px;font-weight:600;color:var(--t1)">Finova AI</div>
+          <div style="font-size:10px;color:var(--t3);letter-spacing:1.5px">WEALTH MANAGEMENT</div>
+        </div>
+      </div>
+      <div style="font-size:26px;font-weight:700;color:var(--t1);margin-bottom:8px">Welcome Back</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:32px;line-height:1.5">Log in to manage your wealth with AI.</div>
+      <div class="inp-label">Email Address</div>
+      <div class="inp focus" style="margin-bottom:20px">
+        <span style="font-size:16px">✉️</span>
+        <span class="t2" style="font-size:14px">rahul@gmail.com</span>
+      </div>
+      <div class="btn btn-p" style="margin-bottom:16px">Continue →</div>
+      <div style="text-align:center;font-size:13px;color:var(--t2)">New here? <span class="tp" style="font-weight:600">Sign up</span></div>
+    </div>
+    <div style="text-align:center;margin-top:24px">
+      <div class="mascot-sm" style="margin:0 auto 10px">🐾</div>
+      <div style="font-size:12px;color:var(--t3)">Your AI wealth companion</div>
+    </div>
+    <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--t3)"><span class="tp">Terms</span> · <span class="tp">Privacy</span></div>
+  </div>
+</div>
+<div class="phone-name">LoginScreen</div>
+</div>
+
+<!-- SIGNUP -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
+      <div class="logo-img">🐾</div>
+      <span style="font-size:15px;font-weight:600">Finova AI</span>
+    </div>
+    <div style="font-size:26px;font-weight:700;margin-bottom:6px">Create Account</div>
+    <div style="font-size:14px;color:var(--t2);margin-bottom:28px">Join Finova AI for smarter wealth management.</div>
+    <div class="inp-label">Full Name</div>
+    <div class="inp" style="margin-bottom:16px"><span class="t2" style="font-size:14px">Rahul Sharma</span></div>
+    <div class="inp-label">Email Address</div>
+    <div class="inp focus" style="margin-bottom:16px"><span class="t2" style="font-size:14px">rahul@gmail.com</span></div>
+    <div class="inp-label">Age</div>
+    <div class="inp" style="margin-bottom:24px"><span class="t2" style="font-size:14px">28</span></div>
+    <div class="btn btn-p" style="margin-bottom:16px">Continue →</div>
+    <div style="text-align:center;font-size:13px;color:var(--t2)">Already have an account? <span class="tp" style="font-weight:600">Log in</span></div>
+    <div style="margin-top:28px;display:flex;align-items:flex-start;gap:12px;background:rgba(61,142,248,.06);border:1px solid rgba(61,142,248,.15);border-radius:16px;padding:14px">
+      <div class="mascot-sm">🐾</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.5">Hi! I'm Fino. I'll help you build your financial future step by step. 😊</div>
+    </div>
+  </div>
+</div>
+<div class="phone-name">SignupScreen</div>
+</div>
+
+<!-- OTP -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:36px">
+      <div class="back-btn">‹</div>
+    </div>
+    <div style="font-size:26px;font-weight:700;margin-bottom:8px">Verify your email</div>
+    <div style="font-size:14px;color:var(--t2);margin-bottom:6px">Code sent to</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:32px">
+      <span style="font-size:14px;font-weight:600;color:var(--t1)">rahul@gmail.com</span>
+      <span class="tp" style="font-size:13px;font-weight:600">Edit</span>
+    </div>
+    <div class="otp-row">
+      <div class="otp-box f">8</div>
+      <div class="otp-box f">4</div>
+      <div class="otp-box f">2</div>
+      <div class="otp-box cur"></div>
+      <div class="otp-box"></div>
+      <div class="otp-box"></div>
+    </div>
+    <div style="text-align:center;font-size:13px;color:var(--t2);margin-bottom:32px">Resend code in <span class="tp" style="font-weight:600">0:47</span></div>
+    <div class="btn btn-p">Verify & Continue</div>
+    <div style="margin-top:32px;text-align:center">
+      <div class="mascot-sm" style="margin:0 auto 8px">🐾</div>
+      <div style="font-size:12px;color:var(--t3)">Check your inbox — it'll be there!</div>
+    </div>
+  </div>
+</div>
+<div class="phone-name">OTPVerification</div>
+</div>
+
+</div><!-- /row -->
+</div><!-- /group -->
+
+<!-- ═══════════════════ ONBOARDING ═══════════════════ -->
+<div class="group">
+<div class="group-label">Onboarding</div>
+<div class="row">
+
+<!-- MONTHLY INCOME -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:13px;color:var(--t3)">Step 1 of 5</span>
+      <span class="badge badge-p" style="font-size:11px">20%</span>
+    </div>
+    <div class="onb-bar" style="margin-bottom:36px"><div class="onb-fill" style="width:20%"></div></div>
+    <div style="font-size:40px;margin-bottom:16px;text-align:center">💰</div>
+    <div style="font-size:22px;font-weight:700;margin-bottom:8px;text-align:center">What is your monthly income?</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:32px;text-align:center">This helps us understand your financial capacity.</div>
+    <div class="inp-label">Monthly Income</div>
+    <div class="inp focus" style="margin-bottom:8px">
+      <span style="font-size:20px;font-weight:600;color:var(--t2)">₹</span>
+      <span style="font-size:18px;font-weight:600;font-variant-numeric:tabular-nums">85,000</span>
+    </div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:32px">Enter your take-home monthly salary</div>
+    <div class="btn btn-p" style="margin-bottom:20px">Continue →</div>
+    <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(61,142,248,.06);border:1px solid rgba(61,142,248,.15);border-radius:16px;padding:14px">
+      <div class="mascot-sm">🐾</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.5">Great! Knowing your income helps me suggest the perfect goals for you. 🎯</div>
+    </div>
+  </div>
+</div>
+<div class="phone-name">MonthlyIncomeScreen</div>
+</div>
+
+<!-- GOAL SELECTION -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div class="header-bar" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="back-btn">‹</div>
+    </div>
+    <div style="font-size:22px;font-weight:700;margin-bottom:6px">Select your goal</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:24px">AI-picked goals based on your profile</div>
+
+    <div class="goal-sel-card on">
+      <div class="emoji-box">🏥</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600;margin-bottom:3px">Emergency Fund</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.4">3–6 months of expenses saved for unexpected events</div>
+        <div style="margin-top:6px"><span class="badge badge-p">₹2,50,000 · 18 months</span></div>
+      </div>
+      <div style="width:22px;height:22px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">✓</div>
+    </div>
+
+    <div class="goal-sel-card">
+      <div class="emoji-box">✈️</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600;margin-bottom:3px">Vacation Fund</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.4">Save for your dream international trip</div>
+        <div style="margin-top:6px"><span class="badge badge-p">₹80,000 · 6 months</span></div>
+      </div>
+    </div>
+
+    <div class="goal-sel-card">
+      <div class="emoji-box">🎓</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600;margin-bottom:3px">Education Fund</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.4">Invest in professional upskilling or a course</div>
+        <div style="margin-top:6px"><span class="badge badge-p">₹1,20,000 · 12 months</span></div>
+      </div>
+    </div>
+
+    <div class="btn btn-p" style="margin-top:8px">Start with this Goal →</div>
+
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-top:16px;background:rgba(61,142,248,.06);border:1px solid rgba(61,142,248,.15);border-radius:16px;padding:12px">
+      <div class="mascot-sm">🐾</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.5">Emergency Fund is perfect for you right now. You can add more goals later!</div>
+    </div>
+  </div>
+</div>
+<div class="phone-name">GoalSelectionScreen</div>
+</div>
+
+<!-- ADD GOAL -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <div class="back-btn">‹</div>
+      <div style="font-size:17px;font-weight:700">Add Goal</div>
+    </div>
+    <div class="inp-label">Goal Name</div>
+    <div class="inp focus" style="margin-bottom:16px"><span class="t1" style="font-size:15px">Emergency Fund</span></div>
+    <div class="inp-label">Target Amount</div>
+    <div class="inp" style="margin-bottom:16px">
+      <span style="font-size:18px;font-weight:600;color:var(--t2)">₹</span>
+      <span style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums">2,50,000</span>
+    </div>
+    <div class="inp-label" style="margin-bottom:10px">Duration</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+      <div class="chip">6 mo</div>
+      <div class="chip">1 yr</div>
+      <div class="chip on">2 yr</div>
+      <div class="chip">3 yr</div>
+      <div class="chip">5 yr</div>
+      <div class="chip">Custom</div>
+    </div>
+    <div class="card-elevated" style="margin-bottom:20px">
+      <div style="font-size:11px;color:var(--t3);font-weight:500;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">Monthly Contribution</div>
+      <div style="font-size:28px;font-weight:700;color:var(--primary);font-variant-numeric:tabular-nums">₹10,417</div>
+      <div style="font-size:12px;color:var(--t3);margin-top:4px">Auto-calculated · 24 months</div>
+    </div>
+    <div class="inp-label">Contribution Day of Month</div>
+    <div class="inp" style="margin-bottom:20px"><span class="t2" style="font-size:14px">5th of every month</span></div>
+    <div class="btn btn-p">Create Goal</div>
+  </div>
+</div>
+<div class="phone-name">AddGoalScreen</div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════ MAIN — DASHBOARD ═══════════════════ -->
+<div class="group">
+<div class="group-label">Main — Goal Pulse</div>
+<div class="row">
+
+<!-- GOAL PULSE WITH GOALS -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="logo-img">🐾</div>
+        <div>
+          <div style="font-size:15px;font-weight:600">Finova Pulse</div>
+          <div style="font-size:10px;color:var(--t3);letter-spacing:1.5px">AI POWERED</div>
+        </div>
+      </div>
+      <div class="avatar"><div><div class="user-head"></div><div class="user-body"></div></div></div>
+    </div>
+
+    <!-- Pulse Score Card -->
+    <div style="background:var(--elevated);border:1px solid rgba(61,142,248,.18);border-radius:20px;padding:20px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+        <div style="position:relative;display:inline-flex;align-items:center;justify-content:center">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#252538" stroke-width="8"/>
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#00e8b0" stroke-width="8"
+              stroke-dasharray="213.6" stroke-dashoffset="74.8"
+              stroke-linecap="round" transform="rotate(-90 40 40)"/>
+          </svg>
+          <div style="position:absolute;font-size:18px;font-weight:700;color:#00e8b0;font-variant-numeric:tabular-nums">65</div>
+        </div>
+        <div>
+          <div style="font-size:17px;font-weight:700;margin-bottom:4px">Progress Score</div>
+          <div style="font-size:11px;color:var(--t3)">Your overall goal achievement</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:10px">
+        <div style="font-size:13px;color:var(--t2);text-align:center;margin-bottom:6px">💪 Great job! You're on track!</div>
+        <div class="badge badge-g" style="display:block;text-align:center;padding:6px 16px;border-radius:12px">₹4,500 available to invest</div>
+      </div>
+    </div>
+
+    <!-- Section: AI Suggestions (horizontal scroll hint) -->
+    <div class="sec-lbl">✨ AI Suggested Goals</div>
+    <div style="display:flex;gap:12px;overflow:hidden;margin-bottom:20px">
+      <div style="min-width:165px;background:var(--elevated);border:1px solid rgba(61,142,248,.15);border-radius:20px;padding:16px">
+        <div style="font-size:26px;margin-bottom:8px">✈️</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">Vacation Fund</div>
+        <div style="font-size:18px;font-weight:700;color:var(--primary);font-variant-numeric:tabular-nums;margin-bottom:2px">₹80,000</div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:10px">6 months</div>
+        <div class="btn btn-s" style="height:36px;font-size:12px;border-radius:10px">+ Add Goal</div>
+      </div>
+      <div style="min-width:165px;background:var(--elevated);border:1px solid rgba(61,142,248,.15);border-radius:20px;padding:16px">
+        <div style="font-size:26px;margin-bottom:8px">💻</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">Skill Fund</div>
+        <div style="font-size:18px;font-weight:700;color:var(--primary);font-variant-numeric:tabular-nums;margin-bottom:2px">₹50,000</div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:10px">8 months</div>
+        <div class="btn btn-s" style="height:36px;font-size:12px;border-radius:10px">+ Add Goal</div>
+      </div>
+    </div>
+
+    <!-- Section: Smart Goals -->
+    <div class="sec-lbl">💵 Smart Goals</div>
+
+    <!-- Goal Card 1 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:16px;font-weight:600;flex:1;margin-right:8px">Emergency Fund</div>
+        <div style="background:transparent;border:1px solid var(--border);border-radius:10px;padding:5px 12px;font-size:11px;color:var(--t2)">Edit</div>
+      </div>
+      <div style="font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;margin-bottom:2px">
+        <span style="color:var(--t2);font-weight:500">₹1,62,500 </span>/ ₹2,50,000
+      </div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Achieve in 18 months</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div class="prog-track" style="flex:1"><div class="prog-fill" style="width:65%;background:#00e8b0"></div></div>
+        <div style="font-size:13px;font-weight:600;color:#00e8b0;min-width:38px;text-align:right;font-variant-numeric:tabular-nums">65%</div>
+      </div>
+      <div class="btn btn-s" style="height:40px;font-size:13px;border-radius:12px">Ask AI about your goal</div>
+    </div>
+
+    <!-- Goal Card 2 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:80px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:16px;font-weight:600;flex:1;margin-right:8px">Vacation Fund</div>
+        <div style="background:transparent;border:1px solid var(--border);border-radius:10px;padding:5px 12px;font-size:11px;color:var(--t2)">Edit</div>
+      </div>
+      <div style="font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;margin-bottom:2px">
+        <span style="color:var(--t2);font-weight:500">₹22,400 </span>/ ₹80,000
+      </div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Achieve in 6 months</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div class="prog-track" style="flex:1"><div class="prog-fill" style="width:28%;background:#fbbf24"></div></div>
+        <div style="font-size:13px;font-weight:600;color:#fbbf24;min-width:38px;text-align:right;font-variant-numeric:tabular-nums">28%</div>
+      </div>
+      <div class="btn btn-s" style="height:40px;font-size:13px;border-radius:12px">Ask AI about your goal</div>
+    </div>
+  </div>
+  <div class="fab">+</div>
+</div>
+<div class="phone-name">GoalPulse (with goals)</div>
+</div>
+
+<!-- GOAL PULSE EMPTY STATE -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="logo-img">🐾</div>
+        <div>
+          <div style="font-size:15px;font-weight:600">Finova Pulse</div>
+          <div style="font-size:10px;color:var(--t3);letter-spacing:1.5px">AI POWERED</div>
+        </div>
+      </div>
+      <div class="avatar"><div><div class="user-head"></div><div class="user-body"></div></div></div>
+    </div>
+
+    <!-- AI Suggestions even when empty -->
+    <div class="sec-lbl">✨ AI Suggested Goals</div>
+    <div style="display:flex;gap:12px;overflow:hidden;margin-bottom:28px">
+      <div style="min-width:165px;background:var(--elevated);border:1px solid rgba(61,142,248,.15);border-radius:20px;padding:16px">
+        <div style="font-size:26px;margin-bottom:8px">🏥</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">Emergency Fund</div>
+        <div style="font-size:18px;font-weight:700;color:var(--primary);font-variant-numeric:tabular-nums;margin-bottom:2px">₹2,50,000</div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:10px">18 months</div>
+        <div class="btn btn-s" style="height:36px;font-size:12px;border-radius:10px">+ Add Goal</div>
+      </div>
+      <div style="min-width:165px;background:var(--elevated);border:1px solid rgba(61,142,248,.15);border-radius:20px;padding:16px">
+        <div style="font-size:26px;margin-bottom:8px">✈️</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">Vacation Fund</div>
+        <div style="font-size:18px;font-weight:700;color:var(--primary);font-variant-numeric:tabular-nums;margin-bottom:2px">₹80,000</div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:10px">6 months</div>
+        <div class="btn btn-s" style="height:36px;font-size:12px;border-radius:10px">+ Add Goal</div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div style="display:flex;flex-direction:column;align-items:center;padding:20px 24px;text-align:center">
+      <div style="font-size:80px;margin-bottom:12px">🐾</div>
+      <div style="font-size:22px;font-weight:700;margin-bottom:10px">Hi, I'm Fino! 👋</div>
+      <div style="font-size:14px;color:var(--t2);line-height:1.6">You haven't added any goals yet. Start your financial journey by tapping + below or pick one from our suggestions above.</div>
+    </div>
+  </div>
+  <div class="fab">+</div>
+</div>
+<div class="phone-name">GoalPulse (empty state)</div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════ MAIN — VAULT & INVEST ═══════════════════ -->
+<div class="group">
+<div class="group-label">Main — Vault &amp; Invest Hub</div>
+<div class="row">
+
+<!-- VAULT -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:22px;font-weight:700">Vault</div>
+      <div class="back-btn" style="font-size:16px">⋯</div>
+    </div>
+    <div class="toggle-pill">
+      <div class="toggle-opt on">Consolidated</div>
+      <div class="toggle-opt">Manual</div>
+    </div>
+
+    <!-- Balance Hero -->
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:11px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Total Liquid Balance</div>
+      <div style="font-size:38px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px">₹4,82,500</div>
+      <div class="badge badge-g" style="margin-top:8px">+₹12,400 this month</div>
+    </div>
+
+    <!-- Stat cards -->
+    <div style="display:flex;gap:10px;margin-bottom:20px">
+      <div class="stat-card">
+        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Available</div>
+        <div style="font-size:17px;font-weight:700;color:var(--gain-t);font-variant-numeric:tabular-nums">₹15,000</div>
+        <div style="font-size:11px;color:var(--t3)">to invest</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Yield</div>
+        <div style="font-size:17px;font-weight:700;color:var(--gain-t);font-variant-numeric:tabular-nums">₹3,850</div>
+        <div style="font-size:11px;color:var(--t3)">monthly avg</div>
+      </div>
+    </div>
+
+    <!-- Accounts -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="sec-lbl" style="margin-bottom:12px">Connected Accounts</div>
+      <div class="acc-row">
+        <div class="acc-icon">🏦</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600">HDFC Bank</div>
+          <div style="font-size:12px;color:var(--t3)">Savings Account</div>
+        </div>
+        <div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">₹3,20,000</div>
+      </div>
+      <div class="acc-row">
+        <div class="acc-icon">🏛️</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600">ICICI Bank</div>
+          <div style="font-size:12px;color:var(--t3)">Savings Account</div>
+        </div>
+        <div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">₹1,40,000</div>
+      </div>
+      <div class="acc-row">
+        <div class="acc-icon">💳</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600">Paytm Wallet</div>
+          <div style="font-size:12px;color:var(--t3)">Digital Wallet</div>
+        </div>
+        <div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">₹22,500</div>
+      </div>
+    </div>
+
+    <!-- Spends placeholder -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="sec-lbl">Monthly Spends</div>
+      <div style="height:80px;background:var(--elevated);border-radius:12px;display:flex;align-items:center;justify-content:center">
+        <div style="font-size:12px;color:var(--t3)">Chart coming soon</div>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:12px">
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:#3d8ef8"></div><span style="font-size:11px;color:var(--t2)">Food</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:#00c896"></div><span style="font-size:11px;color:var(--t2)">Transport</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:#a855f7"></div><span style="font-size:11px;color:var(--t2)">Shopping</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="phone-name">VaultScreen</div>
+</div>
+
+<!-- INVEST HUB -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:22px;font-weight:700">Invest Hub</div>
+      <div class="back-btn" style="font-size:16px">🔍</div>
+    </div>
+
+    <!-- Portfolio hero -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Portfolio Value</div>
+      <div style="display:flex;align-items:baseline;gap:12px">
+        <div style="font-size:36px;font-weight:700;font-variant-numeric:tabular-nums">₹2,14,500</div>
+        <div class="badge badge-g">+1.2%</div>
+      </div>
+      <div style="font-size:12px;color:var(--t3);margin-top:4px">+₹2,574 today</div>
+    </div>
+
+    <!-- AI Optimizer card -->
+    <div style="background:rgba(61,142,248,.08);border:1px solid rgba(61,142,248,.20);border-radius:20px;padding:16px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start">
+      <div style="width:36px;height:36px;border-radius:10px;background:var(--primary-dim);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">⚡</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:4px">AI Portfolio Optimizer</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Rebalancing to large-cap funds could improve your 5-yr return by <span style="color:var(--gain-t);font-weight:600">+2.4%</span></div>
+      </div>
+    </div>
+
+    <!-- Asset allocation -->
+    <div class="card">
+      <div class="sec-lbl" style="margin-bottom:12px">Asset Allocation</div>
+      <div class="asset-row">
+        <div class="asset-icon">📈</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600">Mutual Funds</div>
+          <div style="font-size:12px;color:var(--t3)">4 funds · Large cap</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">₹1,50,000</div>
+          <div style="font-size:12px;color:var(--gain-t);font-variant-numeric:tabular-nums">+2.3%</div>
+        </div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-icon">🥇</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600">Digital Gold</div>
+          <div style="font-size:12px;color:var(--t3)">3.6g · SGB</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">₹45,000</div>
+          <div style="font-size:12px;color:var(--gain-t);font-variant-numeric:tabular-nums">+0.8%</div>
+        </div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-icon">🏦</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600">Fixed Deposits</div>
+          <div style="font-size:12px;color:var(--t3)">2 FDs · HDFC</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">₹19,500</div>
+          <div style="font-size:12px;color:var(--t3)">3.2% p.a.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="fab" style="font-size:20px">+</div>
+</div>
+<div class="phone-name">InvestHubScreen</div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════ MAIN — PROFILE & NOTIFICATIONS ═══════════════════ -->
+<div class="group">
+<div class="group-label">Main — Profile &amp; Notifications</div>
+<div class="row">
+
+<!-- PROFILE -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px">
+      <div class="back-btn">‹</div>
+      <div style="font-size:17px;font-weight:700">Profile</div>
+    </div>
+
+    <!-- User card -->
+    <div class="card" style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+      <div style="width:60px;height:60px;border-radius:20px;background:var(--primary-dim);border:1px solid rgba(61,142,248,.25);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--primary)">RS</div>
+      <div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:3px">Rahul Sharma</div>
+        <div style="font-size:13px;color:var(--t2)">rahul@gmail.com</div>
+        <div style="margin-top:6px"><span class="badge badge-p">Premium Member</span></div>
+      </div>
+    </div>
+
+    <!-- Menu items -->
+    <div class="menu-item">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:20px">👤</div>
+        <div style="font-size:14px;font-weight:500">Profile Info</div>
+      </div>
+      <span style="color:var(--t3)">›</span>
+    </div>
+    <div class="menu-item">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:20px">💰</div>
+        <div style="font-size:14px;font-weight:500">Financial Details</div>
+      </div>
+      <span style="color:var(--t3)">›</span>
+    </div>
+    <div class="menu-item">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:20px">🔔</div>
+        <div style="font-size:14px;font-weight:500">Notifications</div>
+      </div>
+      <span style="color:var(--t3)">›</span>
+    </div>
+    <div class="menu-item">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:20px">🔒</div>
+        <div style="font-size:14px;font-weight:500">Privacy &amp; Security</div>
+      </div>
+      <span style="color:var(--t3)">›</span>
+    </div>
+    <div class="menu-item" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:20px">❓</div>
+        <div style="font-size:14px;font-weight:500">Help &amp; Support</div>
+      </div>
+      <span style="color:var(--t3)">›</span>
+    </div>
+
+    <div class="btn btn-d">Log Out</div>
+  </div>
+</div>
+<div class="phone-name">ProfileScreen</div>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <div class="back-btn">‹</div>
+      <div style="font-size:17px;font-weight:700">Notifications</div>
+    </div>
+
+    <div class="card">
+      <!-- Suggestion -->
+      <div class="notif-item">
+        <div class="notif-icon" style="background:var(--warn-dim);color:var(--warn-t)">⚡</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600;margin-bottom:3px">New Goal Suggestion</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.4">Add a Vacation Fund — you have ₹4,500 free monthly budget for it.</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:5px">2h ago</div>
+        </div>
+      </div>
+      <!-- Achievement -->
+      <div class="notif-item">
+        <div class="notif-icon" style="background:var(--ach-dim);color:var(--ach)">🏆</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600;margin-bottom:3px">Milestone Reached!</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.4">Your Emergency Fund is now 65% complete. Keep it up!</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:5px">Yesterday</div>
+        </div>
+      </div>
+      <!-- Update -->
+      <div class="notif-item">
+        <div class="notif-icon" style="background:var(--gain-dim);color:var(--gain-t)">✅</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600;margin-bottom:3px">Contribution Recorded</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.4">₹10,417 added to Emergency Fund on 5th Aug.</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:5px">2 days ago</div>
+        </div>
+      </div>
+      <!-- Alert -->
+      <div class="notif-item">
+        <div class="notif-icon" style="background:var(--loss-dim);color:var(--loss-t)">⚠️</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600;margin-bottom:3px">EMI Due Soon</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.4">Your ₹12,000 EMI is due in 3 days. Ensure you have funds ready.</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:5px">3 days ago</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="phone-name">NotificationScreen</div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════ MAIN — GOAL DETAILS ═══════════════════ -->
+<div class="group">
+<div class="group-label">Main — Goal Details</div>
+<div class="row">
+
+<!-- CONTRIBUTIONS -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <div class="back-btn">‹</div>
+      <div>
+        <div style="font-size:17px;font-weight:700">Emergency Fund</div>
+        <div style="font-size:12px;color:var(--t3)">Contributions timeline</div>
+      </div>
+    </div>
+
+    <!-- Summary card -->
+    <div class="card-elevated" style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Saved</div>
+          <div style="font-size:24px;font-weight:700;color:var(--gain-t);font-variant-numeric:tabular-nums">₹1,62,500</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Target</div>
+          <div style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">₹2,50,000</div>
+        </div>
+      </div>
+      <div class="prog-track" style="margin-bottom:8px"><div class="prog-fill" style="width:65%;background:#00e8b0"></div></div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:12px;color:var(--t2)">₹10,417 / month</span>
+        <span style="font-size:12px;color:var(--gain-t);font-weight:600">65%</span>
+      </div>
+    </div>
+
+    <!-- Next contribution -->
+    <div class="card" style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Next Contribution</div>
+        <div style="font-size:16px;font-weight:700;font-variant-numeric:tabular-nums">₹10,417</div>
+        <div style="font-size:12px;color:var(--t3)">5 Sep 2026</div>
+      </div>
+      <div class="badge badge-w">In 1 month</div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="sec-lbl">History</div>
+    <div class="card">
+      <div class="tl-item tl-paid">
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <div class="tl-dot"></div>
+          <div class="tl-line" style="height:28px"></div>
+        </div>
+        <div style="flex:1;padding-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:13px;font-weight:600">5 Aug 2026</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gain-t);font-variant-numeric:tabular-nums">+₹10,417</div>
+          </div>
+          <div style="font-size:11px;color:var(--t3)">Paid · Auto-deducted</div>
+        </div>
+      </div>
+      <div class="tl-item tl-paid">
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <div class="tl-dot"></div>
+          <div class="tl-line" style="height:28px"></div>
+        </div>
+        <div style="flex:1;padding-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:13px;font-weight:600">5 Jul 2026</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gain-t);font-variant-numeric:tabular-nums">+₹10,417</div>
+          </div>
+          <div style="font-size:11px;color:var(--t3)">Paid · Auto-deducted</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <div class="tl-dot" style="background:var(--warn)"></div>
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:13px;font-weight:600">5 Jun 2026</div>
+            <div style="font-size:13px;font-weight:700;color:var(--warn-t);font-variant-numeric:tabular-nums">+₹10,417</div>
+          </div>
+          <div style="font-size:11px;color:var(--t3)">Paid</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="phone-name">ContributionsScreen</div>
+</div>
+
+<!-- EDIT GOAL -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <div class="back-btn">‹</div>
+      <div style="font-size:17px;font-weight:700">Edit Goal</div>
+    </div>
+
+    <div class="inp-label">Goal Name</div>
+    <div class="inp focus" style="margin-bottom:16px"><span class="t1" style="font-size:15px">Emergency Fund</span></div>
+
+    <div class="inp-label">Target Amount (₹)</div>
+    <div class="inp" style="margin-bottom:16px">
+      <span style="font-size:18px;font-weight:600;color:var(--t2)">₹</span>
+      <span style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums">2,50,000</span>
+    </div>
+
+    <div class="inp-label">Duration (months)</div>
+    <div class="inp" style="margin-bottom:16px">
+      <span class="t1" style="font-size:15px;font-variant-numeric:tabular-nums">18 months</span>
+    </div>
+
+    <div class="inp-label">Monthly Contribution</div>
+    <div class="inp" style="margin-bottom:16px">
+      <span style="font-size:15px;font-weight:600;color:var(--primary);font-variant-numeric:tabular-nums">₹10,417</span>
+    </div>
+
+    <div class="inp-label">Contribution Day</div>
+    <div class="inp" style="margin-bottom:24px"><span class="t2" style="font-size:14px">5th of every month</span></div>
+
+    <!-- Amount saved info -->
+    <div style="background:var(--gain-dim);border-radius:12px;padding:12px 16px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;color:var(--t2)">Already saved</span>
+      <span style="font-size:15px;font-weight:700;color:var(--gain-t);font-variant-numeric:tabular-nums">₹1,62,500</span>
+    </div>
+
+    <div class="btn btn-p" style="margin-bottom:12px">Save Changes</div>
+    <div class="btn btn-d">Delete Goal</div>
+  </div>
+</div>
+<div class="phone-name">EditGoalScreen</div>
+</div>
+
+<!-- GOAL CHAT (Coming Soon) -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px">
+      <div class="back-btn">‹</div>
+      <div style="font-size:17px;font-weight:700">Emergency Fund · AI</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 16px">
+      <div style="width:80px;height:80px;border-radius:28px;background:var(--primary-dim);border:1px solid rgba(61,142,248,.25);display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px">🤖</div>
+      <div style="font-size:22px;font-weight:700;margin-bottom:10px">Coming Soon</div>
+      <div style="font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:32px">AI-powered goal coaching is on its way. Join the waitlist and be first to know when it launches.</div>
+      <div class="btn btn-p" style="width:200px">Join Waitlist</div>
+    </div>
+  </div>
+</div>
+<div class="phone-name">GoalChatScreen</div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════ SETTINGS ═══════════════════ -->
+<div class="group">
+<div class="group-label">Settings &amp; Onboarding Steps</div>
+<div class="row">
+
+<!-- EDIT FINANCIAL DETAILS -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <div class="back-btn">‹</div>
+      <div style="font-size:17px;font-weight:700">Financial Details</div>
+    </div>
+
+    <div class="inp-label">Monthly Income</div>
+    <div class="inp focus" style="margin-bottom:16px">
+      <span style="font-size:16px;font-weight:600;color:var(--primary)">₹</span>
+      <span style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">85,000</span>
+    </div>
+    <div class="inp-label">Monthly Expenses</div>
+    <div class="inp" style="margin-bottom:16px">
+      <span style="font-size:16px;font-weight:600;color:var(--t2)">₹</span>
+      <span style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">45,000</span>
+    </div>
+    <div class="inp-label">Monthly EMI</div>
+    <div class="inp" style="margin-bottom:16px">
+      <span style="font-size:16px;font-weight:600;color:var(--t2)">₹</span>
+      <span style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">12,000</span>
+    </div>
+    <div class="inp-label">Outstanding EMI</div>
+    <div class="inp" style="margin-bottom:16px">
+      <span style="font-size:16px;font-weight:600;color:var(--t2)">₹</span>
+      <span style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">3,60,000</span>
+    </div>
+    <div class="inp-label">Monthly Investment</div>
+    <div class="inp" style="margin-bottom:24px">
+      <span style="font-size:16px;font-weight:600;color:var(--t2)">₹</span>
+      <span style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">15,000</span>
+    </div>
+
+    <div style="background:var(--gain-dim);border-radius:12px;padding:12px 16px;margin-bottom:20px">
+      <div style="font-size:12px;color:var(--gain-t);font-weight:600;margin-bottom:2px">Monthly Surplus</div>
+      <div style="font-size:20px;font-weight:700;color:var(--t1);font-variant-numeric:tabular-nums">₹28,000</div>
+      <div style="font-size:11px;color:var(--t3)">After expenses, EMIs &amp; investments</div>
+    </div>
+
+    <div class="btn btn-p">Save Changes</div>
+  </div>
+</div>
+<div class="phone-name">EditFinancialDetails</div>
+</div>
+
+<!-- NOTIFICATION SETTINGS -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <div class="back-btn">‹</div>
+      <div style="font-size:17px;font-weight:700">Notification Settings</div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px">
+      <div class="sec-lbl" style="margin-bottom:14px">Categories</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:18px">⚡</span>
+          <div>
+            <div style="font-size:14px;font-weight:500">AI Suggestions</div>
+            <div style="font-size:11px;color:var(--t3)">Goal tips &amp; insights</div>
+          </div>
+        </div>
+        <div style="width:44px;height:26px;background:var(--primary);border-radius:99px;position:relative">
+          <div style="width:20px;height:20px;border-radius:50%;background:white;position:absolute;right:3px;top:3px"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:18px">🏆</span>
+          <div>
+            <div style="font-size:14px;font-weight:500">Achievements</div>
+            <div style="font-size:11px;color:var(--t3)">Milestones &amp; badges</div>
+          </div>
+        </div>
+        <div style="width:44px;height:26px;background:var(--primary);border-radius:99px;position:relative">
+          <div style="width:20px;height:20px;border-radius:50%;background:white;position:absolute;right:3px;top:3px"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:18px">⚠️</span>
+          <div>
+            <div style="font-size:14px;font-weight:500">Alerts</div>
+            <div style="font-size:11px;color:var(--t3)">EMI due, budget warnings</div>
+          </div>
+        </div>
+        <div style="width:44px;height:26px;background:var(--border);border-radius:99px;position:relative">
+          <div style="width:20px;height:20px;border-radius:50%;background:var(--t2);position:absolute;left:3px;top:3px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-lbl" style="margin-bottom:14px">Quiet Hours</div>
+      <div style="display:flex;gap:10px">
+        <div class="stat-card" style="text-align:center">
+          <div style="font-size:11px;color:var(--t3);margin-bottom:4px">From</div>
+          <div style="font-size:18px;font-weight:700;font-variant-numeric:tabular-nums">10:00 PM</div>
+        </div>
+        <div class="stat-card" style="text-align:center">
+          <div style="font-size:11px;color:var(--t3);margin-bottom:4px">To</div>
+          <div style="font-size:18px;font-weight:700;font-variant-numeric:tabular-nums">7:00 AM</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="phone-name">NotificationSettings</div>
+</div>
+
+<!-- ONBOARDING EMI STEP -->
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="sb"><span class="sb-time">9:41</span><span class="sb-icons">▲ ◆ 🔋</span></div>
+  <div class="screen" style="padding-top:64px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:13px;color:var(--t3)">Step 3 of 5</span>
+      <span class="badge badge-p">60%</span>
+    </div>
+    <div class="onb-bar" style="margin-bottom:36px"><div class="onb-fill" style="width:60%"></div></div>
+    <div style="font-size:36px;margin-bottom:16px;text-align:center">📋</div>
+    <div style="font-size:22px;font-weight:700;margin-bottom:8px;text-align:center">What's your monthly EMI?</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:32px;text-align:center">Include home loan, car loan, and all other EMIs.</div>
+    <div class="inp-label">Monthly EMI</div>
+    <div class="inp focus" style="margin-bottom:8px">
+      <span style="font-size:20px;font-weight:600;color:var(--t2)">₹</span>
+      <span style="font-size:18px;font-weight:600;font-variant-numeric:tabular-nums">12,000</span>
+    </div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:32px">Enter 0 if you have no EMIs</div>
+    <div class="btn btn-p" style="margin-bottom:20px">Continue →</div>
+    <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(61,142,248,.06);border:1px solid rgba(61,142,248,.15);border-radius:16px;padding:14px">
+      <div class="mascot-sm">🐾</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.5">EMIs reduce your investable surplus. I'll account for them in your goal plan. 📊</div>
+    </div>
+  </div>
+</div>
+<div class="phone-name">MonthlyEMIScreen</div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════ DESIGN SYSTEM PALETTE ═══════════════════ -->
+<div class="group">
+<div class="group-label">Design System — Color Palette</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="width:18px;height:18px;border-radius:50%;background:#080811;border:1px solid #333"></div>
+    <div><div style="font-size:10px;color:var(--t3)">Background</div><div style="font-size:12px;font-weight:600">#080811</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="width:18px;height:18px;border-radius:50%;background:#0f0f1c;border:1px solid #333"></div>
+    <div><div style="font-size:10px;color:var(--t3)">Card Surface</div><div style="font-size:12px;font-weight:600">#0f0f1c</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="width:18px;height:18px;border-radius:50%;background:#161628;border:1px solid #333"></div>
+    <div><div style="font-size:10px;color:var(--t3)">Elevated</div><div style="font-size:12px;font-weight:600">#161628</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="width:18px;height:18px;border-radius:50%;background:#3d8ef8"></div>
+    <div><div style="font-size:10px;color:var(--t3)">Primary</div><div style="font-size:12px;font-weight:600">#3d8ef8</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="width:18px;height:18px;border-radius:50%;background:#00e8b0"></div>
+    <div><div style="font-size:10px;color:var(--t3)">Gain</div><div style="font-size:12px;font-weight:600">#00e8b0</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="width:18px;height:18px;border-radius:50%;background:#ff7272"></div>
+    <div><div style="font-size:10px;color:var(--t3)">Loss</div><div style="font-size:12px;font-weight:600">#ff7272</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="width:18px;height:18px;border-radius:50%;background:#fbbf24"></div>
+    <div><div style="font-size:10px;color:var(--t3)">Warning</div><div style="font-size:12px;font-weight:600">#fbbf24</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="width:18px;height:18px;border-radius:50%;background:#a855f7"></div>
+    <div><div style="font-size:10px;color:var(--t3)">Achievement</div><div style="font-size:12px;font-weight:600">#a855f7</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="width:18px;height:18px;border-radius:50%;background:#f0f0fa"></div>
+    <div><div style="font-size:10px;color:var(--t3)">Text Primary</div><div style="font-size:12px;font-weight:600">#f0f0fa</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="width:18px;height:18px;border-radius:50%;background:#8b8b9e"></div>
+    <div><div style="font-size:10px;color:var(--t3)">Text Secondary</div><div style="font-size:12px;font-weight:600">#8b8b9e</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <div style="width:18px;height:18px;border-radius:50%;background:#55556a"></div>
+    <div><div style="font-size:10px;color:var(--t3)">Text Tertiary</div><div style="font-size:12px;font-weight:600">#55556a</div></div>
+  </div>
+</div>
+</div>
+
+</body>
+</html>

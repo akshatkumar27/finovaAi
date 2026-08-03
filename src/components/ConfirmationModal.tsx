@@ -40,26 +40,26 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             case 'success':
                 return {
                     icon: '✅',
-                    iconBg: 'rgba(34, 197, 94, 0.15)',
-                    confirmBg: '#22c55e',
+                    iconBg: colors.gainDim,
+                    confirmBg: colors.gain,
                 };
             case 'error':
                 return {
                     icon: '❌',
-                    iconBg: 'rgba(239, 68, 68, 0.15)',
-                    confirmBg: '#ef4444',
+                    iconBg: colors.lossDim,
+                    confirmBg: colors.loss,
                 };
             case 'warning':
                 return {
                     icon: '⚠️',
-                    iconBg: 'rgba(245, 158, 11, 0.15)',
-                    confirmBg: '#f59e0b',
+                    iconBg: colors.warningDim,
+                    confirmBg: colors.warning,
                 };
             default:
                 return {
                     icon: '💡',
-                    iconBg: 'rgba(59, 130, 246, 0.15)',
-                    confirmBg: '#3b82f6',
+                    iconBg: colors.primaryDim,
+                    confirmBg: colors.primary,
                 };
         }
     };
@@ -127,12 +127,12 @@ const styles = StyleSheet.create({
     },
     modalContainer: {
         width: SCREEN_WIDTH - spacing.xl * 2,
-        backgroundColor: colors.cardBackground,
-        borderRadius: 20,
+        backgroundColor: colors.elevatedBackground,
+        borderRadius: 24,
         padding: spacing.xl,
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: colors.border,
+        borderColor: colors.borderStrong,
     },
     iconContainer: {
         width: 64,
@@ -168,25 +168,31 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.inputBackground,
         paddingVertical: spacing.md,
-        borderRadius: 12,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: colors.border,
         alignItems: 'center',
+        minHeight: 52,
+        justifyContent: 'center',
     },
     cancelButtonText: {
-        color: colors.textPrimary,
+        color: colors.textSecondary,
         fontSize: typography.body,
         fontWeight: typography.semibold,
     },
     confirmButton: {
         flex: 1,
         paddingVertical: spacing.md,
-        borderRadius: 12,
+        borderRadius: 14,
         alignItems: 'center',
+        minHeight: 52,
+        justifyContent: 'center',
     },
     fullWidthButton: {
         flex: 1,
     },
     confirmButtonText: {
-        color: colors.background,
+        color: colors.textPrimary,
         fontSize: typography.body,
         fontWeight: typography.bold,
     },

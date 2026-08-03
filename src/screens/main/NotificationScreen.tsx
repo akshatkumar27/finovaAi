@@ -41,15 +41,30 @@ const getNotificationIcon = (type: string) => {
 const getNotificationColor = (type: string) => {
     switch (type) {
         case 'suggestion':
-            return '#f59e0b';
+            return colors.warningText;
         case 'alert':
-            return '#ef4444';
+            return colors.lossText;
         case 'update':
-            return '#22c55e';
+            return colors.gainText;
         case 'achievement':
-            return '#8b5cf6';
+            return colors.achievement;
         default:
             return colors.primary;
+    }
+};
+
+const getNotificationDimColor = (type: string) => {
+    switch (type) {
+        case 'suggestion':
+            return colors.warningDim;
+        case 'alert':
+            return colors.lossDim;
+        case 'update':
+            return colors.gainDim;
+        case 'achievement':
+            return colors.achievementDim;
+        default:
+            return colors.primaryDim;
     }
 };
 
@@ -150,7 +165,7 @@ export const NotificationScreen: React.FC = () => {
                         <View
                             style={[
                                 styles.iconContainer,
-                                { backgroundColor: getNotificationColor(notification.type) + '20' },
+                                { backgroundColor: getNotificationDimColor(notification.type) },
                             ]}
                         >
                             <Text style={styles.icon}>{getNotificationIcon(notification.type)}</Text>
@@ -188,7 +203,7 @@ export const NotificationScreen: React.FC = () => {
                         <View
                             style={[
                                 styles.iconContainer,
-                                { backgroundColor: getNotificationColor(notification.type) + '20' },
+                                { backgroundColor: getNotificationDimColor(notification.type) },
                             ]}
                         >
                             <Text style={styles.icon}>{getNotificationIcon(notification.type)}</Text>
@@ -252,7 +267,9 @@ const styles = StyleSheet.create({
         fontWeight: typography.medium,
     },
     unreadBadge: {
-        backgroundColor: colors.primary + '20',
+        backgroundColor: colors.primaryDim,
+        borderWidth: 1,
+        borderColor: 'rgba(61,142,248,0.25)',
         marginHorizontal: spacing.lg,
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.md,
@@ -270,17 +287,19 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.lg,
     },
     sectionLabel: {
-        color: colors.textMuted,
+        color: colors.textSecondary,
         fontSize: typography.caption,
         fontWeight: typography.semibold,
-        letterSpacing: 0.5,
+        letterSpacing: 0.3,
         marginBottom: spacing.sm,
         marginTop: spacing.md,
     },
     notificationCard: {
         flexDirection: 'row',
         backgroundColor: colors.cardBackground,
-        borderRadius: 12,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: colors.border,
         padding: spacing.md,
         marginBottom: spacing.sm,
     },

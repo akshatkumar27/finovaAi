@@ -302,7 +302,7 @@ export const EditFinancialDetailsScreen: React.FC = () => {
                     disabled={isSaving}
                 >
                     {isSaving ? (
-                        <ActivityIndicator size="small" color="#fff" />
+                        <ActivityIndicator size="small" color={colors.textPrimary} />
                     ) : (
                         <Text style={styles.saveButtonText}>Save Changes</Text>
                     )}
@@ -341,31 +341,34 @@ const styles = StyleSheet.create({
         marginBottom: spacing.lg,
     },
     label: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
+        color: colors.textTertiary,
+        fontSize: typography.caption,
         marginBottom: spacing.xs,
-        fontWeight: '500',
+        fontWeight: typography.medium,
+        textTransform: 'uppercase',
+        letterSpacing: 0.3,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: colors.inputBackground,
-        borderRadius: 12,
+        borderRadius: 14,
+        minHeight: 52,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
         borderWidth: 1,
         borderColor: colors.border,
     },
     inputError: {
-        borderColor: '#ef4444',
+        borderColor: colors.lossText,
     },
     errorText: {
-        color: '#ef4444',
+        color: colors.lossText,
         fontSize: typography.caption,
         marginTop: 4,
     },
     currencyPrefix: {
-        color: colors.textPrimary,
+        color: colors.primary,
         fontSize: typography.h3,
         fontWeight: typography.bold,
         marginRight: spacing.sm,
@@ -376,6 +379,7 @@ const styles = StyleSheet.create({
         fontSize: typography.h3,
         fontWeight: typography.bold,
         padding: 0,
+        fontVariant: ['tabular-nums'],
     },
     footer: {
         padding: spacing.lg,
@@ -385,16 +389,25 @@ const styles = StyleSheet.create({
     },
     saveButton: {
         backgroundColor: colors.primary,
-        borderRadius: 12,
+        borderRadius: 14,
+        minHeight: 52,
         paddingVertical: spacing.md,
         alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: colors.primary,
+        shadowOpacity: 0.35,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 12,
+        elevation: 8,
     },
     saveButtonDisabled: {
         opacity: 0.5,
+        shadowOpacity: 0,
+        elevation: 0,
     },
     saveButtonText: {
-        color: '#ffffff',
+        color: colors.textPrimary,
         fontSize: typography.body,
-        fontWeight: 'bold',
+        fontWeight: typography.bold,
     },
 });

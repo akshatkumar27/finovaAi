@@ -247,7 +247,7 @@ export const PersonalInfoScreen: React.FC = () => {
                                 disabled={isDeleting}
                             >
                                 {isDeleting ? (
-                                    <ActivityIndicator size="small" color="#fff" />
+                                    <ActivityIndicator size="small" color={colors.lossText} />
                                 ) : (
                                     <Text style={styles.modalDeleteText}>Delete</Text>
                                 )}
@@ -299,7 +299,9 @@ const styles = StyleSheet.create({
     },
     card: {
         backgroundColor: colors.cardBackground,
-        borderRadius: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: colors.border,
         overflow: 'hidden',
     },
     infoRow: {
@@ -338,19 +340,21 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.lg,
     },
     deleteButton: {
-        backgroundColor: '#fee2e2',
+        backgroundColor: colors.lossDim,
         marginHorizontal: spacing.lg,
         paddingVertical: spacing.md,
-        borderRadius: 12,
+        borderRadius: 14,
+        minHeight: 52,
         alignItems: 'center',
+        justifyContent: 'center',
         marginBottom: spacing.xxl,
         borderWidth: 1,
-        borderColor: '#fca5a5',
+        borderColor: 'rgba(255,82,82,0.25)',
     },
     deleteButtonText: {
-        color: '#ef4444',
+        color: colors.lossText,
         fontSize: typography.body,
-        fontWeight: 'bold',
+        fontWeight: typography.bold,
     },
     modalOverlay: {
         flex: 1,
@@ -360,8 +364,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.lg,
     },
     modalContainer: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 20,
+        backgroundColor: colors.elevatedBackground,
+        borderRadius: 24,
+        borderWidth: 1,
+        borderColor: colors.borderStrong,
         padding: spacing.xl,
         width: '100%',
         maxWidth: 320,
@@ -371,7 +377,7 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
         borderRadius: 30,
-        backgroundColor: '#fee2e2',
+        backgroundColor: colors.lossDim,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: spacing.md,
@@ -400,26 +406,34 @@ const styles = StyleSheet.create({
     modalCancelButton: {
         flex: 1,
         backgroundColor: colors.inputBackground,
-        borderRadius: 12,
+        borderRadius: 14,
+        minHeight: 52,
         paddingVertical: spacing.md,
         alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: colors.border,
     },
     modalCancelText: {
-        color: colors.textPrimary,
+        color: colors.textSecondary,
         fontSize: typography.body,
         fontWeight: typography.medium,
     },
     modalDeleteButton: {
         flex: 1,
-        backgroundColor: '#ef4444',
-        borderRadius: 12,
+        backgroundColor: colors.lossDim,
+        borderRadius: 14,
+        minHeight: 52,
         paddingVertical: spacing.md,
         alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,82,82,0.25)',
     },
     modalDeleteText: {
-        color: '#ffffff',
+        color: colors.lossText,
         fontSize: typography.body,
-        fontWeight: 'bold',
+        fontWeight: typography.bold,
     },
     valueContainer: {
         flexDirection: 'row',

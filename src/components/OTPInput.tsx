@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     box: {
         width: 48,
         height: 56,
-        borderRadius: 12,
+        borderRadius: 14,
         borderWidth: 1,
         borderColor: colors.border,
         backgroundColor: colors.inputBackground,
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     boxActive: {
-        borderColor: colors.primary,
+        borderColor: colors.borderFocused,
         borderWidth: 2,
     },
     boxFilled: {

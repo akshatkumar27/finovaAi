@@ -19,14 +19,15 @@ const styles = StyleSheet.create({
     button: {
         width: 40,
         height: 40,
-        borderRadius: 8,
+        borderRadius: 12,
         borderWidth: 1,
         borderColor: colors.border,
+        backgroundColor: colors.cardBackground,
         justifyContent: 'center',
         alignItems: 'center',
     },
     icon: {
-        color: colors.textPrimary,
+        color: colors.textSecondary,
         fontSize: 24,
         fontWeight: '300',
         marginTop: -2,

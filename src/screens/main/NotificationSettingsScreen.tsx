@@ -59,7 +59,7 @@ export const NotificationSettingsScreen: React.FC = () => {
             </View>
             <Switch
                 trackColor={{ false: colors.inputBackground, true: colors.primary }}
-                thumbColor={'#fff'}
+                thumbColor={colors.textPrimary}
                 ios_backgroundColor={colors.inputBackground}
                 onValueChange={onValueChange}
                 value={value}
@@ -80,7 +80,7 @@ export const NotificationSettingsScreen: React.FC = () => {
                 <View style={[styles.card, styles.masterCard]}>
                     <View style={styles.settingRow}>
                         <View style={styles.rowLeft}>
-                            <View style={[styles.iconContainer, { backgroundColor: '#ef444420' }]}>
+                            <View style={[styles.iconContainer, { backgroundColor: colors.lossDim }]}>
                                 <Text style={styles.iconText}>🔕</Text>
                             </View>
                             <View>
@@ -90,7 +90,7 @@ export const NotificationSettingsScreen: React.FC = () => {
                         </View>
                         <Switch
                             trackColor={{ false: colors.inputBackground, true: colors.primary }}
-                            thumbColor={'#fff'}
+                            thumbColor={colors.textPrimary}
                             ios_backgroundColor={colors.inputBackground}
                             onValueChange={setPauseAll}
                             value={pauseAll}
@@ -228,7 +228,9 @@ const styles = StyleSheet.create({
     },
     card: {
         backgroundColor: colors.cardBackground,
-        borderRadius: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: colors.border,
         overflow: 'hidden',
     },
     masterCard: {

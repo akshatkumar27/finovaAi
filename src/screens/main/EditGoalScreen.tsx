@@ -479,10 +479,10 @@ export const EditGoalScreen: React.FC = () => {
                                 disabled={isLoading}
                             >
                                 <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-                                    <Path d="M3 6h18" stroke="#ef4444" strokeWidth={2} strokeLinecap="round" />
-                                    <Path d="M8 6V4h8v2" stroke="#ef4444" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                                    <Path d="M19 6l-1 14H6L5 6" stroke="#ef4444" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                                    <Path d="M10 11v6M14 11v6" stroke="#ef4444" strokeWidth={2} strokeLinecap="round" />
+                                    <Path d="M3 6h18" stroke={colors.lossText} strokeWidth={2} strokeLinecap="round" />
+                                    <Path d="M8 6V4h8v2" stroke={colors.lossText} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                                    <Path d="M19 6l-1 14H6L5 6" stroke={colors.lossText} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                                    <Path d="M10 11v6M14 11v6" stroke={colors.lossText} strokeWidth={2} strokeLinecap="round" />
                                 </Svg>
                             </TouchableOpacity>
                         }
@@ -778,14 +778,15 @@ const styles = StyleSheet.create({
         marginBottom: spacing.sm,
     },
     textInput: {
-        backgroundColor: 'transparent',
+        backgroundColor: colors.inputBackground,
         borderWidth: 1,
         borderColor: colors.border,
-        borderRadius: 8,
+        borderRadius: 14,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
         color: colors.textPrimary,
         fontSize: typography.body,
+        minHeight: 52,
     },
     rowFieldContainer: {
         flexDirection: 'row',
@@ -797,10 +798,10 @@ const styles = StyleSheet.create({
     compactInput: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.cardBackground,
+        backgroundColor: colors.inputBackground,
         borderWidth: 1,
         borderColor: colors.border,
-        borderRadius: 8,
+        borderRadius: 14,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
         maxWidth: 150,
@@ -827,8 +828,8 @@ const styles = StyleSheet.create({
         marginRight: spacing.xs,
     },
     highlightedInput: {
-        backgroundColor: colors.primary + '10',
-        borderColor: colors.primary + '40',
+        backgroundColor: colors.primaryDim,
+        borderColor: 'rgba(61,142,248,0.25)',
     },
     highlightedText: {
         color: colors.primary,
@@ -848,7 +849,7 @@ const styles = StyleSheet.create({
         borderColor: colors.border,
     },
     durationOptionSelected: {
-        backgroundColor: colors.primary + '20',
+        backgroundColor: colors.primaryDim,
         borderColor: colors.primary,
     },
     durationText: {
@@ -865,16 +866,17 @@ const styles = StyleSheet.create({
         marginTop: spacing.xs,
     },
     customMonthsInput: {
-        backgroundColor: colors.cardBackground,
+        backgroundColor: colors.inputBackground,
         borderWidth: 1,
-        borderColor: colors.primary,
-        borderRadius: 8,
+        borderColor: colors.borderFocused,
+        borderRadius: 14,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
         color: colors.textPrimary,
         fontSize: typography.body,
         width: 100,
         textAlign: 'center',
+        minHeight: 52,
     },
     customMonthsLabel: {
         color: colors.textSecondary,
@@ -882,10 +884,10 @@ const styles = StyleSheet.create({
         marginLeft: spacing.sm,
     },
     inputError: {
-        borderColor: colors.error,
+        borderColor: colors.lossText,
     },
     errorText: {
-        color: colors.error,
+        color: colors.lossText,
         fontSize: typography.caption,
         marginTop: 4,
         alignSelf: 'flex-end',
@@ -898,9 +900,9 @@ const styles = StyleSheet.create({
         width: 36,
         height: 36,
         borderRadius: 10,
-        backgroundColor: 'rgba(239, 68, 68, 0.12)',
+        backgroundColor: colors.lossDim,
         borderWidth: 1,
-        borderColor: 'rgba(239, 68, 68, 0.3)',
+        borderColor: 'rgba(255,82,82,0.25)',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -914,13 +916,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.xl,
     },
     modalCard: {
-        backgroundColor: '#1a1a2e',
-        borderRadius: 20,
+        backgroundColor: colors.elevatedBackground,
+        borderRadius: 24,
         padding: spacing.xl,
         width: '100%',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#2a2a4a',
+        borderColor: colors.borderStrong,
     },
     modalIcon: {
         fontSize: 40,
@@ -951,26 +953,32 @@ const styles = StyleSheet.create({
     modalCancelBtn: {
         flex: 1,
         paddingVertical: spacing.md,
-        borderRadius: 10,
+        borderRadius: 14,
         borderWidth: 1,
         borderColor: colors.border,
         alignItems: 'center',
-        backgroundColor: colors.cardBackground,
+        backgroundColor: colors.inputBackground,
+        minHeight: 52,
+        justifyContent: 'center',
     },
     modalCancelText: {
         color: colors.textSecondary,
         fontSize: typography.body,
-        fontWeight: typography.medium as any,
+        fontWeight: typography.semibold as any,
     },
     modalDeleteBtn: {
         flex: 1,
         paddingVertical: spacing.md,
-        borderRadius: 10,
+        borderRadius: 14,
         alignItems: 'center',
-        backgroundColor: '#ef4444',
+        backgroundColor: colors.lossDim,
+        borderWidth: 1,
+        borderColor: 'rgba(255,82,82,0.25)',
+        minHeight: 52,
+        justifyContent: 'center',
     },
     modalDeleteText: {
-        color: '#fff',
+        color: colors.lossText,
         fontSize: typography.body,
         fontWeight: typography.semibold as any,
     },
@@ -1022,7 +1030,7 @@ const calendarStyles = StyleSheet.create({
         alignItems: 'center',
     },
     ordinalText: {
-        color: '#fff',
+        color: colors.textPrimary,
         fontSize: 9,
         fontWeight: typography.bold as any,
     },
@@ -1073,12 +1081,12 @@ const calendarStyles = StyleSheet.create({
         paddingHorizontal: spacing.lg,
     },
     modalContent: {
-        backgroundColor: '#1a1a2e',
-        borderRadius: 20,
+        backgroundColor: colors.elevatedBackground,
+        borderRadius: 24,
         padding: spacing.lg,
         width: '100%',
         borderWidth: 1,
-        borderColor: '#2a2a4a',
+        borderColor: colors.borderStrong,
     },
     modalTitle: {
         color: colors.textPrimary,
@@ -1167,9 +1175,13 @@ const calendarStyles = StyleSheet.create({
     closeBtn: {
         marginTop: spacing.lg,
         paddingVertical: spacing.md,
-        borderRadius: 12,
-        backgroundColor: colors.cardBackground,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: colors.border,
+        backgroundColor: colors.inputBackground,
         alignItems: 'center',
+        minHeight: 52,
+        justifyContent: 'center',
     },
     closeBtnText: {
         color: colors.textSecondary,

@@ -574,7 +574,7 @@ export const ContributionsScreen: React.FC = () => {
                                 onPress={handleSaveEdit}
                             >
                                 {isSaving ? (
-                                    <ActivityIndicator size="small" color="#fff" />
+                                    <ActivityIndicator size="small" color={colors.textPrimary} />
                                 ) : (
                                     <Text style={styles.modalButtonTextSave}>Save</Text>
                                 )}
@@ -629,9 +629,9 @@ export const ContributionsScreen: React.FC = () => {
                         {hasPaidThisMonth ? (
                             <View style={styles.pulseRow}>
                                 <View style={styles.pulseLeftCol}>
-                                    <View style={[styles.timerBadge, { backgroundColor: 'rgba(34, 197, 94, 0.2)', marginBottom: 8 }]}>
+                                    <View style={[styles.timerBadge, { backgroundColor: colors.gainDim, marginBottom: 8 }]}>
                                         <Text style={styles.timerIcon}>✅</Text>
-                                        <Text style={[styles.timerText, { color: '#22c55e' }]}>Contributed</Text>
+                                        <Text style={[styles.timerText, { color: colors.gainText }]}>Contributed</Text>
                                     </View>
                                     <Text style={styles.pulseTitle}>Next Due</Text>
                                     <Text style={styles.pulseSubtitle}>
@@ -654,9 +654,9 @@ export const ContributionsScreen: React.FC = () => {
                                 <View style={styles.pulseRow}>
                                     <View style={styles.pulseLeftCol}>
                                         {paymentEnabled ? (
-                                            <View style={[styles.timerBadge, { backgroundColor: 'rgba(245, 158, 11, 0.2)', marginBottom: 8 }]}>
+                                            <View style={[styles.timerBadge, { backgroundColor: colors.warningDim, marginBottom: 8 }]}>
                                                 <Text style={styles.timerIcon}>⚠️</Text>
-                                                <Text style={[styles.timerText, { color: '#f59e0b' }]}>Pending</Text>
+                                                <Text style={[styles.timerText, { color: colors.warningText }]}>Pending</Text>
                                             </View>
                                         ) : (
                                             <View style={[styles.timerBadge, { marginBottom: 8 }]}>
@@ -847,12 +847,12 @@ const styles = StyleSheet.create({
     },
     // Pulse Style Card
     upcomingCardPulse: {
-        backgroundColor: '#1a2a3a',
+        backgroundColor: colors.elevatedBackground,
         borderRadius: 20,
         padding: spacing.lg,
         marginBottom: spacing.lg,
         borderWidth: 1,
-        borderColor: '#2a4a6a',
+        borderColor: colors.borderStrong,
         marginTop: spacing.md,
         overflow: 'hidden',
         position: 'relative',
@@ -862,7 +862,7 @@ const styles = StyleSheet.create({
         width: 150,
         height: 150,
         borderRadius: 75,
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        backgroundColor: colors.gainDim,
         top: -50,
         right: -30,
         zIndex: -1,
@@ -883,7 +883,7 @@ const styles = StyleSheet.create({
     timerBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.primary + '33', // 20% opacity primary color
+        backgroundColor: colors.primaryDim,
         paddingHorizontal: spacing.sm,
         paddingVertical: spacing.xs,
         borderRadius: 12,
@@ -899,10 +899,10 @@ const styles = StyleSheet.create({
         fontWeight: typography.bold,
     },
     pulseTitle: {
-        color: colors.textMuted,
+        color: colors.textSecondary,
         fontSize: typography.caption,
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        letterSpacing: 0.3,
         marginBottom: 2,
     },
     pulseSubtitle: {
@@ -914,6 +914,7 @@ const styles = StyleSheet.create({
         fontSize: 32,
         fontWeight: typography.bold,
         letterSpacing: -1,
+        fontVariant: ['tabular-nums'],
     },
     editIconBtn: {
         fontSize: 20,
@@ -926,16 +927,16 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     pulsePayBtn: {
-        backgroundColor: '#22c55e',
+        backgroundColor: colors.gain,
         paddingVertical: 10,
         paddingHorizontal: spacing.lg,
-        borderRadius: 12,
+        borderRadius: 14,
         marginTop: spacing.sm,
-        shadowColor: '#22c55e',
+        shadowColor: colors.gain,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.3,
         shadowRadius: 8,
-        elevation: 3,
+        elevation: 4,
     },
     pulsePayBtnDisabled: {
         opacity: 0.6,
@@ -943,7 +944,7 @@ const styles = StyleSheet.create({
         elevation: 0,
     },
     pulsePayBtnText: {
-        color: '#fff',
+        color: colors.background,
         fontSize: typography.bodySmall,
         fontWeight: typography.bold,
     },
@@ -957,25 +958,30 @@ const styles = StyleSheet.create({
     },
     pulseConfirmBtn: {
         backgroundColor: colors.primary,
-        borderRadius: 10,
+        borderRadius: 14,
         paddingVertical: 10,
         paddingHorizontal: spacing.xl,
         marginLeft: spacing.md,
+        shadowColor: colors.primary,
+        shadowOpacity: 0.35,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 8,
+        elevation: 6,
     },
     pulseConfirmBtnText: {
-        color: colors.background,
+        color: colors.textPrimary,
         fontSize: typography.bodySmall,
         fontWeight: typography.bold,
     },
 
     // Sub-Pulse Summary Card
     pulseSummaryCard: {
-        backgroundColor: '#1a2a3a',
+        backgroundColor: colors.cardBackground,
         borderRadius: 20,
         padding: spacing.lg,
         marginBottom: spacing.xl,
         borderWidth: 1,
-        borderColor: '#2a4a6a',
+        borderColor: colors.border,
         overflow: 'hidden',
         position: 'relative',
     },
@@ -984,7 +990,7 @@ const styles = StyleSheet.create({
         width: 120,
         height: 120,
         borderRadius: 60,
-        backgroundColor: 'rgba(34, 197, 94, 0.08)',
+        backgroundColor: colors.gainDim,
         bottom: -40,
         left: -40,
         zIndex: -1,
@@ -999,7 +1005,7 @@ const styles = StyleSheet.create({
     summaryGlassItem: {
         width: '48%',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+        backgroundColor: colors.elevatedBackground,
         borderRadius: 12,
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.xs,
@@ -1010,10 +1016,12 @@ const styles = StyleSheet.create({
         fontSize: typography.body,
         fontWeight: typography.bold,
         marginBottom: 4,
+        fontVariant: ['tabular-nums'],
     },
     summaryLabel: {
-        color: colors.textMuted,
+        color: colors.textSecondary,
         fontSize: typography.caption,
+        letterSpacing: 0.3,
     },
     progressSection: {
         marginBottom: spacing.md,
@@ -1032,7 +1040,7 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 16,
-        backgroundColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: colors.primaryDim,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: spacing.sm,
@@ -1046,29 +1054,30 @@ const styles = StyleSheet.create({
         fontWeight: typography.bold,
     },
     progressPercentBadge: {
-        backgroundColor: 'rgba(34, 197, 94, 0.15)',
+        backgroundColor: colors.gainDim,
         paddingHorizontal: spacing.sm,
         paddingVertical: 4,
         borderRadius: 12,
     },
     progressPercent: {
-        color: '#22c55e',
+        color: colors.gainText,
         fontSize: typography.bodySmall,
         fontWeight: typography.bold,
+        fontVariant: ['tabular-nums'],
     },
     pulseProgressSection: {
         marginBottom: spacing.md,
     },
     progressBarBackground: {
-        height: 12,
-        backgroundColor: 'rgba(255,255,255,0.06)',
-        borderRadius: 6,
+        height: 8,
+        backgroundColor: colors.border,
+        borderRadius: 99,
         overflow: 'hidden',
     },
     pulseProgressBarFill: {
         height: '100%',
-        backgroundColor: '#22c55e',
-        borderRadius: 6,
+        backgroundColor: colors.gain,
+        borderRadius: 99,
     },
     progressAmounts: {
         flexDirection: 'row',
@@ -1076,9 +1085,10 @@ const styles = StyleSheet.create({
         marginTop: spacing.sm,
     },
     progressSaved: {
-        color: '#22c55e',
+        color: colors.gainText,
         fontSize: typography.bodySmall,
         fontWeight: typography.bold,
+        fontVariant: ['tabular-nums'],
     },
     progressTarget: {
         color: colors.textSecondary,
@@ -1086,7 +1096,7 @@ const styles = StyleSheet.create({
     },
     summaryDividerHorizontal: {
         height: 1,
-        backgroundColor: 'rgba(255,255,255,0.06)',
+        backgroundColor: colors.border,
         marginVertical: spacing.lg,
     },
     // History section
@@ -1103,17 +1113,17 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: spacing.sm,
-        backgroundColor: "rgba(255,255,255,0.02)",
+        backgroundColor: colors.cardBackground,
         borderRadius: 16,
         padding: spacing.md,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.04)',
+        borderColor: colors.border,
     },
     historyDot: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        backgroundColor: colors.gainDim,
         marginRight: spacing.md,
         alignItems: 'center',
         justifyContent: 'center',
@@ -1138,9 +1148,10 @@ const styles = StyleSheet.create({
         fontWeight: typography.semibold,
     },
     historyAmount: {
-        color: '#22c55e',
+        color: colors.gainText,
         fontSize: typography.bodySmall,
         fontWeight: typography.bold,
+        fontVariant: ['tabular-nums'],
     },
     historyDate: {
         color: colors.textMuted,
@@ -1151,7 +1162,7 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         borderRadius: 8,
         borderWidth: 1,
-        borderColor: colors.primary + '60',
+        borderColor: 'rgba(61,142,248,0.35)',
     },
     historyEditBtnText: {
         color: colors.primary,
@@ -1197,10 +1208,10 @@ const styles = StyleSheet.create({
     contributionInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: "rgba(0,0,0,0.2)",
-        borderWidth: 1.5,
-        borderColor: colors.primary + '30',
-        borderRadius: 12,
+        backgroundColor: colors.inputBackground,
+        borderWidth: 1,
+        borderColor: 'rgba(61,142,248,0.25)',
+        borderRadius: 14,
         paddingHorizontal: spacing.md,
         paddingVertical: 8,
         flex: 1,
@@ -1261,16 +1272,16 @@ const styles = StyleSheet.create({
         width: 28,
         height: 28,
         borderRadius: 14,
-        backgroundColor: '#22c55e',
+        backgroundColor: colors.gain,
         justifyContent: 'center',
         alignItems: 'center',
         marginLeft: 4,
     },
     inlineActionCancel: {
-        backgroundColor: colors.error,
+        backgroundColor: colors.lossDim,
     },
     inlineActionText: {
-        color: '#fff',
+        color: colors.textPrimary,
         fontSize: 12,
         fontWeight: 'bold',
     },
@@ -1299,12 +1310,12 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         width: '100%',
-        backgroundColor: colors.cardBackground,
-        borderRadius: 20,
+        backgroundColor: colors.elevatedBackground,
+        borderRadius: 24,
         padding: spacing.xl,
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: colors.border,
+        borderColor: colors.borderStrong,
     },
     modalTitle: {
         fontSize: typography.h3,
@@ -1344,7 +1355,7 @@ const styles = StyleSheet.create({
         paddingVertical: 0,
     },
     modalErrorText: {
-        color: colors.error,
+        color: colors.lossText,
         fontSize: typography.caption,
         marginBottom: spacing.sm,
         alignSelf: 'flex-start',
@@ -1364,22 +1375,30 @@ const styles = StyleSheet.create({
     modalButton: {
         flex: 1,
         paddingVertical: spacing.md,
-        borderRadius: 12,
+        borderRadius: 14,
+        minHeight: 52,
         alignItems: 'center',
         justifyContent: 'center',
     },
     modalButtonCancel: {
         backgroundColor: colors.inputBackground,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
     modalButtonSave: {
         backgroundColor: colors.primary,
+        shadowColor: colors.primary,
+        shadowOpacity: 0.35,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 12,
+        elevation: 8,
     },
     modalButtonTextCancel: {
         color: colors.textSecondary,
         fontWeight: typography.bold,
     },
     modalButtonTextSave: {
-        color: '#000',
+        color: colors.textPrimary,
         fontWeight: typography.bold,
     },
     editButtonIcon: {

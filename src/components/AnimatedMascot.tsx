@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
         borderRightWidth: 12,
         borderTopColor: 'transparent',
         borderBottomColor: 'transparent',
-        borderRightColor: 'rgba(255, 255, 255, 0.25)',
+        borderRightColor: colors.borderStrong,
         zIndex: 1,
     },
     tooltipArrowInner: {
@@ -179,18 +179,17 @@ const styles = StyleSheet.create({
         borderRightWidth: 10,
         borderTopColor: 'transparent',
         borderBottomColor: 'transparent',
-        borderRightColor: 'rgba(30, 30, 40, 0.95)',
+        borderRightColor: colors.elevatedBackground,
         zIndex: 2,
     },
     tooltipBubble: {
         marginLeft: 10,
-        backgroundColor: 'rgba(30, 30, 40, 0.95)',
+        backgroundColor: colors.elevatedBackground,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.15)',
+        borderColor: colors.borderStrong,
         paddingHorizontal: 18,
         paddingVertical: 14,
-        // Subtle shadow
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -201,9 +200,9 @@ const styles = StyleSheet.create({
         elevation: 6,
     },
     tooltipText: {
-        color: colors.textPrimary || '#FFFFFF',
-        fontSize: typography.body || 14,
-        fontWeight: '500',
+        color: colors.textPrimary,
+        fontSize: typography.body,
+        fontWeight: typography.medium,
         lineHeight: 20,
     },
 });

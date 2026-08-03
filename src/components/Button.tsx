@@ -7,7 +7,7 @@ import {
     ViewStyle,
     TextStyle,
 } from 'react-native';
-import { colors } from '../constants';
+import { colors, typography, spacing } from '../constants';
 
 interface ButtonProps {
     title: string;
@@ -53,18 +53,24 @@ export const Button: React.FC<ButtonProps> = ({
 const styles = StyleSheet.create({
     button: {
         backgroundColor: colors.primary,
-        paddingVertical: 16,
-        paddingHorizontal: 24,
-        borderRadius: 12,
+        paddingVertical: spacing.md,
+        paddingHorizontal: spacing.lg,
+        borderRadius: 14,
+        minHeight: 52,
         alignItems: 'center',
         justifyContent: 'center',
+        shadowColor: colors.primary,
+        shadowOpacity: 0.35,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 12,
+        elevation: 8,
     },
     buttonDisabled: {
         opacity: 0.6,
     },
     buttonText: {
         color: colors.textPrimary,
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: typography.body,
+        fontWeight: typography.semibold,
     },
 });

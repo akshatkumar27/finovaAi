@@ -93,8 +93,8 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
     progress,
     size = 160,
     strokeWidth = 14,
-    progressColor = '#22c55e',
-    trackColor = colors.cardBackground,
+    progressColor = colors.gainText,
+    trackColor = colors.elevatedBackground,
 }) => {
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
@@ -130,7 +130,9 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
             </Svg>
             {/* Center Score Text */}
             <View style={circularStyles.centerText}>
-                <Text style={circularStyles.scoreText}>{Math.round(progress)}</Text>
+                <Text style={[circularStyles.scoreText, { color: progressColor }]}>
+                    {Math.round(progress)}
+                </Text>
             </View>
         </View>
     );
@@ -147,7 +149,6 @@ const circularStyles = StyleSheet.create({
         alignItems: 'center',
     },
     scoreText: {
-        color: '#22c55e',
         fontSize: 32,
         fontWeight: '700',
     },
@@ -280,6 +281,13 @@ export const GoalPulseScreen: React.FC = () => {
 
     const availableBudget = goalBudget ? goalBudget.availableForNewGoals : 0;
 
+    // Progress ring color: gain teal when crushing it, brand blue on track, amber if just starting
+    const progressRingColor = averageAchievement >= 75
+        ? colors.gainText
+        : averageAchievement >= 40
+            ? colors.primary
+            : colors.warningText;
+
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor={colors.background} />
@@ -328,11 +336,16 @@ export const GoalPulseScreen: React.FC = () => {
                     {/* Monthly Pulse Score - only show when there are goals */}
                     {goals.length > 0 && (
                         <View style={styles.pulseCard}>
-                            <View style={styles.pulseCardGradient}>
+                            <View style={styles.pulseCardInner}>
                                 <View style={styles.pulseHeaderRow}>
                                     <View style={styles.pulseScoreContainer}>
                                         <View style={styles.glowEffect} />
-                                        <CircularProgress progress={averageAchievement} size={80} strokeWidth={8} />
+                                        <CircularProgress
+                                            progress={averageAchievement}
+                                            size={80}
+                                            strokeWidth={8}
+                                            progressColor={progressRingColor}
+                                        />
                                     </View>
 
                                     <View style={styles.pulseTitleContainer}>
@@ -529,35 +542,22 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-    logoIcon: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
     logoImage: {
         width: 40,
         height: 40,
         borderRadius: 10,
         marginRight: spacing.sm,
     },
-    logoText: {
-        color: colors.textPrimary,
-        fontSize: 12,
-        fontWeight: typography.bold,
-    },
     headerTitle: {
         color: colors.textPrimary,
         fontSize: typography.body,
         fontWeight: typography.semibold,
+        letterSpacing: 0.2,
     },
     headerSubtitle: {
-        color: colors.textMuted,
+        color: colors.textTertiary,
         fontSize: 10,
-        letterSpacing: 1,
+        letterSpacing: 1.5,
     },
     headerRight: {
         flexDirection: 'row',
@@ -579,7 +579,9 @@ const styles = StyleSheet.create({
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: colors.primary,
+        backgroundColor: colors.elevatedBackground,
+        borderWidth: 1,
+        borderColor: 'rgba(61,142,248,0.30)',
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
@@ -598,90 +600,22 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 10,
         backgroundColor: colors.textPrimary,
     },
-    avatarText: {
-        fontSize: 16,
-    },
     content: {
         flex: 1,
     },
-    smartSaveCard: {
-        backgroundColor: '#1a3a5c',
-        marginBottom: spacing.lg,
-    },
-    smartSaveHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: spacing.sm,
-    },
-    smartSaveLabel: {
-        color: '#22c55e',
-        fontSize: typography.caption,
-        fontWeight: typography.semibold,
-    },
-    goldBadge: {
-        backgroundColor: '#f59e0b',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
-        marginLeft: spacing.sm,
-    },
-    goldBadgeText: {
-        color: '#000',
-        fontSize: 10,
-        fontWeight: typography.bold,
-    },
-    roundUpLabel: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        marginBottom: 4,
-    },
-    amountRow: {
-        flexDirection: 'row',
-        alignItems: 'baseline',
-    },
-    rupeeSymbol: {
-        color: colors.textPrimary,
-        fontSize: typography.h2,
-        fontWeight: typography.bold,
-    },
-    amountValue: {
-        color: colors.textPrimary,
-        fontSize: 32,
-        fontWeight: typography.bold,
-    },
-    valueAddedRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: spacing.sm,
-        alignSelf: 'flex-end',
-    },
-    valueAddedLabel: {
-        color: colors.textMuted,
-        fontSize: 10,
-        marginRight: spacing.xs,
-    },
-    valueAddedAmount: {
-        color: '#22c55e',
-        fontSize: typography.bodySmall,
-        fontWeight: typography.semibold,
-    },
-    pulseScoreSection: {
-        alignItems: 'center',
-        paddingVertical: spacing.lg,
-        marginBottom: spacing.lg,
-    },
+    // ── Pulse Score Card ────────────────────────────────────────────────────────
     pulseCard: {
-        marginBottom: spacing.md,
+        marginBottom: spacing.lg,
         marginHorizontal: spacing.lg,
         borderRadius: 20,
         overflow: 'hidden',
     },
-    pulseCardGradient: {
-        backgroundColor: '#1a2a3a',
+    pulseCardInner: {
+        backgroundColor: colors.elevatedBackground,
         borderRadius: 20,
         padding: spacing.lg,
         borderWidth: 1,
-        borderColor: '#2a4a6a',
+        borderColor: 'rgba(61,142,248,0.18)',
         width: '100%',
     },
     pulseHeaderRow: {
@@ -702,14 +636,14 @@ const styles = StyleSheet.create({
     },
     pulseCardTitle: {
         color: colors.textPrimary,
-        fontSize: typography.h3,
+        fontSize: 17,
         fontWeight: typography.bold,
         marginBottom: spacing.xs,
         textAlign: 'left',
     },
     pulseCardSubtitle: {
-        color: colors.textMuted,
-        fontSize: typography.bodySmall,
+        color: colors.textTertiary,
+        fontSize: typography.caption,
         marginBottom: spacing.xs,
         textAlign: 'left',
     },
@@ -724,18 +658,19 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: 'rgba(34, 197, 94, 0.15)',
-        shadowColor: '#22c55e',
+        backgroundColor: 'rgba(61,142,248,0.10)',
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5,
-        shadowRadius: 30,
+        shadowOpacity: 0.4,
+        shadowRadius: 24,
     },
     encourageText: {
         color: colors.textSecondary,
-        fontSize: typography.body,
+        fontSize: typography.bodySmall,
         textAlign: 'center',
         fontWeight: typography.medium,
     },
+    // ── Section headers ─────────────────────────────────────────────────────────
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -743,155 +678,18 @@ const styles = StyleSheet.create({
         marginBottom: spacing.sm,
     },
     sectionTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-        marginTop: spacing.md,
-    },
-    changePositive: {
-        color: '#22c55e',
+        color: colors.textSecondary,
         fontSize: typography.bodySmall,
         fontWeight: typography.semibold,
+        marginTop: spacing.lg,
+        letterSpacing: 0.3,
     },
-    pulseScoreRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.cardBackground,
-        borderRadius: 12,
-        padding: spacing.md,
-    },
-    scoreCircle: {
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        borderWidth: 3,
-        borderColor: '#22c55e',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.md,
-    },
-    scoreValue: {
-        color: '#22c55e',
-        fontSize: typography.h2,
-        fontWeight: typography.bold,
-    },
-    scoreInfo: {
-        flex: 1,
-    },
-    scoreMessage: {
-        color: colors.textPrimary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium,
-    },
-    scoreSubtext: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        marginTop: 2,
-    },
-    goalsSection: {
-        marginBottom: spacing.xxl,
-        paddingHorizontal: spacing.lg,
-    },
-    analyticsLink: {
-        color: colors.primary,
-        fontSize: typography.caption,
-        fontWeight: typography.semibold,
-        letterSpacing: 0.5,
-    },
-    progressMessage: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 8,
-        padding: spacing.sm,
-        alignItems: 'center',
-    },
-    progressText: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-    },
-    fab: {
-        position: 'absolute',
-        bottom: spacing.xl,
-        right: spacing.lg,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-    },
-    fabText: {
-        color: colors.textPrimary,
-        fontSize: 28,
-        fontWeight: '300',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    combinedCard: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 16,
-        marginBottom: spacing.md,
-    },
-    emptyStateContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: spacing.xl,
-        // paddingTop: spacing.xl,
-        paddingBottom: spacing.xl,
-    },
-    emptyStateMascot: {
-        width: 140,
-        height: 140,
-        // marginBottom: spacing.lg,
-        resizeMode: 'contain',
-    },
-    emptyStateTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.h2,
-        fontWeight: typography.bold,
-        marginBottom: spacing.sm,
-        textAlign: 'center',
-    },
-    emptyStateDesc: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        textAlign: 'center',
-        lineHeight: 24,
-    },
-    emptyState: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 12,
-        padding: spacing.xl,
-        alignItems: 'center',
-    },
-    emptyStateText: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        textAlign: 'center',
-    },
-    // AI Suggestions
-    suggestionsSection: {
-        marginBottom: spacing.sm,
-    },
-    suggestionsContent: {
-        paddingHorizontal: spacing.lg,
-        paddingBottom: spacing.sm,
-    },
-    suggestionsScroll: {
-        marginTop: spacing.sm,
-    },
+    // ── Budget badge (gain semantic) ─────────────────────────────────────────────
     budgetBadge: {
-        color: '#22c55e',
+        color: colors.gainText,
         fontSize: typography.caption,
         fontWeight: typography.semibold,
-        backgroundColor: 'rgba(34,197,94,0.12)',
+        backgroundColor: colors.gainDim,
         paddingHorizontal: spacing.sm,
         paddingVertical: 3,
         borderRadius: 20,
@@ -899,14 +697,22 @@ const styles = StyleSheet.create({
         marginTop: spacing.md,
         marginBottom: spacing.xs,
     },
+    // ── AI Suggestion cards ──────────────────────────────────────────────────────
+    suggestionsSection: {
+        marginBottom: spacing.sm,
+    },
+    suggestionsContent: {
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.sm,
+    },
     suggestionCard: {
         width: 180,
-        backgroundColor: colors.cardBackground,
-        borderRadius: 16,
+        backgroundColor: colors.elevatedBackground,
+        borderRadius: 20,
         padding: spacing.md,
         marginRight: spacing.md,
         borderWidth: 1,
-        borderColor: colors.primary + '30',
+        borderColor: 'rgba(61,142,248,0.15)',
     },
     suggestionIcon: {
         fontSize: 28,
@@ -914,7 +720,7 @@ const styles = StyleSheet.create({
     },
     suggestionName: {
         color: colors.textPrimary,
-        fontSize: typography.body,
+        fontSize: typography.bodySmall,
         fontWeight: typography.semibold,
         marginBottom: spacing.xs,
         lineHeight: 20,
@@ -924,9 +730,10 @@ const styles = StyleSheet.create({
         fontSize: typography.h3,
         fontWeight: typography.bold,
         marginBottom: 2,
+        fontVariant: ['tabular-nums'],
     },
     suggestionMonths: {
-        color: colors.textMuted,
+        color: colors.textTertiary,
         fontSize: typography.caption,
         marginBottom: spacing.sm,
     },
@@ -938,15 +745,89 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     suggestionAddBtn: {
-        backgroundColor: colors.primary,
-        borderRadius: 8,
+        backgroundColor: colors.primaryDim,
+        borderWidth: 1,
+        borderColor: 'rgba(61,142,248,0.25)',
+        borderRadius: 12,
         paddingVertical: spacing.sm,
         alignItems: 'center',
     },
     suggestionAddBtnText: {
-        color: '#fff',
+        color: colors.primary,
+        fontSize: typography.caption,
+        fontWeight: typography.semibold,
+    },
+    // ── Goals section ────────────────────────────────────────────────────────────
+    goalsSection: {
+        marginBottom: spacing.xxl,
+        paddingHorizontal: spacing.lg,
+    },
+    // ── Empty state ──────────────────────────────────────────────────────────────
+    emptyStateContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: spacing.xl,
+        paddingBottom: spacing.xl,
+    },
+    emptyStateMascot: {
+        width: 140,
+        height: 140,
+        resizeMode: 'contain',
+    },
+    emptyStateTitle: {
+        color: colors.textPrimary,
+        fontSize: typography.h2,
+        fontWeight: typography.bold,
+        marginBottom: spacing.sm,
+        textAlign: 'center',
+    },
+    emptyStateDesc: {
+        color: colors.textSecondary,
+        fontSize: typography.bodySmall,
+        textAlign: 'center',
+        lineHeight: 22,
+    },
+    // ── FAB ──────────────────────────────────────────────────────────────────────
+    fab: {
+        position: 'absolute',
+        bottom: spacing.xl,
+        right: spacing.lg,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 8,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.45,
+        shadowRadius: 12,
+    },
+    fabText: {
+        color: colors.textPrimary,
+        fontSize: 28,
+        fontWeight: '300',
+    },
+    // ── Misc (kept for any residual references) ──────────────────────────────────
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    changePositive: {
+        color: colors.gainText,
         fontSize: typography.bodySmall,
         fontWeight: typography.semibold,
     },
+    progressMessage: {
+        backgroundColor: colors.cardBackground,
+        borderRadius: 8,
+        padding: spacing.sm,
+        alignItems: 'center',
+    },
+    progressText: {
+        color: colors.textSecondary,
+        fontSize: typography.caption,
+    },
 });
-

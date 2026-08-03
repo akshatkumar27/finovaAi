@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     },
     contactCard: {
         backgroundColor: colors.cardBackground,
-        borderRadius: 16, // using number directly
+        borderRadius: 20,
         padding: spacing.lg,
         marginTop: spacing.md,
         marginBottom: spacing.xl,
@@ -164,14 +164,21 @@ const styles = StyleSheet.create({
     },
     contactButton: {
         backgroundColor: colors.primary,
-        paddingVertical: 12, // using number directly
-        paddingHorizontal: 24, // using number directly
-        borderRadius: 24, // using number directly
+        paddingVertical: spacing.md,
+        paddingHorizontal: spacing.xl,
+        borderRadius: 14,
+        minHeight: 52,
         width: '100%',
         alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: colors.primary,
+        shadowOpacity: 0.35,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 12,
+        elevation: 8,
     },
     contactButtonText: {
-        color: '#fff',
+        color: colors.textPrimary,
         fontSize: typography.body,
         fontWeight: typography.bold,
     },
@@ -185,7 +192,9 @@ const styles = StyleSheet.create({
     },
     faqList: {
         backgroundColor: colors.cardBackground,
-        borderRadius: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: colors.border,
         overflow: 'hidden',
     },
     faqItem: {
