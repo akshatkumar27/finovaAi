@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "649778146026",
+    "project_id": "monefyai",
+    "storage_bucket": "monefyai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:649778146026:android:31ba00d15a06660e350593",
+        "android_client_info": {
+          "package_name": "com.monefyai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAL3e6xew-ESltHO3SM92ez7ePAFdoRjlA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
