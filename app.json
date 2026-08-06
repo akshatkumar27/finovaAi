@@ -1,4 +1,27 @@
 {
   "name": "monefyai",
-  "displayName": "monefyai"
+  "displayName": "monefyai",
+  "expo": {
+    "name": "monefyai",
+    "slug": "monefyai",
+    "version": "1.2.6",
+    "orientation": "portrait",
+    "newArchEnabled": false,
+    "ios": {
+      "bundleIdentifier": "org.reactjs.native.example.monefyai",
+      "buildNumber": "9",
+      "googleServicesFile": "./ios/GoogleService-Info.plist"
+    },
+    "android": {
+      "package": "com.monefyai",
+      "versionCode": 9,
+      "googleServicesFile": "./android/app/google-services.json"
+    },
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "a79adb7d-1b13-4c46-bc71-adae01084240"
+      }
+    }
+  }
 }
