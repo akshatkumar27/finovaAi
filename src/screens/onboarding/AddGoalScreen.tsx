@@ -12,14 +12,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import { api } from '../../services';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Button, BackButton, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
-import { api } from '../../services';
 import { formatCompactCurrency } from '../../utils';
 import { formatNumberInput, formatCompactNumber } from '../../utils/formatNumber';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../store';
+import { updateUser } from '../../store/slices/authSlice';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
 
@@ -37,9 +39,11 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const ordinal = (d: number) => (d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th');
 
 export const AddGoalScreen: React.FC = () => {
+    const dispatch = useDispatch();
     const navigation = useNavigation();
     const route = useRoute<RouteProp<MainStackParamList, 'AddGoal'>>();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useSelector((state: RootState) => state.settings.appCurrency);
+    const user = useSelector((state: RootState) => state.auth.user);
     const { colors, typography } = useTheme();
 
     const availableForNewGoals = route.params?.availableForNewGoals;
@@ -169,14 +173,9 @@ export const AddGoalScreen: React.FC = () => {
             };
             await api.post('/api/goals', payload);
             try {
-                const userStr = await AsyncStorage.getItem('user');
-                if (userStr) {
-                    const user = JSON.parse(userStr);
-                    if (user.isNewUser) {
-                        user.isNewUser = false;
-                        await AsyncStorage.setItem('user', JSON.stringify(user));
-                        await AsyncStorage.removeItem('onboarding_progress_data');
-                    }
+                if (user?.isNewUser) {
+                    dispatch(updateUser({ isNewUser: false }));
+                    await AsyncStorage.removeItem('onboarding_progress_data');
                 }
             } catch (e) { console.error('user update failed', e); }
             navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });

@@ -13,9 +13,10 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, BackButton, Icon } from '../../components';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../../services';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../store';
+import { updateUser } from '../../store/slices/authSlice';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
 
@@ -38,16 +39,16 @@ const parseTitle = (title: string) => {
 
 
 export const GoalSelectionScreen: React.FC = () => {
+    const dispatch = useDispatch();
     const navigation = useNavigation<NavigationProp>();
-    const route = useRoute<ScreenRouteProp>();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useSelector((state: RootState) => state.settings.appCurrency);
+    const { monthlyIncome, monthlyExpenses, monthlyEmi, emiOutstanding, monthlyInvestment } = useSelector((state: RootState) => state.financialData);
     const { colors, typography } = useTheme();
     const [selectedGoal, setSelectedGoal] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [insights, setInsights] = useState<Insight[]>([]);
 
-    const onboardingData = route.params?.onboardingData || {};
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
     useEffect(() => { fetchInsights(); /* eslint-disable-next-line */ }, []);
@@ -56,11 +57,11 @@ export const GoalSelectionScreen: React.FC = () => {
         setIsLoading(true);
         try {
             const payload = {
-                monthly_income: onboardingData.monthly_income || 0,
-                monthly_expenses: onboardingData.monthly_expenses || 0,
-                monthly_emi: onboardingData.monthly_emi || 0,
-                emi_outstanding: onboardingData.emi_outstanding || 0,
-                monthly_investment: onboardingData.monthly_investment || 0,
+                monthly_income: monthlyIncome || 0,
+                monthly_expenses: monthlyExpenses || 0,
+                monthly_emi: monthlyEmi || 0,
+                emi_outstanding: emiOutstanding || 0,
+                monthly_investment: monthlyInvestment || 0,
             };
             const res = await api.post('/api/insights', payload);
             if (res.data.success && res.data.insights) setInsights(res.data.insights);
@@ -83,12 +84,7 @@ export const GoalSelectionScreen: React.FC = () => {
                 monthly_contribution: Math.ceil(insight.amount / insight.target_months),
             };
             await api.post('/api/goals', payload);
-            const userStr = await AsyncStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                user.isNewUser = false;
-                await AsyncStorage.setItem('user', JSON.stringify(user));
-            }
+            dispatch(updateUser({ isNewUser: false }));
             navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
         } catch (error) {
             console.error('Save goal error:', error);

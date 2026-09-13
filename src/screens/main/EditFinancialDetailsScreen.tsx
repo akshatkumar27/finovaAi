@@ -14,10 +14,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../../services/api';
 import { formatNumberInput } from '../../utils/formatNumber';
-import { useCurrency } from '../../context/CurrencyContext';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
 import { useTheme } from '../../theme';
@@ -28,7 +26,7 @@ type FieldKey = 'monthly_income' | 'monthly_expenses' | 'monthly_emi' | 'emi_out
 
 export const EditFinancialDetailsScreen: React.FC = () => {
     const navigation = useNavigation<any>();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
     const { colors, typography } = useTheme();
     const dispatch = useAppDispatch();
     const financialData = useAppSelector((state) => state.financialData);
@@ -95,7 +93,7 @@ export const EditFinancialDetailsScreen: React.FC = () => {
             const outstanding = asNum(form.emi_outstanding);
             const investment = asNum(form.monthly_investment);
             const updated = { monthly_income: income, monthly_expenses: expenses, monthly_emi: emi, emi_outstanding: outstanding, monthly_investment: investment };
-            await AsyncStorage.setItem('onboardingData', JSON.stringify(updated));
+            
             await api.put('/api/user/financial-profile', {
                 monthly_income: income, monthly_expenses: expenses, monthly_emi: emi, emi_outstanding: outstanding, monthly_savings: investment,
             });

@@ -14,8 +14,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { notificationService } from '../../services/NotificationService';
 import api from '../../services/api';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
-import { useAppDispatch } from '../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { clearFinancialData } from '../../store/slices/financialDataSlice';
+import { logout } from '../../store/slices/authSlice';
 import { useTheme, ThemeMode } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { Icon } from '../../components';
@@ -27,27 +28,14 @@ type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 export const ProfileScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
     const dispatch = useAppDispatch();
+    const user = useAppSelector((state) => state.auth.user) || {};
     const { colors, typography, mode, setMode } = useTheme();
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
-    const [userName, setUserName] = useState('');
-    const [userEmail, setUserEmail] = useState('');
+    
+    const userName = user.name || '';
+    const userEmail = user.email || '';
 
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
-
-    useEffect(() => { loadUserData(); }, []);
-
-    const loadUserData = async () => {
-        try {
-            const userData = await AsyncStorage.getItem('user');
-            if (userData) {
-                const user = JSON.parse(userData);
-                setUserName(user.name || '');
-                setUserEmail(user.email || '');
-            }
-        } catch (error) {
-            console.error('Error loading user data:', error);
-        }
-    };
 
     const handleLogout = async () => {
         setLogoutModalVisible(false);
@@ -62,8 +50,7 @@ export const ProfileScreen: React.FC = () => {
         }
         try { await AsyncStorage.clear(); } catch (e) { console.error(e); }
         dispatch(clearFinancialData());
-        navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Auth' }] }));
-    };
+        dispatch(logout());
 
     const initials = (() => {
         if (!userName) return 'U';

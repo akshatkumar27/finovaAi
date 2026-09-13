@@ -5,12 +5,15 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import { formatNumberInput } from '../../utils/formatNumber';
 import { OnboardingAmountScreen } from './_OnboardingLayout';
+import { useDispatch } from 'react-redux';
+import { setFinancialData } from '../../store/slices/financialDataSlice';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
 const PRESETS = [40000, 60000, 80000, 120000, 200000];
 
 export const MonthlyIncomeScreen: React.FC = () => {
+    const dispatch = useDispatch();
     const navigation = useNavigation<NavigationProp>();
     const [amount, setAmount] = useState('');
 
@@ -20,7 +23,8 @@ export const MonthlyIncomeScreen: React.FC = () => {
             Toast.show({ type: 'error', text1: 'Invalid input', text2: 'Enter a monthly income greater than 0.' });
             return;
         }
-        navigation.navigate('MonthlyExpenses', { onboardingData: { monthly_income: income } });
+        dispatch(setFinancialData({ monthlyIncome: income }));
+        navigation.navigate('MonthlyExpenses');
     };
 
     return (

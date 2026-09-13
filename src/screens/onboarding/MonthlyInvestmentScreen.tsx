@@ -1,30 +1,27 @@
 import React, { useState } from 'react';
 import Toast from 'react-native-toast-message';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import { api } from '../../services';
 import { formatNumberInput } from '../../utils/formatNumber';
 import { OnboardingAmountScreen } from './_OnboardingLayout';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../store';
+import { setFinancialData, setFinancialProfilePresent } from '../../store/slices/financialDataSlice';
+import { updateUser } from '../../store/slices/authSlice';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
-type ScreenRouteProp = RouteProp<OnboardingStackParamList, 'MonthlyInvestment'>;
 
 const PRESETS = [0, 5000, 10000, 15000, 25000];
 
 export const MonthlyInvestmentScreen: React.FC = () => {
+    const dispatch = useDispatch();
     const navigation = useNavigation<NavigationProp>();
-    const route = useRoute<ScreenRouteProp>();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useSelector((state: RootState) => state.settings.appCurrency);
+    const { monthlyIncome, monthlyExpenses, monthlyEmi, emiOutstanding } = useSelector((state: RootState) => state.financialData);
     const [amount, setAmount] = useState('');
     const [saving, setSaving] = useState(false);
-
-    const onboardingData = route.params?.onboardingData || {};
-    const monthlyIncome = onboardingData.monthly_income || 0;
-    const monthlyExpenses = onboardingData.monthly_expenses || 0;
-    const monthlyEmi = onboardingData.monthly_emi || 0;
     const available = monthlyIncome - monthlyExpenses - monthlyEmi;
     const value = parseInt(amount.replace(/,/g, '')) || 0;
     const exceeds = value > available;
@@ -41,21 +38,19 @@ export const MonthlyInvestmentScreen: React.FC = () => {
         setSaving(true);
         try {
             const payload = {
-                monthly_income: onboardingData.monthly_income || 0,
-                monthly_expenses: onboardingData.monthly_expenses || 0,
-                monthly_emi: onboardingData.monthly_emi || 0,
-                emi_outstanding: onboardingData.emi_outstanding || 0,
+                monthly_income: monthlyIncome || 0,
+                monthly_expenses: monthlyExpenses || 0,
+                monthly_emi: monthlyEmi || 0,
+                emi_outstanding: emiOutstanding || 0,
                 monthly_investment: value,
             };
-            await AsyncStorage.setItem('onboardingData', JSON.stringify(payload));
+            
             await api.post('/api/user/financial-profile', payload);
 
-            const userStr = await AsyncStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                user.isNewUser = false;
-                await AsyncStorage.setItem('user', JSON.stringify(user));
-            }
+            dispatch(setFinancialData({ monthlyInvestment: value }));
+            dispatch(setFinancialProfilePresent(true));
+            dispatch(updateUser({ isNewUser: false, isFinancialProfilePresent: true }));
+
             navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
         } catch (error) {
             console.error('Onboarding submit error:', error);

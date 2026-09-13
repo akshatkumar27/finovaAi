@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useAppSelector } from '../../store/hooks';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { Icon, IconName } from '../../components';
@@ -9,7 +9,7 @@ import { Icon, IconName } from '../../components';
 
 
 export const InvestHubScreen: React.FC = () => {
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
     const { colors, typography } = useTheme();
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 

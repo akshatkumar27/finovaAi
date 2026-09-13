@@ -17,7 +17,7 @@ import { api } from '../../services/api';
 import { notificationService } from '../../services/NotificationService';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { clearFinancialData } from '../../store/slices/financialDataSlice';
-import { useCurrency } from '../../context/CurrencyContext';
+import { logout } from '../../store/slices/authSlice';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { BackButton } from '../../components';
@@ -28,30 +28,13 @@ export const PersonalInfoScreen: React.FC = () => {
     const navigation = useNavigation<any>();
     const dispatch = useAppDispatch();
     const { colors, typography } = useTheme();
-    const { currencySymbol } = useCurrency();
-    const [user, setUser] = useState<UserData>({});
-    const [isLoading, setIsLoading] = useState(true);
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
+    const user = useAppSelector((state) => state.auth.user) || {};
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const financialData = useAppSelector((state) => state.financialData);
 
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
-
-    useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => loadData());
-        return unsubscribe;
-    }, [navigation]);
-
-    useEffect(() => { loadData(); }, []);
-
-    const loadData = async () => {
-        try {
-            const userData = await AsyncStorage.getItem('user');
-            if (userData) setUser(JSON.parse(userData));
-        } catch (error) {
-            console.error('Error loading personal info:', error);
-        } finally { setIsLoading(false); }
-    };
 
     const handleConfirmDelete = async () => {
         setIsDeleting(true);
@@ -63,9 +46,9 @@ export const PersonalInfoScreen: React.FC = () => {
             await api.post('/api/user/delete');
             await AsyncStorage.clear();
             dispatch(clearFinancialData());
+            dispatch(logout());
             setDeleteModalVisible(false);
             Toast.show({ type: 'success', text1: 'Account deleted', text2: 'Your account is gone.' });
-            navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Auth' }] }));
         } catch (error) {
             console.error('Error deleting account:', error);
             setIsDeleting(false);
@@ -74,16 +57,7 @@ export const PersonalInfoScreen: React.FC = () => {
         }
     };
 
-    if (isLoading) {
-        return (
-            <SafeAreaView style={styles.container} edges={['top']}>
-                <View style={styles.loadingWrap}>
-                    <ActivityIndicator size="large" color={colors.accent} />
-                </View>
-            </SafeAreaView>
-        );
-    }
-
+    // Removed loading state
     const accountRows = [
         { label: 'Full name', value: user.name || '—' },
         { label: 'Email', value: user.email || '—' },

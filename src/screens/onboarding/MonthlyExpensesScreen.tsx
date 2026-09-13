@@ -1,25 +1,24 @@
 import React, { useState } from 'react';
 import Toast from 'react-native-toast-message';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import { formatNumberInput } from '../../utils/formatNumber';
 import { OnboardingAmountScreen } from './_OnboardingLayout';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../store';
+import { setFinancialData } from '../../store/slices/financialDataSlice';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
-type ScreenRouteProp = RouteProp<OnboardingStackParamList, 'MonthlyExpenses'>;
 
 const PRESETS = [20000, 30000, 45000, 60000, 80000];
 
 export const MonthlyExpensesScreen: React.FC = () => {
+    const dispatch = useDispatch();
     const navigation = useNavigation<NavigationProp>();
-    const route = useRoute<ScreenRouteProp>();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useSelector((state: RootState) => state.settings.appCurrency);
+    const monthlyIncome = useSelector((state: RootState) => state.financialData.monthlyIncome);
     const [amount, setAmount] = useState('');
-
-    const onboardingData = route.params?.onboardingData || {};
-    const monthlyIncome = onboardingData.monthly_income || 0;
     const value = parseInt(amount.replace(/,/g, '')) || 0;
     const exceedsIncome = value > monthlyIncome;
 
@@ -32,7 +31,8 @@ export const MonthlyExpensesScreen: React.FC = () => {
             Toast.show({ type: 'error', text1: 'Too high', text2: `Expenses can't exceed your income (${currencySymbol}${monthlyIncome.toLocaleString()}).` });
             return;
         }
-        navigation.navigate('MonthlyEMI', { onboardingData: { ...onboardingData, monthly_expenses: value } });
+        dispatch(setFinancialData({ monthlyExpenses: value }));
+        navigation.navigate('MonthlyEMI');
     };
 
     return (

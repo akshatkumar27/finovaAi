@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
 import { colors, typography, spacing } from '../constants';
-import { useCurrency } from '../context/CurrencyContext';
+import { useAppSelector } from '../store/hooks';
 
 interface CardProps {
     children: React.ReactNode;
@@ -167,7 +167,7 @@ export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
     onAskAiPress,
     onCardPress,
 }) => {
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
     const formatCurrency = (amount: number) => {
         if (amount >= 1000000000) {
             return currencySymbol + (amount / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';

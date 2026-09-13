@@ -14,15 +14,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { OTPInput, Button, BackButton } from '../../components';
 import { API_BASE_URL } from '../../constants';
+import { api } from '../../services';
 import { notificationService } from '../../services/NotificationService';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
-import { api } from '../../services';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { useDispatch } from 'react-redux';
+import { login } from '../../store/slices/authSlice';
 
 type OTPVerificationScreenRouteProp = RouteProp<AuthStackParamList, 'OTPVerification'>;
 
 export const OTPVerificationScreen: React.FC = () => {
+    const dispatch = useDispatch();
     const navigation = useNavigation();
     const route = useRoute<OTPVerificationScreenRouteProp>();
     const { colors, typography } = useTheme();
@@ -56,6 +59,10 @@ export const OTPVerificationScreen: React.FC = () => {
             const response = await axios.post(`${API_BASE_URL}/api/auth/verify-otp`, body);
             await AsyncStorage.setItem('authToken', response.data.token);
             await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+            
+            // Dispatch to Redux
+            dispatch(login({ token: response.data.token, user: response.data.user }));
+
             if (isSignupFlow && signupData) {
                 await AsyncStorage.setItem('signupData', JSON.stringify(signupData));
             }
@@ -71,16 +78,6 @@ export const OTPVerificationScreen: React.FC = () => {
             } catch (e) { console.error('FCM registration failed', e); }
 
             const user = response.data.user;
-            if (user) {
-                const payload = {
-                    monthly_income: user.monthly_income || 0,
-                    monthly_expenses: user.monthly_expenses || 0,
-                    monthly_emi: user.monthly_emi || 0,
-                    emi_outstanding: user.emi_outstanding || 0,
-                    monthly_investment: user.monthly_investment || 0,
-                };
-                await AsyncStorage.setItem('onboardingData', JSON.stringify(payload));
-            }
 
             const meRes = await api.get('/api/auth/me');
             const meData = meRes.data;

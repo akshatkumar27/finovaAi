@@ -18,7 +18,6 @@ import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import Toast from 'react-native-toast-message';
 import { api } from '../../services';
 import { formatCompactNumber } from '../../utils/formatNumber';
-import { useCurrency } from '../../context/CurrencyContext';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
 import { useTheme } from '../../theme';
@@ -110,7 +109,7 @@ export const GoalPulseScreen: React.FC = () => {
     const dispatch = useAppDispatch();
     const financialData = useAppSelector(state => state.financialData);
     const { colors, typography } = useTheme();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector(state => state.settings.appCurrency);
 
     const [goals, setGoals] = useState<Goal[]>([]);
     const [averageAchievement, setAverageAchievement] = useState(0);

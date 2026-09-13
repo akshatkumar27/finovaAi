@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import Toast from 'react-native-toast-message';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import { formatNumberInput } from '../../utils/formatNumber';
 import { OnboardingAmountScreen } from './_OnboardingLayout';
+import { useDispatch } from 'react-redux';
+import { setFinancialData } from '../../store/slices/financialDataSlice';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
-type ScreenRouteProp = RouteProp<OnboardingStackParamList, 'EMIOutstanding'>;
 
 const PRESETS = [0, 100000, 300000, 500000, 1000000];
 
 export const EMIOutstandingScreen: React.FC = () => {
+    const dispatch = useDispatch();
     const navigation = useNavigation<NavigationProp>();
-    const route = useRoute<ScreenRouteProp>();
     const [amount, setAmount] = useState('');
 
-    const onboardingData = route.params?.onboardingData || {};
     const value = amount.trim() === '' ? -1 : parseInt(amount.replace(/,/g, '')) || 0;
 
     const handleContinue = () => {
@@ -24,9 +24,8 @@ export const EMIOutstandingScreen: React.FC = () => {
             Toast.show({ type: 'error', text1: 'Fill this in', text2: 'Enter your outstanding EMI (0 is fine).' });
             return;
         }
-        navigation.navigate('MonthlyInvestment', {
-            onboardingData: { ...onboardingData, emi_outstanding: value },
-        });
+        dispatch(setFinancialData({ emiOutstanding: value }));
+        navigation.navigate('MonthlyInvestment');
     };
 
     return (

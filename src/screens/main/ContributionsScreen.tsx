@@ -18,7 +18,7 @@ import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { ConfirmationModal, SkeletonLoader, BackButton, Icon, IconName } from '../../components';
 import api from '../../services/api';
 import { formatCompactCurrency } from '../../utils';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useAppSelector } from '../../store/hooks';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
 
@@ -50,7 +50,7 @@ interface ModalState {
 export const ContributionsScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
     const route = useRoute<ContributionsRouteProp>();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
     const { colors, typography } = useTheme();
 
     const goalId = route.params?.goalId || '';

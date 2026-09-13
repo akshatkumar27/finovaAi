@@ -1,26 +1,24 @@
 import React, { useState } from 'react';
 import Toast from 'react-native-toast-message';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import { formatNumberInput } from '../../utils/formatNumber';
 import { OnboardingAmountScreen } from './_OnboardingLayout';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../store';
+import { setFinancialData } from '../../store/slices/financialDataSlice';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
-type ScreenRouteProp = RouteProp<OnboardingStackParamList, 'MonthlyEMI'>;
 
 const PRESETS = [0, 5000, 10000, 20000, 30000];
 
 export const MonthlyEMIScreen: React.FC = () => {
+    const dispatch = useDispatch();
     const navigation = useNavigation<NavigationProp>();
-    const route = useRoute<ScreenRouteProp>();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useSelector((state: RootState) => state.settings.appCurrency);
+    const { monthlyIncome, monthlyExpenses } = useSelector((state: RootState) => state.financialData);
     const [amount, setAmount] = useState('');
-
-    const onboardingData = route.params?.onboardingData || {};
-    const monthlyIncome = onboardingData.monthly_income || 0;
-    const monthlyExpenses = onboardingData.monthly_expenses || 0;
     const available = monthlyIncome - monthlyExpenses;
     const value = amount.trim() === '' ? -1 : parseInt(amount.replace(/,/g, '')) || 0;
     const exceeds = value > available;
@@ -34,7 +32,8 @@ export const MonthlyEMIScreen: React.FC = () => {
             Toast.show({ type: 'error', text1: 'Too high', text2: `EMI can't exceed available (${currencySymbol}${available.toLocaleString()}).` });
             return;
         }
-        navigation.navigate('EMIOutstanding', { onboardingData: { ...onboardingData, monthly_emi: value } });
+        dispatch(setFinancialData({ monthlyEmi: value }));
+        navigation.navigate('EMIOutstanding');
     };
 
     return (

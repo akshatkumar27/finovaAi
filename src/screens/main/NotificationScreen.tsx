@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useAppSelector } from '../../store/hooks';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { BackButton, Icon, IconName } from '../../components';
@@ -23,7 +23,7 @@ interface NotificationItem {
 export const NotificationScreen: React.FC = () => {
     const navigation = useNavigation();
     const { colors, typography } = useTheme();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
     const NOTIFICATIONS: NotificationItem[] = useMemo(() => [

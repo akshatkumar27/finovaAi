@@ -14,7 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Button, BackButton } from '../../components';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useAppSelector } from '../../store/hooks';
 
 export type OnboardingAmountProps = {
     step: number;                        // 1..5
@@ -56,7 +56,7 @@ export const OnboardingAmountScreen: React.FC<OnboardingAmountProps> = ({
 }) => {
     const navigation = useNavigation();
     const { colors, typography } = useTheme();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
 
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 

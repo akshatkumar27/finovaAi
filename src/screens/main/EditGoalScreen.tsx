@@ -21,7 +21,7 @@ import { Button, BackButton, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
 import { formatNumberInput } from '../../utils/formatNumber';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useAppSelector } from '../../store/hooks';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
 
@@ -49,7 +49,7 @@ const sanitize = (val: number | string | undefined, fallback: string) => {
 export const EditGoalScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
     const route = useRoute<EditGoalRouteProp>();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
     const { colors, typography } = useTheme();
 
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);

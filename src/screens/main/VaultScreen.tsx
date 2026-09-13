@@ -8,7 +8,7 @@ import {
     TouchableOpacity,
 } from 'react-native';
 
-import { useCurrency } from '../../context/CurrencyContext';
+import { useAppSelector } from '../../store/hooks';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { Icon, IconName } from '../../components';
@@ -16,7 +16,7 @@ import { Icon, IconName } from '../../components';
 
 
 export const VaultScreen: React.FC = () => {
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
     const { colors, typography } = useTheme();
     const [mode, setMode] = useState<'linked' | 'manual'>('linked');
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
