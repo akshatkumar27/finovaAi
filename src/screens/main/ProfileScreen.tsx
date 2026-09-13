@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    StatusBar,
     ScrollView,
     TouchableOpacity,
     Modal,
@@ -12,26 +11,44 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { BackButton } from '../../components';
-import { colors, typography, spacing } from '../../constants';
 import { notificationService } from '../../services/NotificationService';
 import api from '../../services/api';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { useAppDispatch } from '../../store/hooks';
 import { clearFinancialData } from '../../store/slices/financialDataSlice';
+import { useTheme, ThemeMode } from '../../theme';
+import { Palette } from '../../theme/palette';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
+
+const RowIcon: React.FC<{ children: React.ReactNode; c: Palette }> = ({ children, c }) => (
+    <View
+        style={{
+            width: 32, height: 32, borderRadius: 10,
+            backgroundColor: c.surfaceAlt,
+            alignItems: 'center', justifyContent: 'center',
+            marginRight: 12,
+        }}
+    >
+        <Text style={{ color: c.ink2, fontSize: 14, fontWeight: '600' }}>{children}</Text>
+    </View>
+);
+
+const Chevron: React.FC<{ c: Palette }> = ({ c }) => (
+    <Text style={{ color: c.ink3, fontSize: 18 }}>›</Text>
+);
 
 export const ProfileScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
     const dispatch = useAppDispatch();
+    const { colors, typography, mode, setMode } = useTheme();
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
     const [userName, setUserName] = useState('');
     const [userEmail, setUserEmail] = useState('');
 
-    useEffect(() => {
-        loadUserData();
-    }, []);
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
+
+    useEffect(() => { loadUserData(); }, []);
 
     const loadUserData = async () => {
         try {
@@ -49,345 +66,211 @@ export const ProfileScreen: React.FC = () => {
     const handleLogout = async () => {
         setLogoutModalVisible(false);
         try {
-            // Deregister FCM Token
             const fcmToken = await notificationService.getFCMToken();
             if (fcmToken) {
-                await api.delete('/api/notifications/unregister-token', {
-                    data: { fcm_token: fcmToken }
-                });
+                await api.delete('/api/notifications/unregister-token', { data: { fcm_token: fcmToken } });
             }
-
-            // Call logout API
             await api.post('/api/auth/logout');
         } catch (error) {
             console.error('Logout API error:', error);
         }
-        // Clear all local data from AsyncStorage
-        try {
-            await AsyncStorage.clear();
-        } catch (error) {
-            console.error('Error clearing local data:', error);
-        }
-
-        // Clear global state
+        try { await AsyncStorage.clear(); } catch (e) { console.error(e); }
         dispatch(clearFinancialData());
-
-        // Reset navigation to Auth screen
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'Auth' }],
-            })
-        );
+        navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Auth' }] }));
     };
 
-    // Get initials for avatar
-    const getInitials = () => {
-        if (!userName) return '👤';
+    const initials = (() => {
+        if (!userName) return 'U';
         const parts = userName.trim().split(' ');
-        if (parts.length >= 2) {
-            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-        }
+        if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
         return parts[0][0].toUpperCase();
-    };
+    })();
+
+    const themeOptions: { key: ThemeMode; label: string }[] = [
+        { key: 'light', label: 'Light' },
+        { key: 'dark', label: 'Dark' },
+        { key: 'system', label: 'System' },
+    ];
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-
-            {/* Logout Confirmation Modal */}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={logoutModalVisible}
-                onRequestClose={() => setLogoutModalVisible(false)}
-            >
+        <SafeAreaView style={styles.container} edges={['top']}>
+            {/* Logout modal */}
+            <Modal animationType="fade" transparent visible={logoutModalVisible} onRequestClose={() => setLogoutModalVisible(false)}>
                 <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <View style={styles.modalIconContainer}>
-                            <Text style={styles.modalIcon}>👋</Text>
-                        </View>
-                        <Text style={styles.modalTitle}>Log Out</Text>
-                        <Text style={styles.modalMessage}>
-                            Are you sure you want to log out of your account?
-                        </Text>
+                    <View style={styles.modalCard}>
+                        <Text style={styles.modalTitle}>Sign out</Text>
+                        <Text style={styles.modalMessage}>You'll need to sign in again to see your goals.</Text>
                         <View style={styles.modalButtons}>
-                            <TouchableOpacity
-                                style={styles.modalCancelButton}
-                                onPress={() => setLogoutModalVisible(false)}
-                            >
+                            <TouchableOpacity style={styles.modalCancel} onPress={() => setLogoutModalVisible(false)}>
                                 <Text style={styles.modalCancelText}>Cancel</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.modalLogoutButton}
-                                onPress={handleLogout}
-                            >
-                                <Text style={styles.modalLogoutText}>Log Out</Text>
+                            <TouchableOpacity style={styles.modalConfirm} onPress={handleLogout}>
+                                <Text style={styles.modalConfirmText}>Sign out</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Modal>
 
-            {/* Header */}
             <View style={styles.header}>
-                <BackButton onPress={() => navigation.goBack()} />
-                <Text style={styles.headerTitle}>Profile</Text>
-                <View style={styles.headerSpacer} />
+                <View style={{ width: 34 }} />
+                <Text style={styles.headerTitle}>You</Text>
+                <View style={{ width: 34 }} />
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {/* Profile Card */}
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+                {/* Profile card */}
                 <View style={styles.profileCard}>
-                    <View style={styles.avatarLarge}>
-                        <Text style={styles.avatarText}>{getInitials()}</Text>
-                    </View>
+                    <View style={styles.avatar}><Text style={styles.avatarText}>{initials}</Text></View>
                     <Text style={styles.userName}>{userName || 'User'}</Text>
-                    <Text style={styles.userEmail}>{userEmail || ''}</Text>
+                    <Text style={styles.userEmail}>{userEmail}</Text>
                 </View>
 
-                {/* Menu Items */}
-                <View style={styles.menuSection}>
-                    <TouchableOpacity
-                        style={styles.menuItem}
-                        onPress={() => navigation.navigate('PersonalInfo' as never)}
-                    >
-                        <Text style={styles.menuIcon}>👤</Text>
-                        <Text style={styles.menuText}>Personal Information</Text>
-                        <Text style={styles.menuArrow}>›</Text>
+                {/* Appearance */}
+                <Text style={styles.sectionHead}>APPEARANCE</Text>
+                <View style={styles.card}>
+                    <View style={styles.appearanceRow}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.rowTitle}>Theme</Text>
+                            <Text style={styles.rowSub}>Choose how Finova looks</Text>
+                        </View>
+                        <View style={styles.seg}>
+                            {themeOptions.map((opt) => {
+                                const active = mode === opt.key;
+                                return (
+                                    <TouchableOpacity
+                                        key={opt.key}
+                                        onPress={() => setMode(opt.key)}
+                                        style={[styles.segBtn, active && styles.segBtnActive]}
+                                        activeOpacity={0.85}
+                                    >
+                                        <Text style={[styles.segBtnText, active && styles.segBtnTextActive]}>{opt.label}</Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+                    </View>
+                </View>
+
+                {/* Account */}
+                <Text style={styles.sectionHead}>ACCOUNT</Text>
+                <View style={styles.card}>
+                    <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('PersonalInfo' as never)}>
+                        <RowIcon c={colors}>P</RowIcon>
+                        <View style={{ flex: 1 }}><Text style={styles.rowTitle}>Personal info</Text></View>
+                        <Chevron c={colors} />
                     </TouchableOpacity>
-
-                    {/* <TouchableOpacity style={styles.menuItem}>
-                        <Text style={styles.menuIcon}>🏦</Text>
-                        <Text style={styles.menuText}>Linked Accounts</Text>
-                        <Text style={styles.menuArrow}>›</Text>
-                    </TouchableOpacity> */}
-
-                    {/* <TouchableOpacity
-                        style={styles.menuItem}
-                        onPress={() => navigation.navigate('NotificationSettings' as never)}
-                    >
-                        <Text style={styles.menuIcon}>⚙️</Text>
-                        <Text style={styles.menuText}>Notification Settings</Text>
-                        <Text style={styles.menuArrow}>›</Text>
-                    </TouchableOpacity> */}
-
-                    <TouchableOpacity
-                        style={styles.menuItem}
-                        onPress={() => navigation.navigate('PrivacySecurity' as never)}
-                    >
-                        <Text style={styles.menuIcon}>🔒</Text>
-                        <Text style={styles.menuText}>Privacy & Security</Text>
-                        <Text style={styles.menuArrow}>›</Text>
+                    <View style={styles.divider} />
+                    <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('PrivacySecurity' as never)}>
+                        <RowIcon c={colors}>S</RowIcon>
+                        <View style={{ flex: 1 }}><Text style={styles.rowTitle}>Privacy &amp; security</Text></View>
+                        <Chevron c={colors} />
                     </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.menuItem}
-                        onPress={() => navigation.navigate('HelpSupport' as never)}
-                    >
-                        <Text style={styles.menuIcon}>❓</Text>
-                        <Text style={styles.menuText}>Help & Support</Text>
-                        <Text style={styles.menuArrow}>›</Text>
+                    <View style={styles.divider} />
+                    <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('HelpSupport' as never)}>
+                        <RowIcon c={colors}>?</RowIcon>
+                        <View style={{ flex: 1 }}><Text style={styles.rowTitle}>Help &amp; support</Text></View>
+                        <Chevron c={colors} />
                     </TouchableOpacity>
                 </View>
 
-                {/* Logout Button */}
-                <TouchableOpacity
-                    style={styles.logoutButton}
-                    onPress={() => setLogoutModalVisible(true)}
-                >
-                    <Text style={styles.logoutText}>Log Out</Text>
+                <TouchableOpacity style={styles.signOut} onPress={() => setLogoutModalVisible(true)} activeOpacity={0.85}>
+                    <Text style={styles.signOutText}>Sign out</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.version}>Finova AI v1.0</Text>
+                <Text style={styles.version}>Finova AI · v1.0</Text>
             </ScrollView>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-    },
-    headerTitle: {
-        flex: 1,
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        textAlign: 'center',
-    },
-    headerSpacer: {
-        width: 40,
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: spacing.lg,
-    },
-    profileCard: {
-        alignItems: 'center',
-        paddingVertical: spacing.xl,
-        marginBottom: spacing.lg,
-    },
-    avatarLarge: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: colors.primaryDim,
-        borderWidth: 2,
-        borderColor: 'rgba(61,142,248,0.25)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-    },
-    avatarText: {
-        fontSize: 36,
-    },
-    userName: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.semibold,
-        marginBottom: spacing.xs,
-    },
-    userEmail: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-    },
-    menuSection: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: colors.border,
-        marginBottom: spacing.lg,
-    },
-    menuItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.md,
-        borderBottomWidth: 0.3,
-        borderBottomColor: colors.border,
-    },
-    menuIcon: {
-        fontSize: 20,
-        marginRight: spacing.md,
-    },
-    menuText: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        flex: 1,
-    },
-    menuArrow: {
-        color: colors.textMuted,
-        fontSize: 20,
-    },
-    logoutButton: {
-        backgroundColor: colors.lossDim,
-        borderRadius: 14,
-        paddingVertical: spacing.md,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(255,82,82,0.25)',
-        marginBottom: spacing.lg,
-        marginTop: spacing.xxl,
-        minHeight: 52,
-        justifyContent: 'center',
-    },
-    logoutText: {
-        color: colors.lossText,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    version: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        textAlign: 'center',
-        marginBottom: spacing.xxl,
-    },
-    // Modal Styles
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-    },
-    modalContainer: {
-        backgroundColor: colors.elevatedBackground,
-        borderRadius: 24,
-        padding: spacing.xl,
-        width: '100%',
-        maxWidth: 320,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: colors.borderStrong,
-    },
-    modalIconContainer: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: colors.lossDim,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-    },
-    modalIcon: {
-        fontSize: 28,
-    },
-    modalTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        marginBottom: spacing.sm,
-    },
-    modalMessage: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        textAlign: 'center',
-        marginBottom: spacing.xl,
-        lineHeight: 22,
-    },
-    modalButtons: {
-        flexDirection: 'row',
-        width: '100%',
-        gap: spacing.sm,
-    },
-    modalCancelButton: {
-        flex: 1,
-        backgroundColor: colors.inputBackground,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: colors.border,
-        paddingVertical: spacing.md,
-        alignItems: 'center',
-        minHeight: 52,
-        justifyContent: 'center',
-    },
-    modalCancelText: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    modalLogoutButton: {
-        flex: 1,
-        backgroundColor: colors.lossDim,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: 'rgba(255,82,82,0.25)',
-        paddingVertical: spacing.md,
-        alignItems: 'center',
-        minHeight: 52,
-        justifyContent: 'center',
-    },
-    modalLogoutText: {
-        color: colors.lossText,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-});
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flex: 1, backgroundColor: c.canvas },
+        header: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6,
+        },
+        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold, letterSpacing: -0.2 },
+        content: { paddingHorizontal: 20, paddingBottom: 40, gap: 12 },
+
+        profileCard: {
+            alignItems: 'center',
+            backgroundColor: c.surface,
+            borderRadius: 20,
+            borderWidth: 1, borderColor: c.border,
+            paddingVertical: 22, paddingHorizontal: 20,
+            marginTop: 8,
+        },
+        avatar: {
+            width: 64, height: 64, borderRadius: 32,
+            backgroundColor: c.accent,
+            alignItems: 'center', justifyContent: 'center',
+        },
+        avatarText: { color: c.accentInk, fontSize: 24, fontWeight: t.weightBold, letterSpacing: -0.4 },
+        userName: { color: c.ink1, fontSize: 16, fontWeight: t.weightSemibold, marginTop: 10 },
+        userEmail: { color: c.ink3, fontSize: 12, marginTop: 2 },
+
+        sectionHead: {
+            color: c.ink3,
+            fontSize: 11, fontWeight: t.weightSemibold, letterSpacing: 1.2,
+            marginTop: 12, marginBottom: -4, paddingHorizontal: 4,
+        },
+
+        card: {
+            backgroundColor: c.surface,
+            borderRadius: 16,
+            borderWidth: 1, borderColor: c.border,
+            paddingHorizontal: 16,
+        },
+        appearanceRow: {
+            flexDirection: 'row', alignItems: 'center',
+            paddingVertical: 14,
+        },
+        row: {
+            flexDirection: 'row', alignItems: 'center',
+            paddingVertical: 12,
+        },
+        rowTitle: { color: c.ink1, fontSize: 14, fontWeight: t.weightMedium },
+        rowSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
+        divider: { height: 1, backgroundColor: c.border },
+
+        seg: {
+            flexDirection: 'row',
+            backgroundColor: c.surfaceAlt,
+            borderRadius: 10, padding: 3,
+        },
+        segBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+        segBtnActive: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.border },
+        segBtnText: { color: c.ink2, fontSize: 12, fontWeight: t.weightMedium },
+        segBtnTextActive: { color: c.ink1 },
+
+        signOut: {
+            marginTop: 12,
+            paddingVertical: 14,
+            borderRadius: 12,
+            borderWidth: 1, borderColor: c.borderStrong,
+            alignItems: 'center',
+        },
+        signOutText: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+
+        version: { color: c.ink3, fontSize: 11, textAlign: 'center', marginTop: 24 },
+
+        modalOverlay: {
+            flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+            alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32,
+        },
+        modalCard: {
+            backgroundColor: c.surface, borderRadius: 20,
+            paddingVertical: 24, paddingHorizontal: 20,
+            width: '100%',
+            borderWidth: 1, borderColor: c.border,
+        },
+        modalTitle: { color: c.ink1, fontSize: 18, fontWeight: t.weightBold, marginBottom: 6 },
+        modalMessage: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 20 },
+        modalButtons: { flexDirection: 'row', gap: 10 },
+        modalCancel: { flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong, alignItems: 'center' },
+        modalCancelText: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        modalConfirm: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: c.loss, alignItems: 'center' },
+        modalConfirmText: { color: '#FFFFFF', fontSize: 14, fontWeight: t.weightSemibold },
+    });

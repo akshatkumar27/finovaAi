@@ -10,6 +10,12 @@ import { api } from './src/services';
 import { CurrencyProvider } from './src/context/CurrencyContext';
 import { Provider } from 'react-redux';
 import { store } from './src/store';
+import { ThemeProvider, useTheme } from './src/theme';
+
+const ThemedStatusBar: React.FC = () => {
+  const { isDark, colors } = useTheme();
+  return <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.canvas} />;
+};
 function App(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -207,18 +213,20 @@ function App(): React.JSX.Element {
 
   return (
     <Provider store={store}>
-      <CurrencyProvider initialSymbol={appCurrency}>
-        <NavigationContainer>
-          <StatusBar barStyle="light-content" backgroundColor="#0a0a14" />
-          <RootNavigator
-            isLoggedIn={isLoggedIn}
-            isOnboardingCompleted={isOnboardingCompleted}
-            initialRouteName={initialRoute}
-            initialParams={initialParams}
-          />
-          <Toast config={toastConfig} position="bottom" bottomOffset={40} visibilityTime={4000} />
-        </NavigationContainer>
-      </CurrencyProvider>
+      <ThemeProvider>
+        <CurrencyProvider initialSymbol={appCurrency}>
+          <NavigationContainer>
+            <ThemedStatusBar />
+            <RootNavigator
+              isLoggedIn={isLoggedIn}
+              isOnboardingCompleted={isOnboardingCompleted}
+              initialRouteName={initialRoute}
+              initialParams={initialParams}
+            />
+            <Toast config={toastConfig} position="bottom" bottomOffset={40} visibilityTime={4000} />
+          </NavigationContainer>
+        </CurrencyProvider>
+      </ThemeProvider>
     </Provider>
   );
 }
