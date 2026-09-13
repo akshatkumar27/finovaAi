@@ -3,30 +3,32 @@ import { useTheme } from '../theme';
 import { Palette } from '../theme/palette';
 
 // ── Curated Lucide icon imports (tree-shake safe) ────────────────────────────
-import { Target } from 'lucide-react-native';
-import { Bell } from 'lucide-react-native';
-import { MessageSquare } from 'lucide-react-native';
-import { User } from 'lucide-react-native';
-import { Check } from 'lucide-react-native';
-import { AlertTriangle } from 'lucide-react-native';
-import { Clock } from 'lucide-react-native';
-import { BarChart3 } from 'lucide-react-native';
-import { CircleDollarSign } from 'lucide-react-native';
-import { CreditCard } from 'lucide-react-native';
-import { Search } from 'lucide-react-native';
-import { Landmark } from 'lucide-react-native';
-import { Wallet } from 'lucide-react-native';
-import { Star } from 'lucide-react-native';
-import { Lightbulb } from 'lucide-react-native';
-import { Settings } from 'lucide-react-native';
-import { Pencil } from 'lucide-react-native';
-import { ChevronRight } from 'lucide-react-native';
-import { ChevronLeft } from 'lucide-react-native';
-import { Plus } from 'lucide-react-native';
-import { Trash2 } from 'lucide-react-native';
-import { XCircle } from 'lucide-react-native';
-import { Info } from 'lucide-react-native';
-import { Zap } from 'lucide-react-native';
+import Target from 'lucide-react-native/dist/esm/icons/target';
+import Bell from 'lucide-react-native/dist/esm/icons/bell';
+import MessageSquare from 'lucide-react-native/dist/esm/icons/message-square';
+import User from 'lucide-react-native/dist/esm/icons/user';
+import Check from 'lucide-react-native/dist/esm/icons/check';
+import AlertTriangle from 'lucide-react-native/dist/esm/icons/alert-triangle';
+import Clock from 'lucide-react-native/dist/esm/icons/clock';
+import BarChart3 from 'lucide-react-native/dist/esm/icons/bar-chart-3';
+import CircleDollarSign from 'lucide-react-native/dist/esm/icons/circle-dollar-sign';
+import CreditCard from 'lucide-react-native/dist/esm/icons/credit-card';
+import Search from 'lucide-react-native/dist/esm/icons/search';
+import Landmark from 'lucide-react-native/dist/esm/icons/landmark';
+import Wallet from 'lucide-react-native/dist/esm/icons/wallet';
+import Star from 'lucide-react-native/dist/esm/icons/star';
+import Lightbulb from 'lucide-react-native/dist/esm/icons/lightbulb';
+import Settings from 'lucide-react-native/dist/esm/icons/settings';
+import Pencil from 'lucide-react-native/dist/esm/icons/pencil';
+import ChevronRight from 'lucide-react-native/dist/esm/icons/chevron-right';
+import ChevronLeft from 'lucide-react-native/dist/esm/icons/chevron-left';
+import Plus from 'lucide-react-native/dist/esm/icons/plus';
+import Trash2 from 'lucide-react-native/dist/esm/icons/trash-2';
+import XCircle from 'lucide-react-native/dist/esm/icons/x-circle';
+import Info from 'lucide-react-native/dist/esm/icons/info';
+import Zap from 'lucide-react-native/dist/esm/icons/zap';
+import Lock from 'lucide-react-native/dist/esm/icons/lock';
+import HelpCircle from 'lucide-react-native/dist/esm/icons/help-circle';
 
 // ── Icon registry ────────────────────────────────────────────────────────────
 const ICONS = {
@@ -54,6 +56,8 @@ const ICONS = {
     'x-circle': XCircle,
     info: Info,
     zap: Zap,
+    lock: Lock,
+    'help-circle': HelpCircle,
 } as const;
 
 export type IconName = keyof typeof ICONS;
