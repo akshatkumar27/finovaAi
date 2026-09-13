@@ -16,7 +16,7 @@ import Toast from 'react-native-toast-message';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
-import { ConfirmationModal, SkeletonLoader } from '../../components';
+import { ConfirmationModal, SkeletonLoader, BackButton } from '../../components';
 import api from '../../services/api';
 import { formatCompactCurrency } from '../../utils';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -352,9 +352,7 @@ export const ContributionsScreen: React.FC = () => {
 
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.headerTitle} numberOfLines={1}>{goalName}</Text>
                 <View style={{ width: 34 }} />
             </View>

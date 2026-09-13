@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { BackButton } from '../../components';
 
 type NType = 'suggestion' | 'alert' | 'update' | 'achievement';
 interface NotificationItem {
@@ -79,9 +80,7 @@ export const NotificationScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.headerTitle}>Notifications</Text>
                 <TouchableOpacity onPress={() => navigation.navigate('NotificationSettings' as never)} activeOpacity={0.7} style={styles.back}>
                     <IconGear c={colors.ink2} />

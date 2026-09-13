@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     View,
     Text,
@@ -6,11 +6,11 @@ import {
     Modal,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    Dimensions,
+    ActivityIndicator,
 } from 'react-native';
-import { colors, typography, spacing } from '../constants';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import Svg, { Circle, Path } from 'react-native-svg';
+import { useTheme } from '../theme';
+import { Palette } from '../theme/palette';
 
 interface ConfirmationModalProps {
     visible: boolean;
@@ -22,7 +22,34 @@ interface ConfirmationModalProps {
     onCancel: () => void;
     type?: 'success' | 'error' | 'warning' | 'info';
     showCancelButton?: boolean;
+    loading?: boolean;
 }
+
+const IconCheck: React.FC<{ c: string }> = ({ c }) => (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Path d="M5 12l5 5L20 6" stroke={c} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+const IconWarn: React.FC<{ c: string }> = ({ c }) => (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Path d="M12 2l10 18H2z" stroke={c} strokeWidth={2} strokeLinejoin="round" />
+        <Path d="M12 9v5" stroke={c} strokeWidth={2} strokeLinecap="round" />
+        <Circle cx={12} cy={17.5} r={1.1} fill={c} />
+    </Svg>
+);
+const IconError: React.FC<{ c: string }> = ({ c }) => (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Circle cx={12} cy={12} r={9} stroke={c} strokeWidth={2} />
+        <Path d="M9 9l6 6M15 9l-6 6" stroke={c} strokeWidth={2} strokeLinecap="round" />
+    </Svg>
+);
+const IconInfo: React.FC<{ c: string }> = ({ c }) => (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Circle cx={12} cy={12} r={9} stroke={c} strokeWidth={2} />
+        <Path d="M12 12v5" stroke={c} strokeWidth={2} strokeLinecap="round" />
+        <Circle cx={12} cy={8} r={1.2} fill={c} />
+    </Svg>
+);
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     visible,
@@ -34,79 +61,59 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     onCancel,
     type = 'info',
     showCancelButton = true,
+    loading = false,
 }) => {
-    const getTypeStyles = () => {
-        switch (type) {
-            case 'success':
-                return {
-                    icon: '✅',
-                    iconBg: colors.gainDim,
-                    confirmBg: colors.gain,
-                };
-            case 'error':
-                return {
-                    icon: '❌',
-                    iconBg: colors.lossDim,
-                    confirmBg: colors.loss,
-                };
-            case 'warning':
-                return {
-                    icon: '⚠️',
-                    iconBg: colors.warningDim,
-                    confirmBg: colors.warning,
-                };
-            default:
-                return {
-                    icon: '💡',
-                    iconBg: colors.primaryDim,
-                    confirmBg: colors.primary,
-                };
-        }
-    };
+    const { colors, typography } = useTheme();
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
-    const typeStyles = getTypeStyles();
+    const iconMap = {
+        success: { Icon: IconCheck, tint: colors.gain, tintBg: colors.gainSoft, confirmBg: colors.accent },
+        error:   { Icon: IconError, tint: colors.loss, tintBg: colors.lossSoft, confirmBg: colors.loss },
+        warning: { Icon: IconWarn,  tint: colors.warn, tintBg: colors.warnSoft, confirmBg: colors.accent },
+        info:    { Icon: IconInfo,  tint: colors.accent, tintBg: colors.accentSoft, confirmBg: colors.accent },
+    } as const;
+    const { Icon, tint, tintBg, confirmBg } = iconMap[type];
 
     return (
-        <Modal
-            visible={visible}
-            transparent
-            animationType="fade"
-            onRequestClose={onCancel}
-        >
+        <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
             <TouchableWithoutFeedback onPress={onCancel}>
                 <View style={styles.overlay}>
                     <TouchableWithoutFeedback>
-                        <View style={styles.modalContainer}>
-                            {/* Icon */}
-                            <View style={[styles.iconContainer, { backgroundColor: typeStyles.iconBg }]}>
-                                <Text style={styles.icon}>{typeStyles.icon}</Text>
+                        <View style={styles.card}>
+                            <View style={[styles.iconWrap, { backgroundColor: tintBg }]}>
+                                <Icon c={tint} />
                             </View>
 
-                            {/* Title */}
                             <Text style={styles.title}>{title}</Text>
-
-                            {/* Message */}
                             <Text style={styles.message}>{message}</Text>
 
-                            {/* Buttons */}
-                            <View style={styles.buttonContainer}>
+                            <View style={styles.buttons}>
                                 {showCancelButton && (
                                     <TouchableOpacity
-                                        style={styles.cancelButton}
+                                        style={styles.cancelBtn}
                                         onPress={onCancel}
+                                        disabled={loading}
+                                        activeOpacity={0.7}
                                     >
-                                        <Text style={styles.cancelButtonText}>{cancelText}</Text>
+                                        <Text style={styles.cancelText}>{cancelText}</Text>
                                     </TouchableOpacity>
                                 )}
                                 <TouchableOpacity
-                                    style={[
-                                        styles.confirmButton,
-                                        { backgroundColor: typeStyles.confirmBg },
-                                        !showCancelButton && styles.fullWidthButton,
-                                    ]}
+                                    style={[styles.confirmBtn, { backgroundColor: confirmBg }]}
                                     onPress={onConfirm}
+                                    disabled={loading}
+                                    activeOpacity={0.85}
                                 >
-                                    <Text style={styles.confirmButtonText}>{confirmText}</Text>
+                                    {loading ? (
+                                        <ActivityIndicator color={type === 'error' ? '#FFFFFF' : colors.accentInk} />
+                                    ) : (
+                                        <Text style={[
+                                            styles.confirmText,
+                                            { color: type === 'error' ? '#FFFFFF' : colors.accentInk },
+                                        ]}>
+                                            {confirmText}
+                                        </Text>
+                                    )}
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -117,83 +124,71 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     );
 };
 
-const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-    },
-    modalContainer: {
-        width: SCREEN_WIDTH - spacing.xl * 2,
-        backgroundColor: colors.elevatedBackground,
-        borderRadius: 24,
-        padding: spacing.xl,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: colors.borderStrong,
-    },
-    iconContainer: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-    },
-    icon: {
-        fontSize: 32,
-    },
-    title: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        textAlign: 'center',
-        marginBottom: spacing.sm,
-    },
-    message: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        textAlign: 'center',
-        lineHeight: 24,
-        marginBottom: spacing.xl,
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        width: '100%',
-        gap: spacing.sm,
-    },
-    cancelButton: {
-        flex: 1,
-        backgroundColor: colors.inputBackground,
-        paddingVertical: spacing.md,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: colors.border,
-        alignItems: 'center',
-        minHeight: 52,
-        justifyContent: 'center',
-    },
-    cancelButtonText: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    confirmButton: {
-        flex: 1,
-        paddingVertical: spacing.md,
-        borderRadius: 14,
-        alignItems: 'center',
-        minHeight: 52,
-        justifyContent: 'center',
-    },
-    fullWidthButton: {
-        flex: 1,
-    },
-    confirmButtonText: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.bold,
-    },
-});
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        overlay: {
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: 24,
+        },
+        card: {
+            width: '100%',
+            backgroundColor: c.surface,
+            borderRadius: 20,
+            paddingVertical: 24,
+            paddingHorizontal: 20,
+            borderWidth: 1,
+            borderColor: c.border,
+        },
+        iconWrap: {
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 12,
+        },
+        title: {
+            color: c.ink1,
+            fontSize: 18,
+            fontWeight: t.weightBold,
+            letterSpacing: -0.3,
+            marginBottom: 6,
+        },
+        message: {
+            color: c.ink2,
+            fontSize: 14,
+            lineHeight: 20,
+            marginBottom: 20,
+        },
+        buttons: { flexDirection: 'row', gap: 10 },
+        cancelBtn: {
+            flex: 1,
+            paddingVertical: 12,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: c.borderStrong,
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 48,
+        },
+        cancelText: {
+            color: c.ink1,
+            fontSize: 14,
+            fontWeight: t.weightSemibold,
+        },
+        confirmBtn: {
+            flex: 1,
+            paddingVertical: 12,
+            borderRadius: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 48,
+        },
+        confirmText: {
+            fontSize: 14,
+            fontWeight: t.weightSemibold,
+        },
+    });

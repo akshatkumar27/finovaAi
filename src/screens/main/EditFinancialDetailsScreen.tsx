@@ -22,6 +22,7 @@ import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { BackButton } from '../../components';
 
 type FieldKey = 'monthly_income' | 'monthly_expenses' | 'monthly_emi' | 'emi_outstanding' | 'monthly_investment';
 
@@ -130,9 +131,7 @@ export const EditFinancialDetailsScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.headerTitle}>Financial details</Text>
                 <View style={{ width: 34 }} />
             </View>

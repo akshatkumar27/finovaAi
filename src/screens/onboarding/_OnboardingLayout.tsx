@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { Button } from '../../components';
+import { Button, BackButton } from '../../components';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -75,9 +75,7 @@ export const OnboardingAmountScreen: React.FC<OnboardingAmountProps> = ({
             </View>
 
             <View style={styles.header}>
-                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.stepCap}>STEP {step} OF {totalSteps}</Text>
                 {onSkip ? (
                     <TouchableOpacity onPress={onSkip} activeOpacity={0.7} style={styles.skipBtn}>

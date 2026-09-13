@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { Button } from '../../components';
+import { Button, BackButton } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
 import { formatCompactCurrency } from '../../utils';
@@ -236,9 +236,7 @@ export const AddGoalScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.headerTitle}>New goal</Text>
                 <View style={{ width: 34 }} />
             </View>

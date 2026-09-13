@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { notificationService } from '../../services/NotificationService';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { BackButton } from '../../components';
 
 type Prefs = {
     paymentDue: boolean;
@@ -71,9 +72,7 @@ export const NotificationSettingsScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.headerTitle}>Notifications</Text>
                 <View style={{ width: 34 }} />
             </View>

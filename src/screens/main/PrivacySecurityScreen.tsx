@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { BackButton } from '../../components';
 
 const SECTIONS = [
     { title: 'Data collection', content: 'We only collect what\'s needed to give you personalized financial insights — income, expenses, goals. We never sell your data.' },
@@ -21,9 +22,7 @@ export const PrivacySecurityScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.headerTitle}>Privacy &amp; security</Text>
                 <View style={{ width: 34 }} />
             </View>

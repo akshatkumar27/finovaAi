@@ -12,7 +12,7 @@ import Svg, { Circle } from 'react-native-svg';
 import Toast from 'react-native-toast-message';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button } from '../../components';
+import { Button, BackButton } from '../../components';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../../services';
@@ -107,9 +107,7 @@ export const GoalSelectionScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.stepCap}>YOUR PLAN</Text>
                 <View style={{ width: 42 }} />
             </View>

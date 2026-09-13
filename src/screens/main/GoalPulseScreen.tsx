@@ -246,9 +246,17 @@ export const GoalPulseScreen: React.FC = () => {
                     <Text style={styles.dateCap}>{dayLabel}</Text>
                     <Text style={styles.greeting}>Your goals.</Text>
                 </View>
-                <TouchableOpacity style={styles.notifBtn} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.7}>
-                    <BellIcon color={colors.ink2} />
-                </TouchableOpacity>
+                <View style={styles.headerActions}>
+                    <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.7}>
+                        <BellIcon color={colors.ink2} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Profile')} activeOpacity={0.7}>
+                        <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                            <Circle cx={12} cy={8} r={4} stroke={colors.ink2} strokeWidth={1.8} />
+                            <Path d="M4 21a8 8 0 0116 0" stroke={colors.ink2} strokeWidth={1.8} strokeLinecap="round" />
+                        </Svg>
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {isLoading || refreshing ? (
@@ -466,6 +474,12 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         dateCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
         greeting: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, letterSpacing: -0.4, marginTop: 2 },
         notifBtn: {
+            width: 36, height: 36, borderRadius: 10,
+            backgroundColor: c.surface, borderWidth: 1, borderColor: c.border,
+            alignItems: 'center', justifyContent: 'center',
+        },
+        headerActions: { flexDirection: 'row', gap: 8 },
+        iconBtn: {
             width: 36, height: 36, borderRadius: 10,
             backgroundColor: c.surface, borderWidth: 1, borderColor: c.border,
             alignItems: 'center', justifyContent: 'center',

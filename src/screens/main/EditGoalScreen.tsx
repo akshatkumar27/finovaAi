@@ -17,7 +17,7 @@ import Svg, { Path } from 'react-native-svg';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Toast from 'react-native-toast-message';
-import { Button } from '../../components';
+import { Button, BackButton } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
 import { formatNumberInput } from '../../utils/formatNumber';
@@ -302,9 +302,7 @@ export const EditGoalScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.headerTitle}>Edit goal</Text>
                 <TouchableOpacity style={styles.trashBtn} onPress={() => setShowDeleteModal(true)} disabled={isLoading} activeOpacity={0.7}>
                     <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">

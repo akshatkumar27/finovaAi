@@ -20,6 +20,7 @@ import { clearFinancialData } from '../../store/slices/financialDataSlice';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { BackButton } from '../../components';
 
 interface UserData { name?: string; email?: string; age?: string }
 
@@ -99,9 +100,7 @@ export const PersonalInfoScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.headerTitle}>Personal info</Text>
                 <View style={{ width: 34 }} />
             </View>

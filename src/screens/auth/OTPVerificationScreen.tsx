@@ -12,7 +12,7 @@ import Toast from 'react-native-toast-message';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { OTPInput, Button } from '../../components';
+import { OTPInput, Button, BackButton } from '../../components';
 import { API_BASE_URL } from '../../constants';
 import { notificationService } from '../../services/NotificationService';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
@@ -130,9 +130,7 @@ export const OTPVerificationScreen: React.FC = () => {
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
                 <View style={styles.header}>
-                    <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                        <Text style={styles.backArrow}>←</Text>
-                    </TouchableOpacity>
+                    <BackButton onPress={() => navigation.goBack()} />
                 </View>
 
                 <View style={styles.content}>

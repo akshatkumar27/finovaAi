@@ -15,6 +15,7 @@ import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { BackButton } from '../../components';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 type GoalChatRouteProp = RouteProp<MainStackParamList, 'GoalChat'>;
@@ -62,9 +63,7 @@ export const GoalChatScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.headerTitle}>{goalTitle}</Text>
                 <View style={{ width: 34 }} />
             </View>

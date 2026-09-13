@@ -13,7 +13,7 @@ import Toast from 'react-native-toast-message';
 import axios from 'axios';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import { Input, Button } from '../../components';
+import { Input, Button, BackButton } from '../../components';
 import { API_BASE_URL } from '../../constants';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
 import { useTheme } from '../../theme';
@@ -88,9 +88,7 @@ export const SignupScreen: React.FC = () => {
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
                 <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-                    <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                        <Text style={styles.backArrow}>←</Text>
-                    </TouchableOpacity>
+                    <BackButton onPress={() => navigation.goBack()} />
                     <View style={styles.mark}><Text style={styles.markText}>Fn</Text></View>
                     <Text style={styles.title}>Let's set you up.</Text>
                     <Text style={styles.subtitle}>Three things and you're in.</Text>
