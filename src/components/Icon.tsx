@@ -8,7 +8,7 @@ import Bell from 'lucide-react-native/dist/esm/icons/bell';
 import MessageSquare from 'lucide-react-native/dist/esm/icons/message-square';
 import User from 'lucide-react-native/dist/esm/icons/user';
 import Check from 'lucide-react-native/dist/esm/icons/check';
-import AlertTriangle from 'lucide-react-native/dist/esm/icons/alert-triangle';
+import AlertTriangle from 'lucide-react-native/dist/esm/icons/triangle-alert';
 import Clock from 'lucide-react-native/dist/esm/icons/clock';
 import BarChart3 from 'lucide-react-native/dist/esm/icons/bar-chart-3';
 import CircleDollarSign from 'lucide-react-native/dist/esm/icons/circle-dollar-sign';
@@ -24,11 +24,11 @@ import ChevronRight from 'lucide-react-native/dist/esm/icons/chevron-right';
 import ChevronLeft from 'lucide-react-native/dist/esm/icons/chevron-left';
 import Plus from 'lucide-react-native/dist/esm/icons/plus';
 import Trash2 from 'lucide-react-native/dist/esm/icons/trash-2';
-import XCircle from 'lucide-react-native/dist/esm/icons/x-circle';
+import XCircle from 'lucide-react-native/dist/esm/icons/circle-x';
 import Info from 'lucide-react-native/dist/esm/icons/info';
 import Zap from 'lucide-react-native/dist/esm/icons/zap';
 import Lock from 'lucide-react-native/dist/esm/icons/lock';
-import HelpCircle from 'lucide-react-native/dist/esm/icons/help-circle';
+import HelpCircle from 'lucide-react-native/dist/esm/icons/circle-question-mark';
 
 // ── Icon registry ────────────────────────────────────────────────────────────
 const ICONS = {
