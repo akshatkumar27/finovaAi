@@ -1,40 +1,31 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    StatusBar,
     ScrollView,
     TouchableOpacity,
     ActivityIndicator,
-    Image,
     RefreshControl,
+    DeviceEventEmitter,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Svg, { Circle } from 'react-native-svg';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-    Card,
-    GoalCardWithSuggestion,
-    ProgressBar,
-    AnimatedMascot,
-    MascotLoader,
-} from '../../components';
-import { colors, typography, spacing } from '../../constants';
+import Svg, { Circle, Path } from 'react-native-svg';
+import { MascotLoader } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import Toast from 'react-native-toast-message';
 import { api } from '../../services';
-import { formatNumber, formatCompactNumber } from '../../utils/formatNumber';
+import { formatCompactNumber } from '../../utils/formatNumber';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
-import { DeviceEventEmitter } from 'react-native';
+import { useTheme } from '../../theme';
+import { Palette } from '../../theme/palette';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
-// Types for API response
 interface Goal {
     id: string;
     user_id: string;
@@ -71,93 +62,76 @@ interface Insight {
     target_months: number;
 }
 
-// Extract emoji + text from insight title
 const parseInsightTitle = (title: string) => {
     const emojiMatch = title.match(/^(\p{Emoji}+)\s*/u);
-    if (emojiMatch) {
-        return { icon: emojiMatch[1], text: title.replace(emojiMatch[0], '').trim() };
-    }
-    return { icon: '🎯', text: title };
+    if (emojiMatch) return { icon: emojiMatch[1], text: title.replace(emojiMatch[0], '').trim() };
+    return { icon: '', text: title };
 };
 
-// Circular Progress Component using SVG
-interface CircularProgressProps {
-    progress: number; // 0-100
+// ── Line icons ───────────────────────────────────────────────────────────────
+const TargetIcon: React.FC<{ color: string; size?: number }> = ({ color, size = 14 }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Circle cx={12} cy={12} r={9} stroke={color} strokeWidth={1.8} />
+        <Circle cx={12} cy={12} r={4} stroke={color} strokeWidth={1.8} />
+        <Circle cx={12} cy={12} r={1.5} fill={color} />
+    </Svg>
+);
+
+const BellIcon: React.FC<{ color: string; size?: number }> = ({ color, size = 16 }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+        <Path d="M13 21a2 2 0 01-2 0" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+    </Svg>
+);
+
+const CoachIcon: React.FC<{ color: string; size?: number }> = ({ color, size = 14 }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+// ── Circular ring (pulse score) ──────────────────────────────────────────────
+const Ring: React.FC<{
+    progress: number;
     size?: number;
     strokeWidth?: number;
-    progressColor?: string;
-    trackColor?: string;
-}
-
-const CircularProgress: React.FC<CircularProgressProps> = ({
-    progress,
-    size = 160,
-    strokeWidth = 14,
-    progressColor = colors.gainText,
-    trackColor = colors.elevatedBackground,
-}) => {
+    progressColor: string;
+    trackColor: string;
+    label?: string;
+}> = ({ progress, size = 84, strokeWidth = 8, progressColor, trackColor, label }) => {
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
-    const clampedProgress = Math.min(100, Math.max(0, progress));
-    const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
-
+    const clamped = Math.min(100, Math.max(0, progress));
+    const dashoffset = circumference - (clamped / 100) * circumference;
     return (
-        <View style={circularStyles.container}>
+        <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
             <Svg width={size} height={size}>
-                {/* Background Track */}
+                <Circle cx={size / 2} cy={size / 2} r={radius} stroke={trackColor} strokeWidth={strokeWidth} fill="none" />
                 <Circle
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    stroke={trackColor}
-                    strokeWidth={strokeWidth}
-                    fill="none"
-                />
-                {/* Progress Arc */}
-                <Circle
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    stroke={progressColor}
-                    strokeWidth={strokeWidth}
-                    fill="none"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                    rotation="-90"
-                    origin={`${size / 2}, ${size / 2}`}
+                    cx={size / 2} cy={size / 2} r={radius}
+                    stroke={progressColor} strokeWidth={strokeWidth} fill="none"
+                    strokeDasharray={circumference} strokeDashoffset={dashoffset}
+                    strokeLinecap="round" rotation="-90" origin={`${size / 2}, ${size / 2}`}
                 />
             </Svg>
-            {/* Center Score Text */}
-            <View style={circularStyles.centerText}>
-                <Text style={[circularStyles.scoreText, { color: progressColor }]}>
+            <View style={{ position: 'absolute', alignItems: 'center' }}>
+                <Text style={{ color: progressColor, fontSize: size >= 100 ? 28 : 24, fontWeight: '700', letterSpacing: -0.5 }}>
                     {Math.round(progress)}
                 </Text>
+                {label && <Text style={{ color: progressColor, fontSize: 9, letterSpacing: 1.4, marginTop: -2, opacity: 0.9, fontWeight: '600' }}>{label}</Text>}
             </View>
         </View>
     );
 };
 
-const circularStyles = StyleSheet.create({
-    container: {
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    centerText: {
-        position: 'absolute',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    scoreText: {
-        fontSize: 32,
-        fontWeight: '700',
-    },
-});
-
+// ── Screen ───────────────────────────────────────────────────────────────────
 export const GoalPulseScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
     const dispatch = useAppDispatch();
     const financialData = useAppSelector(state => state.financialData);
+    const { colors, typography } = useTheme();
+    const { currencySymbol } = useCurrency();
+
     const [goals, setGoals] = useState<Goal[]>([]);
     const [averageAchievement, setAverageAchievement] = useState(0);
     const [goalBudget, setGoalBudget] = useState<GoalBudget | null>(null);
@@ -166,38 +140,28 @@ export const GoalPulseScreen: React.FC = () => {
     const [insights, setInsights] = useState<Insight[]>([]);
     const [insightsLoading, setInsightsLoading] = useState(false);
     const [onboardingInvestment, setOnboardingInvestment] = useState(0);
-    const { currencySymbol } = useCurrency();
+
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
     useEffect(() => {
         const fetchData = async () => {
             const profileData = await checkAndFetchFinancialProfile();
             const { goals: currentGoals, goalBudget: currentBudget } = await fetchGoals();
             await fetchInsights(profileData, currentGoals, currentBudget);
-            console.log('goalsd');
         };
         fetchData();
-
-        const subscription = DeviceEventEmitter.addListener('refreshGoals', () => {
-            fetchData();
-        });
-
-        return () => {
-            subscription.remove();
-        };
+        const subscription = DeviceEventEmitter.addListener('refreshGoals', () => { fetchData(); });
+        return () => subscription.remove();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const checkAndFetchFinancialProfile = async () => {
         const hasData = financialData.monthlyIncome > 0 || financialData.monthlyExpenses > 0 || financialData.monthlyEmi > 0 || financialData.monthlyInvestment > 0 || financialData.emiOutstanding > 0;
-        console.log('hasData-->', hasData);
         if (!hasData) {
             try {
                 const response = await api.get('/api/user/financial-profile');
                 if (response.data?.success) {
-                    console.log('newProfileData tot-->', response.data);
-
                     const profile = response.data.profile;
-                    console.log('profile-->', profile);
                     const newProfileData = {
                         monthlyIncome: profile.monthly_income || 0,
                         monthlyExpenses: profile.monthly_expenses || 0,
@@ -205,17 +169,10 @@ export const GoalPulseScreen: React.FC = () => {
                         emiOutstanding: profile.emi_outstanding || 0,
                         monthlyInvestment: profile.monthly_savings || 0,
                     };
-                    console.log('newProfileData-->', newProfileData);
-                    dispatch(setFinancialData({
-                        ...newProfileData,
-                        isFinancialProfilePresent: true,
-                    }));
-
+                    dispatch(setFinancialData({ ...newProfileData, isFinancialProfilePresent: true }));
                     return newProfileData;
                 }
-            } catch (error) {
-                console.error('Failed to fetch financial profile:', error);
-            }
+            } catch (error) { console.error('Failed to fetch financial profile:', error); }
         }
         return financialData;
     };
@@ -228,7 +185,6 @@ export const GoalPulseScreen: React.FC = () => {
                 setGoals(response.data.goals);
                 setAverageAchievement(response.data.averageAchievement);
                 setGoalBudget(response.data.goalBudget);
-                console.log('goalBudget->', response.data.goalBudget);
                 return { goals: response.data.goals, goalBudget: response.data.goalBudget };
             }
             return { goals: [], goalBudget: null };
@@ -259,18 +215,10 @@ export const GoalPulseScreen: React.FC = () => {
                     monthly_contribution: typeof g.monthly_contribution === 'string' ? parseFloat(g.monthly_contribution) : g.monthly_contribution
                 }))
             };
-
-            console.log('Sending Insights Request with Payload:', JSON.stringify(payload, null, 2));
             const res = await api.post('/api/insights', payload);
-            console.log('Insights response:', res.data);
-            if (res.data.insights) {
-                setInsights(res.data.insights);
-            }
-        } catch (error) {
-            console.error('Insights fetch error:', error);
-        } finally {
-            setInsightsLoading(false);
-        }
+            if (res.data.insights) setInsights(res.data.insights);
+        } catch (error) { console.error('Insights fetch error:', error); }
+        finally { setInsightsLoading(false); }
     };
 
     const onRefresh = useCallback(async () => {
@@ -280,156 +228,117 @@ export const GoalPulseScreen: React.FC = () => {
     }, []);
 
     const availableBudget = goalBudget ? goalBudget.availableForNewGoals : 0;
+    const totalSaved = goals.reduce((sum, g) => sum + (Number(g.saved_amount) || 0), 0);
 
-    // Progress ring color: gain teal when crushing it, brand blue on track, amber if just starting
-    const progressRingColor = averageAchievement >= 75
-        ? colors.gainText
+    const scoreColor = averageAchievement >= 75
+        ? colors.gain
         : averageAchievement >= 40
-            ? colors.primary
-            : colors.warningText;
+            ? colors.accent
+            : colors.warn;
+
+    const today = new Date();
+    const dayLabel = today.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase();
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-
-            {/* Header */}
+        <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
-                <View style={styles.headerLeft}>
-                    <Image
-                        source={require('../../asset/mascot.png')}
-                        style={styles.logoImage}
-                    />
-                    <View>
-                        <Text style={styles.headerTitle}>Finova Pulse</Text>
-                        <Text style={styles.headerSubtitle}>AI POWERED</Text>
-                    </View>
+                <View>
+                    <Text style={styles.dateCap}>{dayLabel}</Text>
+                    <Text style={styles.greeting}>Your goals.</Text>
                 </View>
-                <View style={styles.headerRight}>
-                    {/* <TouchableOpacity
-                        style={styles.iconButton}
-                        onPress={() => navigation.navigate('Notifications')}
-                    >
-                        <Text style={styles.iconText}>🔔</Text>
-                    </TouchableOpacity> */}
-                    <TouchableOpacity
-                        style={styles.avatarContainer}
-                        onPress={() => navigation.navigate('Profile')}
-                    >
-                        <View style={styles.userIconHead} />
-                        <View style={styles.userIconBody} />
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity style={styles.notifBtn} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.7}>
+                    <BellIcon color={colors.ink2} />
+                </TouchableOpacity>
             </View>
 
             {isLoading || refreshing ? (
-                <View style={[styles.content, { justifyContent: 'center', alignItems: 'center', paddingBottom: 100 }]}>
+                <View style={styles.loaderWrap}>
                     <MascotLoader size={140} />
                 </View>
             ) : (
                 <ScrollView
-                    style={styles.content}
+                    style={{ flex: 1 }}
+                    contentContainerStyle={styles.scroll}
                     showsVerticalScrollIndicator={false}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
-                    }
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
                 >
-                    {/* Monthly Pulse Score - only show when there are goals */}
+                    {/* Pulse Score hero */}
                     {goals.length > 0 && (
-                        <View style={styles.pulseCard}>
-                            <View style={styles.pulseCardInner}>
-                                <View style={styles.pulseHeaderRow}>
-                                    <View style={styles.pulseScoreContainer}>
-                                        <View style={styles.glowEffect} />
-                                        <CircularProgress
-                                            progress={averageAchievement}
-                                            size={80}
-                                            strokeWidth={8}
-                                            progressColor={progressRingColor}
-                                        />
-                                    </View>
-
-                                    <View style={styles.pulseTitleContainer}>
-                                        <Text style={styles.pulseCardTitle}>Progress Score</Text>
-                                        <Text style={styles.pulseCardSubtitle}>Your overall goal achievement</Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.pulseFooterContainer}>
-                                    <Text style={styles.encourageText}>
-                                        {averageAchievement >= 75 ? '🚀 Outstanding progress! Keep it up!' :
-                                            averageAchievement >= 50 ? '💪 Great job! You\'re on track!' :
-                                                averageAchievement >= 25 ? '📈 Good start! Keep pushing!' :
-                                                    '🌱 Start your journey!'}
+                        <View style={styles.hero}>
+                            <View style={styles.heroRow}>
+                                <Ring
+                                    progress={averageAchievement}
+                                    size={96}
+                                    strokeWidth={9}
+                                    progressColor={scoreColor}
+                                    trackColor={colors.surfaceAlt}
+                                    label="PULSE"
+                                />
+                                <View style={{ flex: 1, marginLeft: 16 }}>
+                                    <Text style={styles.heroCap}>PROGRESS SCORE</Text>
+                                    <Text style={styles.heroTitle}>
+                                        {averageAchievement >= 75 ? 'Ahead of pace' :
+                                            averageAchievement >= 50 ? 'On track' :
+                                                averageAchievement >= 25 ? 'Getting started' : 'Fresh start'}
                                     </Text>
+                                    <Text style={styles.heroSub}>Across {goals.length} {goals.length === 1 ? 'goal' : 'goals'}</Text>
+                                </View>
+                            </View>
 
-                                    {(
-                                        <View style={{ marginTop: spacing.xs }}>
-                                            <Text style={[styles.budgetBadge, { fontSize: typography.bodySmall, paddingVertical: 6, paddingHorizontal: spacing.md, textAlign: 'center', alignSelf: 'stretch' }]}>
-                                                {currencySymbol}{formatCompactNumber(availableBudget)} available to invest
-                                            </Text>
-                                        </View>
-                                    )}
+                            <View style={styles.heroFooter}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.heroFooterCap}>TOTAL SAVED</Text>
+                                    <Text style={styles.heroFooterAmount}>{currencySymbol}{formatCompactNumber(totalSaved)}</Text>
+                                </View>
+                                <View style={styles.heroDivider} />
+                                <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                                    <Text style={styles.heroFooterCap}>AVAILABLE</Text>
+                                    <Text style={styles.heroFooterAmount}>{currencySymbol}{formatCompactNumber(availableBudget)}</Text>
                                 </View>
                             </View>
                         </View>
                     )}
 
-                    {/* AI Suggested Goals — only when budget available */}
+                    {/* AI Suggestions */}
                     {availableBudget > 0 && (
-                        <View style={styles.suggestionsSection}>
-                            <View style={[styles.sectionHeader, { paddingHorizontal: spacing.lg }]}>
-                                <Text style={styles.sectionTitle}>✨ AI Suggested Goals</Text>
+                        <View style={{ marginTop: 8 }}>
+                            <View style={styles.sectionHeadRow}>
+                                <Text style={styles.sectionHead}>SUGGESTED FOR YOU</Text>
                                 {goals.length === 0 && (
-                                    <Text style={styles.budgetBadge}>
-                                        {currencySymbol}{formatCompactNumber(availableBudget)} available for goals
-                                    </Text>
+                                    <Text style={styles.pill}>{currencySymbol}{formatCompactNumber(availableBudget)} available</Text>
                                 )}
                             </View>
 
                             {insightsLoading ? (
-                                <ScrollView
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    contentContainerStyle={styles.suggestionsContent}
-                                >
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggestScroll}>
                                     {[1, 2].map(k => (
-                                        <View key={k} style={styles.suggestionCard}>
-                                            <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 20 }} />
+                                        <View key={k} style={styles.suggestCard}>
+                                            <ActivityIndicator size="small" color={colors.accent} />
                                         </View>
                                     ))}
                                 </ScrollView>
                             ) : insights.length > 0 ? (
-                                <ScrollView
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    contentContainerStyle={styles.suggestionsContent}
-                                >
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggestScroll}>
                                     {insights.map((insight, idx) => {
-                                        const { icon, text } = parseInsightTitle(insight.title);
+                                        const { text } = parseInsightTitle(insight.title);
                                         return (
-                                            <View key={idx} style={styles.suggestionCard}>
-                                                <Text style={styles.suggestionIcon}>{icon}</Text>
-                                                <Text style={styles.suggestionName} numberOfLines={2}>{text}</Text>
-                                                <Text style={styles.suggestionAmount}>
-                                                    {currencySymbol}{insight.amount.toLocaleString()}
-                                                </Text>
-                                                <Text style={styles.suggestionMonths}>
-                                                    {insight.target_months} {insight.target_months === 1 ? 'month' : 'months'}
-                                                </Text>
-                                                <Text style={styles.suggestionDesc} numberOfLines={2}>
-                                                    {insight.description}
-                                                </Text>
+                                            <View key={idx} style={styles.suggestCard}>
+                                                <View style={styles.suggestIconWrap}><TargetIcon color={colors.accent} size={16} /></View>
+                                                <Text style={styles.suggestName} numberOfLines={2}>{text}</Text>
+                                                <Text style={styles.suggestAmount}>{currencySymbol}{insight.amount.toLocaleString()}</Text>
+                                                <Text style={styles.suggestMonths}>{insight.target_months} {insight.target_months === 1 ? 'month' : 'months'}</Text>
+                                                <Text style={styles.suggestDesc} numberOfLines={2}>{insight.description}</Text>
                                                 <TouchableOpacity
-                                                    style={styles.suggestionAddBtn}
+                                                    style={styles.suggestBtn}
+                                                    activeOpacity={0.85}
                                                     onPress={() => navigation.navigate('AddGoal', {
                                                         availableForNewGoals: availableBudget,
                                                         suggestionName: text,
                                                         suggestionTarget: insight.amount,
                                                         suggestionMonths: insight.target_months,
                                                         suggestionDescription: insight.description,
-                                                    })}
-                                                >
-                                                    <Text style={styles.suggestionAddBtnText}>+ Add Goal</Text>
+                                                    })}>
+                                                    <Text style={styles.suggestBtnText}>Add goal</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         );
@@ -439,395 +348,231 @@ export const GoalPulseScreen: React.FC = () => {
                         </View>
                     )}
 
-                    {/* Financial Goals — only shown when goals exist */}
+                    {/* Goals list */}
                     {goals.length > 0 && (
-                        <View style={styles.goalsSection}>
-                            <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitle}>💵 Smart Goals</Text>
-                            </View>
-
-                            {goals.map((goal) => (
-                                <GoalCardWithSuggestion
-                                    key={goal.id}
-                                    title={goal.name}
-                                    progress={goal.progress}
-                                    achieveInMonths={goal.achieve_in_months}
-                                    targetAmount={typeof goal.target_amount === 'string' ? parseFloat(goal.target_amount) : goal.target_amount}
-                                    savedAmount={goal.saved_amount}
-                                    color="#22c55e"
-                                    // suggestionTitle="AI suggestions"
-                                    // suggestionDescription="Track your progress and stay on target for this goal."
-                                    onCardPress={() => navigation.navigate('Contributions', {
-                                        goalId: goal.id,
-                                        goalName: goal.name,
-                                        targetAmount: goal.target_amount,
-                                        monthlyContribution: goal.monthly_contribution,
-                                        achieveInMonths: goal.achieve_in_months,
-                                        goalCreatedAt: goal.created_at,
-                                        contributionDay: goal.contribution_start_date,
-                                    })}
-                                    onEditPress={() => navigation.navigate('EditGoal', {
-                                        goalId: goal.id,
-                                        name: goal.name,
-                                        target: goal.target_amount,
-                                        achieveIn: goal.achieve_in_months,
-                                        monthlyContribution: goal.monthly_contribution,
-                                        savedAmount: goal.saved_amount,
-                                        availableForNewGoals: goalBudget?.availableForNewGoals,
-                                        contributionDay: goal.contribution_start_date,
-                                    })}
-                                    onAskAiPress={() => navigation.navigate('GoalChat', {
-                                        goalTitle: goal.name,
-                                        initialSuggestion: 'How can I achieve this goal faster?',
-                                    })}
-                                />
-                            ))}
+                        <View>
+                            <Text style={styles.sectionHead}>YOUR GOALS</Text>
+                            {goals.map((goal) => {
+                                const progressPct = Math.min(100, Math.max(0, Number(goal.progress) || 0));
+                                const status = progressPct >= 75 ? 'Ahead' : progressPct >= 40 ? 'On track' : 'Starting';
+                                const statusColor = progressPct >= 75 ? colors.gain : progressPct >= 40 ? colors.accent : colors.warn;
+                                const targetNum = typeof goal.target_amount === 'string' ? parseFloat(goal.target_amount) : goal.target_amount;
+                                return (
+                                    <TouchableOpacity
+                                        key={goal.id}
+                                        style={styles.goalCard}
+                                        activeOpacity={0.85}
+                                        onPress={() => navigation.navigate('Contributions', {
+                                            goalId: goal.id,
+                                            goalName: goal.name,
+                                            targetAmount: goal.target_amount,
+                                            monthlyContribution: goal.monthly_contribution,
+                                            achieveInMonths: goal.achieve_in_months,
+                                            goalCreatedAt: goal.created_at,
+                                            contributionDay: goal.contribution_start_date,
+                                        })}
+                                    >
+                                        <View style={styles.goalTop}>
+                                            <View style={styles.goalIconWrap}><TargetIcon color={colors.accent} size={14} /></View>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={styles.goalName}>{goal.name}</Text>
+                                                <Text style={styles.goalSub}>
+                                                    {currencySymbol}{formatCompactNumber(goal.saved_amount)} of {currencySymbol}{formatCompactNumber(targetNum)}
+                                                </Text>
+                                            </View>
+                                            <View style={{ alignItems: 'flex-end' }}>
+                                                <Text style={styles.goalPct}>{Math.round(progressPct)}%</Text>
+                                                <Text style={[styles.goalStatus, { color: statusColor }]}>{status}</Text>
+                                            </View>
+                                        </View>
+                                        <View style={styles.progTrack}>
+                                            <View style={[styles.progFill, { width: `${progressPct}%`, backgroundColor: statusColor }]} />
+                                        </View>
+                                        <View style={styles.goalActions}>
+                                            <TouchableOpacity
+                                                onPress={(e) => { e.stopPropagation(); navigation.navigate('EditGoal', {
+                                                    goalId: goal.id,
+                                                    name: goal.name,
+                                                    target: goal.target_amount,
+                                                    achieveIn: goal.achieve_in_months,
+                                                    monthlyContribution: goal.monthly_contribution,
+                                                    savedAmount: goal.saved_amount,
+                                                    availableForNewGoals: goalBudget?.availableForNewGoals,
+                                                    contributionDay: goal.contribution_start_date,
+                                                }); }}
+                                                activeOpacity={0.7}
+                                                style={styles.goalAction}
+                                            >
+                                                <Text style={styles.goalActionText}>Edit</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={(e) => { e.stopPropagation(); navigation.navigate('GoalChat', {
+                                                    goalTitle: goal.name,
+                                                    initialSuggestion: 'How can I achieve this goal faster?',
+                                                }); }}
+                                                activeOpacity={0.7}
+                                                style={styles.goalActionCoach}
+                                            >
+                                                <CoachIcon color={colors.accent} size={13} />
+                                                <Text style={[styles.goalActionText, { color: colors.accent, marginLeft: 6 }]}>Ask coach</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </TouchableOpacity>
+                                );
+                            })}
                         </View>
                     )}
 
-                    {/* Empty State when no goals exist */}
+                    {/* Empty state */}
                     {goals.length === 0 && (
-                        <View style={styles.emptyStateContainer}>
-                            <Image
-                                source={require('../../asset/happymascot.png')}
-                                style={styles.emptyStateMascot}
-                            />
-                            <Text style={styles.emptyStateTitle}>Hi, I'm Fino! 👋</Text>
-                            <Text style={styles.emptyStateDesc}>
-                                You haven't added any goals yet. Start your financial journey by adding a goal from the + button below or pick one from our suggestions.
-                            </Text>
+                        <View style={styles.empty}>
+                            <View style={styles.emptyIconWrap}><TargetIcon color={colors.accent} size={24} /></View>
+                            <Text style={styles.emptyTitle}>Start your first goal.</Text>
+                            <Text style={styles.emptyDesc}>Pick a suggestion above, or tap + to name your own. Consistency beats intensity.</Text>
                         </View>
                     )}
                 </ScrollView>
             )}
 
-            {/* FAB */}
-            {
-                <TouchableOpacity
-                    style={styles.fab}
-                    onPress={() => {
-                        if (availableBudget > 0) {
-                            navigation.navigate('AddGoal', {
-                                availableForNewGoals: availableBudget
-                            });
-                        } else {
-                            Toast.show({
-                                type: 'error',
-                                text1: 'No Budget Available',
-                                text2: 'No more money is left to create a new goal.',
-                            });
-                        }
-                    }}
-                >
-                    <Text style={styles.fabText}>+</Text>
-                </TouchableOpacity>
-            }
+            <TouchableOpacity
+                style={styles.fab}
+                activeOpacity={0.85}
+                onPress={() => {
+                    if (availableBudget > 0) {
+                        navigation.navigate('AddGoal', { availableForNewGoals: availableBudget });
+                    } else {
+                        Toast.show({
+                            type: 'error',
+                            text1: 'No budget available',
+                            text2: 'No room in your budget to create a new goal.',
+                        });
+                    }
+                }}
+            >
+                <Text style={styles.fabPlus}>+</Text>
+            </TouchableOpacity>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-    },
-    headerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    logoImage: {
-        width: 40,
-        height: 40,
-        borderRadius: 10,
-        marginRight: spacing.sm,
-    },
-    headerTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-        letterSpacing: 0.2,
-    },
-    headerSubtitle: {
-        color: colors.textTertiary,
-        fontSize: 10,
-        letterSpacing: 1.5,
-    },
-    headerRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    iconButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: colors.cardBackground,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
-    iconText: {
-        fontSize: 16,
-    },
-    avatarContainer: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: colors.elevatedBackground,
-        borderWidth: 1,
-        borderColor: 'rgba(61,142,248,0.30)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-    },
-    userIconHead: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: colors.textPrimary,
-        marginBottom: 2,
-    },
-    userIconBody: {
-        width: 20,
-        height: 10,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
-        backgroundColor: colors.textPrimary,
-    },
-    content: {
-        flex: 1,
-    },
-    // ── Pulse Score Card ────────────────────────────────────────────────────────
-    pulseCard: {
-        marginBottom: spacing.lg,
-        marginHorizontal: spacing.lg,
-        borderRadius: 20,
-        overflow: 'hidden',
-    },
-    pulseCardInner: {
-        backgroundColor: colors.elevatedBackground,
-        borderRadius: 20,
-        padding: spacing.lg,
-        borderWidth: 1,
-        borderColor: 'rgba(61,142,248,0.18)',
-        width: '100%',
-    },
-    pulseHeaderRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-    },
-    pulseTitleContainer: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    pulseFooterContainer: {
-        width: '100%',
-        backgroundColor: 'rgba(255, 255, 255, 0.03)',
-        padding: spacing.sm,
-        borderRadius: 12,
-        marginTop: spacing.md,
-    },
-    pulseCardTitle: {
-        color: colors.textPrimary,
-        fontSize: 17,
-        fontWeight: typography.bold,
-        marginBottom: spacing.xs,
-        textAlign: 'left',
-    },
-    pulseCardSubtitle: {
-        color: colors.textTertiary,
-        fontSize: typography.caption,
-        marginBottom: spacing.xs,
-        textAlign: 'left',
-    },
-    pulseScoreContainer: {
-        position: 'relative',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.lg,
-    },
-    glowEffect: {
-        position: 'absolute',
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: 'rgba(61,142,248,0.10)',
-        shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.4,
-        shadowRadius: 24,
-    },
-    encourageText: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        textAlign: 'center',
-        fontWeight: typography.medium,
-    },
-    // ── Section headers ─────────────────────────────────────────────────────────
-    sectionHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: spacing.sm,
-    },
-    sectionTitle: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.semibold,
-        marginTop: spacing.lg,
-        letterSpacing: 0.3,
-    },
-    // ── Budget badge (gain semantic) ─────────────────────────────────────────────
-    budgetBadge: {
-        color: colors.gainText,
-        fontSize: typography.caption,
-        fontWeight: typography.semibold,
-        backgroundColor: colors.gainDim,
-        paddingHorizontal: spacing.sm,
-        paddingVertical: 3,
-        borderRadius: 20,
-        overflow: 'hidden',
-        marginTop: spacing.md,
-        marginBottom: spacing.xs,
-    },
-    // ── AI Suggestion cards ──────────────────────────────────────────────────────
-    suggestionsSection: {
-        marginBottom: spacing.sm,
-    },
-    suggestionsContent: {
-        paddingHorizontal: spacing.lg,
-        paddingBottom: spacing.sm,
-    },
-    suggestionCard: {
-        width: 180,
-        backgroundColor: colors.elevatedBackground,
-        borderRadius: 20,
-        padding: spacing.md,
-        marginRight: spacing.md,
-        borderWidth: 1,
-        borderColor: 'rgba(61,142,248,0.15)',
-    },
-    suggestionIcon: {
-        fontSize: 28,
-        marginBottom: spacing.sm,
-    },
-    suggestionName: {
-        color: colors.textPrimary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.semibold,
-        marginBottom: spacing.xs,
-        lineHeight: 20,
-    },
-    suggestionAmount: {
-        color: colors.primary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        marginBottom: 2,
-        fontVariant: ['tabular-nums'],
-    },
-    suggestionMonths: {
-        color: colors.textTertiary,
-        fontSize: typography.caption,
-        marginBottom: spacing.sm,
-    },
-    suggestionDesc: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        lineHeight: 16,
-        marginBottom: spacing.md,
-        flex: 1,
-    },
-    suggestionAddBtn: {
-        backgroundColor: colors.primaryDim,
-        borderWidth: 1,
-        borderColor: 'rgba(61,142,248,0.25)',
-        borderRadius: 12,
-        paddingVertical: spacing.sm,
-        alignItems: 'center',
-    },
-    suggestionAddBtnText: {
-        color: colors.primary,
-        fontSize: typography.caption,
-        fontWeight: typography.semibold,
-    },
-    // ── Goals section ────────────────────────────────────────────────────────────
-    goalsSection: {
-        marginBottom: spacing.xxl,
-        paddingHorizontal: spacing.lg,
-    },
-    // ── Empty state ──────────────────────────────────────────────────────────────
-    emptyStateContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: spacing.xl,
-        paddingBottom: spacing.xl,
-    },
-    emptyStateMascot: {
-        width: 140,
-        height: 140,
-        resizeMode: 'contain',
-    },
-    emptyStateTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.h2,
-        fontWeight: typography.bold,
-        marginBottom: spacing.sm,
-        textAlign: 'center',
-    },
-    emptyStateDesc: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        textAlign: 'center',
-        lineHeight: 22,
-    },
-    // ── FAB ──────────────────────────────────────────────────────────────────────
-    fab: {
-        position: 'absolute',
-        bottom: spacing.xl,
-        right: spacing.lg,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 8,
-        shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.45,
-        shadowRadius: 12,
-    },
-    fabText: {
-        color: colors.textPrimary,
-        fontSize: 28,
-        fontWeight: '300',
-    },
-    // ── Misc (kept for any residual references) ──────────────────────────────────
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    changePositive: {
-        color: colors.gainText,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.semibold,
-    },
-    progressMessage: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 8,
-        padding: spacing.sm,
-        alignItems: 'center',
-    },
-    progressText: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-    },
-});
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flex: 1, backgroundColor: c.canvas },
+
+        header: {
+            flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
+            paddingHorizontal: 20, paddingTop: 8, paddingBottom: 6,
+        },
+        dateCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
+        greeting: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, letterSpacing: -0.4, marginTop: 2 },
+        notifBtn: {
+            width: 36, height: 36, borderRadius: 10,
+            backgroundColor: c.surface, borderWidth: 1, borderColor: c.border,
+            alignItems: 'center', justifyContent: 'center',
+        },
+
+        loaderWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 100 },
+        scroll: { paddingHorizontal: 20, paddingBottom: 120, gap: 14 },
+
+        hero: {
+            marginTop: 12,
+            backgroundColor: c.surface,
+            borderRadius: 20,
+            borderWidth: 1, borderColor: c.border,
+            padding: 18,
+        },
+        heroRow: { flexDirection: 'row', alignItems: 'center' },
+        heroCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
+        heroTitle: { color: c.ink1, fontSize: 18, fontWeight: t.weightBold, letterSpacing: -0.3, marginTop: 4 },
+        heroSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
+        heroFooter: {
+            flexDirection: 'row', alignItems: 'center',
+            marginTop: 16, paddingTop: 14,
+            borderTopWidth: 1, borderTopColor: c.border,
+        },
+        heroFooterCap: { color: c.ink3, fontSize: 10, letterSpacing: 1.2, fontWeight: t.weightSemibold },
+        heroFooterAmount: { color: c.ink1, fontSize: 20, fontWeight: t.weightBold, letterSpacing: -0.4, marginTop: 2 },
+        heroDivider: { width: 1, height: 32, backgroundColor: c.border, marginHorizontal: 16 },
+
+        sectionHead: {
+            color: c.ink3, fontSize: 11, letterSpacing: 1.4,
+            fontWeight: t.weightSemibold,
+            marginTop: 8, marginBottom: 8, paddingHorizontal: 2,
+        },
+        sectionHeadRow: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            marginTop: 8, marginBottom: 8,
+        },
+        pill: {
+            color: c.gain, backgroundColor: c.gainSoft,
+            fontSize: 11, fontWeight: t.weightSemibold,
+            paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, overflow: 'hidden',
+        },
+
+        suggestScroll: { paddingRight: 20, gap: 12 },
+        suggestCard: {
+            width: 200,
+            backgroundColor: c.surface, borderRadius: 16,
+            borderWidth: 1, borderColor: c.border,
+            padding: 14,
+        },
+        suggestIconWrap: {
+            width: 32, height: 32, borderRadius: 10,
+            backgroundColor: c.accentSoft,
+            alignItems: 'center', justifyContent: 'center',
+        },
+        suggestName: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold, marginTop: 10, lineHeight: 18 },
+        suggestAmount: { color: c.ink1, fontSize: 18, fontWeight: t.weightBold, letterSpacing: -0.3, marginTop: 8 },
+        suggestMonths: { color: c.ink3, fontSize: 11, marginTop: 2 },
+        suggestDesc: { color: c.ink2, fontSize: 12, lineHeight: 16, marginTop: 8, marginBottom: 12 },
+        suggestBtn: {
+            backgroundColor: c.accentSoft,
+            paddingVertical: 8, borderRadius: 10, alignItems: 'center',
+        },
+        suggestBtnText: { color: c.accent, fontSize: 12, fontWeight: t.weightSemibold },
+
+        goalCard: {
+            backgroundColor: c.surface, borderRadius: 16,
+            borderWidth: 1, borderColor: c.border,
+            padding: 14, marginBottom: 10,
+        },
+        goalTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+        goalIconWrap: {
+            width: 32, height: 32, borderRadius: 10,
+            backgroundColor: c.accentSoft,
+            alignItems: 'center', justifyContent: 'center',
+        },
+        goalName: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        goalSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
+        goalPct: { color: c.ink1, fontSize: 15, fontWeight: t.weightBold, letterSpacing: -0.3 },
+        goalStatus: { fontSize: 10, fontWeight: t.weightSemibold, marginTop: 2, letterSpacing: 0.3 },
+
+        progTrack: { height: 6, borderRadius: 999, backgroundColor: c.surfaceAlt, marginTop: 12, overflow: 'hidden' },
+        progFill: { height: '100%', borderRadius: 999 },
+
+        goalActions: { flexDirection: 'row', marginTop: 12, gap: 20, alignItems: 'center' },
+        goalAction: { paddingVertical: 2 },
+        goalActionCoach: { flexDirection: 'row', alignItems: 'center', paddingVertical: 2 },
+        goalActionText: { color: c.ink2, fontSize: 12, fontWeight: t.weightMedium },
+
+        empty: {
+            alignItems: 'center', paddingHorizontal: 24, paddingVertical: 48,
+        },
+        emptyIconWrap: {
+            width: 56, height: 56, borderRadius: 16,
+            backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center',
+            marginBottom: 16,
+        },
+        emptyTitle: { color: c.ink1, fontSize: 20, fontWeight: t.weightBold, letterSpacing: -0.3, textAlign: 'center' },
+        emptyDesc: { color: c.ink2, fontSize: 14, textAlign: 'center', lineHeight: 20, marginTop: 6 },
+
+        fab: {
+            position: 'absolute', right: 20, bottom: 24,
+            width: 56, height: 56, borderRadius: 28,
+            backgroundColor: c.accent,
+            alignItems: 'center', justifyContent: 'center',
+            shadowColor: c.shadow, shadowOpacity: 1, shadowRadius: 12, shadowOffset: { width: 0, height: 6 },
+            elevation: 8,
+        },
+        fabPlus: { color: c.accentInk, fontSize: 28, fontWeight: '300', lineHeight: 30 },
+    });
