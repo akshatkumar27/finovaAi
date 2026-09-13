@@ -1,64 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    StatusBar,
     ScrollView,
     ActivityIndicator,
     TouchableOpacity,
     Modal,
-    TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, CommonActions } from '@react-navigation/native';
-import { BackButton, Header } from '../../components';
-import { colors, typography, spacing } from '../../constants';
 import { formatCurrency } from '../../utils';
 import { api } from '../../services/api';
 import { notificationService } from '../../services/NotificationService';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { clearFinancialData } from '../../store/slices/financialDataSlice';
+import { useCurrency } from '../../context/CurrencyContext';
+import { useTheme } from '../../theme';
+import { Palette } from '../../theme/palette';
 
-interface UserData {
-    name?: string;
-    email?: string;
-    age?: string;
-}
-
-interface OnboardingData {
-    monthly_income?: number;
-    monthly_expenses?: number;
-    monthly_emi?: number;
-    emi_outstanding?: number;
-    monthly_investment?: number;
-}
+interface UserData { name?: string; email?: string; age?: string }
 
 export const PersonalInfoScreen: React.FC = () => {
     const navigation = useNavigation<any>();
     const dispatch = useAppDispatch();
+    const { colors, typography } = useTheme();
+    const { currencySymbol } = useCurrency();
     const [user, setUser] = useState<UserData>({});
     const [isLoading, setIsLoading] = useState(true);
-
-
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const financialData = useAppSelector((state) => state.financialData);
 
-    const financialData = useAppSelector(state => state.financialData);
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
-    // Navigation focus listener to reload data
     useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
-            loadData();
-        });
+        const unsubscribe = navigation.addListener('focus', () => loadData());
         return unsubscribe;
     }, [navigation]);
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    useEffect(() => { loadData(); }, []);
 
     const loadData = async () => {
         try {
@@ -66,386 +49,177 @@ export const PersonalInfoScreen: React.FC = () => {
             if (userData) setUser(JSON.parse(userData));
         } catch (error) {
             console.error('Error loading personal info:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleDeleteAccount = () => {
-        setDeleteModalVisible(true);
+        } finally { setIsLoading(false); }
     };
 
     const handleConfirmDelete = async () => {
         setIsDeleting(true);
         try {
-            // Deregister FCM Token
             const fcmToken = await notificationService.getFCMToken();
             if (fcmToken) {
-                await api.delete('/api/notifications/unregister-token', {
-                    data: { fcm_token: fcmToken }
-                });
+                await api.delete('/api/notifications/unregister-token', { data: { fcm_token: fcmToken } });
             }
-
             await api.post('/api/user/delete');
             await AsyncStorage.clear();
             dispatch(clearFinancialData());
             setDeleteModalVisible(false);
-            Toast.show({
-                type: 'success',
-                text1: 'Account Deleted',
-                text2: 'Your account has been deleted successfully.',
-            });
-            navigation.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'Auth' }],
-                })
-            );
+            Toast.show({ type: 'success', text1: 'Account deleted', text2: 'Your account is gone.' });
+            navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Auth' }] }));
         } catch (error) {
             console.error('Error deleting account:', error);
             setIsDeleting(false);
             setDeleteModalVisible(false);
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: 'Failed to delete account. Please try again.',
-            });
+            Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to delete. Please try again.' });
         }
     };
 
-    const handleEditFinancials = () => {
-        navigation.navigate('EditFinancialDetails');
-    };
-
-    const infoItems = [
-        { icon: '👤', label: 'Full Name', value: user.name || '—' },
-        { icon: '📧', label: 'Email', value: user.email || '—' },
-        { icon: '🎂', label: 'Age', value: user.age ? `${user.age} years` : '—' },
-    ];
-
-    const financialItems = [
-        { icon: '💰', label: 'Monthly Income', value: financialData.monthlyIncome ? formatCurrency(financialData.monthlyIncome) : '—' },
-        { icon: '🛒', label: 'Monthly Expenses', value: financialData.monthlyExpenses ? formatCurrency(financialData.monthlyExpenses) : '—' },
-        { icon: '🏦', label: 'Monthly EMI', value: financialData.monthlyEmi ? formatCurrency(financialData.monthlyEmi) : '—' },
-        { icon: '📋', label: 'EMI Outstanding', value: financialData.emiOutstanding ? formatCurrency(financialData.emiOutstanding) : '—' },
-        { icon: '📈', label: 'Monthly Investment', value: financialData.monthlyInvestment ? formatCurrency(financialData.monthlyInvestment) : '—' },
-    ];
-
     if (isLoading) {
         return (
-            <SafeAreaView style={styles.container}>
-                <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={colors.primary} />
+            <SafeAreaView style={styles.container} edges={['top']}>
+                <View style={styles.loadingWrap}>
+                    <ActivityIndicator size="large" color={colors.accent} />
                 </View>
             </SafeAreaView>
         );
     }
 
+    const accountRows = [
+        { label: 'Full name', value: user.name || '—' },
+        { label: 'Email', value: user.email || '—' },
+        { label: 'Age', value: user.age ? `${user.age}` : '—' },
+    ];
+    const financialRows = [
+        { label: 'Monthly income', value: financialData.monthlyIncome ? formatCurrency(financialData.monthlyIncome, currencySymbol) : '—' },
+        { label: 'Monthly expenses', value: financialData.monthlyExpenses ? formatCurrency(financialData.monthlyExpenses, currencySymbol) : '—' },
+        { label: 'Monthly EMI', value: financialData.monthlyEmi ? formatCurrency(financialData.monthlyEmi, currencySymbol) : '—' },
+        { label: 'EMI outstanding', value: financialData.emiOutstanding ? formatCurrency(financialData.emiOutstanding, currencySymbol) : '—' },
+        { label: 'Monthly investment', value: financialData.monthlyInvestment ? formatCurrency(financialData.monthlyInvestment, currencySymbol) : '—' },
+    ];
+
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <View style={styles.header}>
+                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+                    <Text style={styles.backArrow}>←</Text>
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Personal info</Text>
+                <View style={{ width: 34 }} />
+            </View>
 
-            <Header title="Personal Information" />
-
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {/* Profile Section */}
-                <Text style={styles.sectionTitle}>Account Details</Text>
+            <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+                <Text style={styles.sectionHead}>ACCOUNT</Text>
                 <View style={styles.card}>
-                    {infoItems.map((item, index) => (
-                        <View
-                            key={item.label}
-                            style={[styles.infoRow, index < infoItems.length - 1 && styles.infoRowBorder]}
-                        >
-                            <View style={styles.infoLeft}>
-                                <Text style={styles.infoIcon}>{item.icon}</Text>
-                                <Text style={styles.infoLabel}>{item.label}</Text>
+                    {accountRows.map((row, i) => (
+                        <View key={row.label}>
+                            <View style={styles.kv}>
+                                <Text style={styles.kvKey}>{row.label}</Text>
+                                <Text style={styles.kvValue} numberOfLines={1}>{row.value}</Text>
                             </View>
-                            <View style={styles.valueContainer}>
-                                <Text style={styles.infoValue}>{item.value}</Text>
-                                {(item as any).onEdit && (
-                                    <TouchableOpacity
-                                        style={styles.editButtonSmall}
-                                        onPress={(item as any).onEdit}
-                                        activeOpacity={0.7}
-                                    >
-                                        <Text style={styles.editIconSmall}>✏️</Text>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
+                            {i < accountRows.length - 1 && <View style={styles.divider} />}
                         </View>
                     ))}
                 </View>
 
-                {/* Financial Section */}
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Financial Details</Text>
-                    <TouchableOpacity onPress={handleEditFinancials}>
-                        <Text style={styles.editButtonText}>Edit</Text>
+                <View style={styles.sectionHeadRow}>
+                    <Text style={styles.sectionHead}>FINANCIAL DETAILS</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('EditFinancialDetails')} activeOpacity={0.7}>
+                        <Text style={styles.editLink}>Edit</Text>
                     </TouchableOpacity>
                 </View>
                 <View style={styles.card}>
-                    {financialItems.map((item, index) => (
-                        <View
-                            key={item.label}
-                            style={[styles.infoRow, index < financialItems.length - 1 && styles.infoRowBorder]}
-                        >
-                            <View style={styles.infoLeft}>
-                                <Text style={styles.infoIcon}>{item.icon}</Text>
-                                <Text style={styles.infoLabel}>{item.label}</Text>
+                    {financialRows.map((row, i) => (
+                        <View key={row.label}>
+                            <View style={styles.kv}>
+                                <Text style={styles.kvKey}>{row.label}</Text>
+                                <Text style={styles.kvValueMono}>{row.value}</Text>
                             </View>
-                            <View style={styles.valueContainer}>
-                                <Text style={styles.infoValue}>{item.value}</Text>
-                                {(item as any).onEdit && (
-                                    <TouchableOpacity
-                                        style={styles.editButtonSmall}
-                                        onPress={(item as any).onEdit}
-                                        activeOpacity={0.7}
-                                    >
-                                        <Text style={styles.editIconSmall}>✏️</Text>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
+                            {i < financialRows.length - 1 && <View style={styles.divider} />}
                         </View>
                     ))}
                 </View>
 
-                <Text style={styles.footerNote}>
-                </Text>
-
-                <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
-                    <Text style={styles.deleteButtonText}>Delete Account</Text>
+                <TouchableOpacity style={styles.dangerBtn} onPress={() => setDeleteModalVisible(true)} activeOpacity={0.85}>
+                    <Text style={styles.dangerText}>Delete account</Text>
                 </TouchableOpacity>
             </ScrollView>
 
-            <Modal
-                transparent={true}
-                visible={deleteModalVisible}
-                animationType="fade"
-                onRequestClose={() => setDeleteModalVisible(false)}
-            >
+            <Modal transparent visible={deleteModalVisible} animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
                 <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <View style={styles.modalIconContainer}>
-                            <Text style={styles.modalIcon}>⚠️</Text>
-                        </View>
-                        <Text style={styles.modalTitle}>Delete Account</Text>
+                    <View style={styles.modalCard}>
+                        <Text style={styles.modalTitle}>Delete account?</Text>
                         <Text style={styles.modalMessage}>
-                            Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.
+                            This is permanent. All your data will be removed and can't be recovered.
                         </Text>
                         <View style={styles.modalButtons}>
                             <TouchableOpacity
-                                style={styles.modalCancelButton}
+                                style={styles.modalCancel}
                                 onPress={() => setDeleteModalVisible(false)}
                                 disabled={isDeleting}
+                                activeOpacity={0.7}
                             >
                                 <Text style={styles.modalCancelText}>Cancel</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={styles.modalDeleteButton}
+                                style={styles.modalConfirm}
                                 onPress={handleConfirmDelete}
                                 disabled={isDeleting}
+                                activeOpacity={0.85}
                             >
-                                {isDeleting ? (
-                                    <ActivityIndicator size="small" color={colors.lossText} />
-                                ) : (
-                                    <Text style={styles.modalDeleteText}>Delete</Text>
-                                )}
+                                {isDeleting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.modalConfirmText}>Delete</Text>}
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Modal>
-
-
-
-        </SafeAreaView >
+        </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flex: 1, backgroundColor: c.canvas },
+        header: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6,
+        },
+        back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
+        backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
+        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold },
+        loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
-    content: {
-        flex: 1,
-        paddingHorizontal: spacing.lg,
-    },
-    sectionHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: spacing.lg,
-        marginBottom: spacing.sm,
-    },
-    sectionTitle: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium,
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-    },
-    editButtonText: {
-        color: colors.primary,
-        fontSize: typography.body,
-        fontWeight: '600',
-    },
-    card: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: colors.border,
-        overflow: 'hidden',
-    },
-    infoRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.md,
-    },
-    infoRowBorder: {
-        borderBottomWidth: 0.3,
-        borderBottomColor: colors.border,
-    },
-    infoLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    infoIcon: {
-        fontSize: 18,
-        marginRight: spacing.md,
-    },
-    infoLabel: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-    },
-    infoValue: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    footerNote: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        textAlign: 'center',
-        marginVertical: spacing.xl,
-        paddingHorizontal: spacing.lg,
-    },
-    deleteButton: {
-        backgroundColor: colors.lossDim,
-        marginHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-        borderRadius: 14,
-        minHeight: 52,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: spacing.xxl,
-        borderWidth: 1,
-        borderColor: 'rgba(255,82,82,0.25)',
-    },
-    deleteButtonText: {
-        color: colors.lossText,
-        fontSize: typography.body,
-        fontWeight: typography.bold,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-    },
-    modalContainer: {
-        backgroundColor: colors.elevatedBackground,
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: colors.borderStrong,
-        padding: spacing.xl,
-        width: '100%',
-        maxWidth: 320,
-        alignItems: 'center',
-    },
-    modalIconContainer: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: colors.lossDim,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-    },
-    modalIcon: {
-        fontSize: 28,
-    },
-    modalTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        marginBottom: spacing.sm,
-    },
-    modalMessage: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        textAlign: 'center',
-        marginBottom: spacing.xl,
-        lineHeight: 22,
-    },
-    modalButtons: {
-        flexDirection: 'row',
-        width: '100%',
-        gap: spacing.sm, // Note: gap might require newer React Native, but user seems to be using it
-    },
-    modalCancelButton: {
-        flex: 1,
-        backgroundColor: colors.inputBackground,
-        borderRadius: 14,
-        minHeight: 52,
-        paddingVertical: spacing.md,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    modalCancelText: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        fontWeight: typography.medium,
-    },
-    modalDeleteButton: {
-        flex: 1,
-        backgroundColor: colors.lossDim,
-        borderRadius: 14,
-        minHeight: 52,
-        paddingVertical: spacing.md,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(255,82,82,0.25)',
-    },
-    modalDeleteText: {
-        color: colors.lossText,
-        fontSize: typography.body,
-        fontWeight: typography.bold,
-    },
-    valueContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    editButtonSmall: {
-        marginLeft: spacing.sm,
-        padding: 4,
-        backgroundColor: colors.inputBackground,
-        borderRadius: 8,
-    },
-    editIconSmall: {
-        fontSize: 14,
-    },
-});
+        scroll: { paddingHorizontal: 20, paddingBottom: 40, gap: 12 },
+        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold, marginTop: 8, paddingHorizontal: 2 },
+        sectionHeadRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
+        editLink: { color: c.accent, fontSize: 13, fontWeight: t.weightMedium },
+
+        card: { backgroundColor: c.surface, borderRadius: 16, borderWidth: 1, borderColor: c.border, paddingHorizontal: 16 },
+        kv: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14 },
+        kvKey: { color: c.ink2, fontSize: 13 },
+        kvValue: { color: c.ink1, fontSize: 14, fontWeight: t.weightMedium, maxWidth: '60%' },
+        kvValueMono: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold, fontVariant: ['tabular-nums'] },
+        divider: { height: 1, backgroundColor: c.border },
+
+        dangerBtn: {
+            marginTop: 20, paddingVertical: 14,
+            borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong,
+            alignItems: 'center',
+        },
+        dangerText: { color: c.loss, fontSize: 14, fontWeight: t.weightSemibold },
+
+        modalOverlay: {
+            flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+            alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32,
+        },
+        modalCard: {
+            backgroundColor: c.surface, borderRadius: 20,
+            paddingVertical: 24, paddingHorizontal: 20, width: '100%',
+            borderWidth: 1, borderColor: c.border,
+        },
+        modalTitle: { color: c.ink1, fontSize: 18, fontWeight: t.weightBold, marginBottom: 6 },
+        modalMessage: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 20 },
+        modalButtons: { flexDirection: 'row', gap: 10 },
+        modalCancel: { flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong, alignItems: 'center' },
+        modalCancelText: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        modalConfirm: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: c.loss, alignItems: 'center' },
+        modalConfirmText: { color: '#FFFFFF', fontSize: 14, fontWeight: t.weightSemibold },
+    });

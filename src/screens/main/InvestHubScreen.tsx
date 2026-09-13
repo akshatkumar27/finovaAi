@@ -1,326 +1,182 @@
-import React from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    SafeAreaView,
-    StatusBar,
-    ScrollView,
-    TouchableOpacity,
-} from 'react-native';
-import { Card, AssetRow, AIInsightCard } from '../../components';
-import { colors, typography, spacing } from '../../constants';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useTheme } from '../../theme';
+import { Palette } from '../../theme/palette';
+
+const ChartIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 18 }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Path d="M4 20V10M10 20V4M16 20v-8M22 20v-6" stroke={c} strokeWidth={1.8} strokeLinecap="round" />
+    </Svg>
+);
+const CoinIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 18 }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Circle cx={12} cy={12} r={9} stroke={c} strokeWidth={1.8} />
+        <Path d="M9 9h4a2 2 0 010 4h-3a2 2 0 000 4h4" stroke={c} strokeWidth={1.8} strokeLinecap="round" />
+    </Svg>
+);
+const BankIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 18 }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Rect x={3} y={6} width={18} height={12} rx={2} stroke={c} strokeWidth={1.8} />
+        <Path d="M3 10h18" stroke={c} strokeWidth={1.8} />
+    </Svg>
+);
 
 export const InvestHubScreen: React.FC = () => {
     const { currencySymbol } = useCurrency();
+    const { colors, typography } = useTheme();
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
+
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-
-            {/* Header */}
             <View style={styles.header}>
-                <View style={styles.headerLeft}>
-                    <View style={styles.logoIcon}>
-                        <Text style={styles.logoText}>◀▶</Text>
-                    </View>
-                    <View>
-                        <Text style={styles.headerTitle}>Invest Hub</Text>
-                        <Text style={styles.headerSubtitle}>SMART PORTFOLIO</Text>
-                    </View>
+                <View>
+                    <Text style={styles.dateCap}>INVEST</Text>
+                    <Text style={styles.greeting}>Grow your money.</Text>
                 </View>
-                <View style={styles.headerRight}>
-                    <TouchableOpacity style={styles.iconButton}>
-                        <Text style={styles.iconText}>🔍</Text>
-                    </TouchableOpacity>
-                    <View style={styles.avatarContainer}>
-                        <Text style={styles.avatarText}>👤</Text>
-                    </View>
-                </View>
+                <TouchableOpacity style={styles.searchBtn} activeOpacity={0.7}>
+                    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                        <Circle cx={11} cy={11} r={7} stroke={colors.ink2} strokeWidth={1.8} />
+                        <Path d="M20 20l-4-4" stroke={colors.ink2} strokeWidth={1.8} strokeLinecap="round" />
+                    </Svg>
+                </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {/* Portfolio Value */}
-                <View style={styles.portfolioSection}>
-                    <Text style={styles.portfolioLabel}>Total Portfolio Value</Text>
-                    <View style={styles.portfolioRow}>
-                        <Text style={styles.rupeeSymbol}>{currencySymbol}</Text>
-                        <Text style={styles.portfolioValue}>24,85,420</Text>
-                        <View style={styles.changePositiveBadge}>
-                            <Text style={styles.changePositiveText}>+1.2%</Text>
+            <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+                {/* Portfolio value */}
+                <View style={styles.hero}>
+                    <View style={styles.row}>
+                        <View>
+                            <Text style={styles.heroCap}>PORTFOLIO VALUE</Text>
+                            <View style={styles.amountRow}>
+                                <Text style={styles.heroSymbol}>{currencySymbol}</Text>
+                                <Text style={styles.heroValue}>24,85,420</Text>
+                            </View>
+                        </View>
+                        <View style={styles.gainBadge}>
+                            <Text style={styles.gainBadgeText}>+12.4%</Text>
                         </View>
                     </View>
-                    <View style={styles.dayChangeRow}>
-                        <Text style={styles.dayChangeLabel}>24h Change:</Text>
-                        <Text style={styles.dayChangeValue}>+{currencySymbol}28,620</Text>
-                        <TouchableOpacity>
-                            <Text style={styles.historyLink}>HISTORY</Text>
-                        </TouchableOpacity>
+                    <Svg viewBox="0 0 280 60" preserveAspectRatio="none" style={{ width: '100%', height: 52, marginTop: 8 }}>
+                        <Path
+                            d="M0 48 L30 42 L60 44 L90 32 L120 34 L150 22 L180 26 L210 18 L240 20 L280 8"
+                            fill="none" stroke={colors.gain} strokeWidth={2}
+                            strokeLinecap="round" strokeLinejoin="round"
+                        />
+                        <Path
+                            d="M0 48 L30 42 L60 44 L90 32 L120 34 L150 22 L180 26 L210 18 L240 20 L280 8 L280 60 L0 60 Z"
+                            fill={colors.gainSoft} opacity={0.6}
+                        />
+                    </Svg>
+                    <View style={styles.axisRow}>
+                        <Text style={styles.axisText}>Aug 2025</Text>
+                        <Text style={styles.axisText}>Sep 2026</Text>
                     </View>
                 </View>
 
-                {/* AI Portfolio Optimizer */}
-                <Card style={styles.optimizerCard}>
-                    <View style={styles.optimizerHeader}>
-                        <Text style={styles.optimizerIcon}>✨</Text>
-                        <Text style={styles.optimizerTitle}>AI PORTFOLIO OPTIMIZER</Text>
-                    </View>
-                    <Text style={styles.optimizerText}>
-                        Move {currencySymbol}10,000 from Savings to <Text style={styles.highlightText}>Index Fund</Text> for better long-term growth.
+                {/* AI suggestion */}
+                <View style={styles.tipCard}>
+                    <Text style={styles.tipHeader}>SUGGESTED MOVE</Text>
+                    <Text style={styles.tipText}>
+                        Move {currencySymbol}10,000 from Savings to an index fund for better long-term growth.
                     </Text>
-                    <TouchableOpacity style={styles.rebalanceButton}>
-                        <Text style={styles.rebalanceButtonText}>Apply Rebalance</Text>
+                    <TouchableOpacity style={styles.tipBtn} activeOpacity={0.85}>
+                        <Text style={styles.tipBtnText}>Review options</Text>
                     </TouchableOpacity>
-                </Card>
-
-                {/* Asset Allocation */}
-                <View style={styles.assetSection}>
-                    <Text style={styles.sectionTitle}>Asset Allocation</Text>
-
-                    <AssetRow
-                        icon="📈"
-                        name="Mutual Funds"
-                        subtitle="10 Active SIPs"
-                        value={`${currencySymbol}14,20,000`}
-                        change="+18.4%"
-                        isPositive={true}
-                    />
-
-                    <AssetRow
-                        icon="🪙"
-                        name="Digital Gold"
-                        subtitle="45.2g"
-                        value={`${currencySymbol}3,15,420`}
-                        change="+6.2%"
-                        isPositive={true}
-                    />
-
-                    <AssetRow
-                        icon="🏦"
-                        name="Fixed Deposits"
-                        subtitle="3 FDs Active"
-                        value={`${currencySymbol}7,50,000`}
-                        change="-7.1%"
-                        isPositive={false}
-                    />
                 </View>
+
+                <Text style={styles.sectionHead}>YOUR ALLOCATION</Text>
+
+                {[
+                    { name: 'Mutual funds', sub: '10 active SIPs', amount: 1420000, change: '+18.4%', gain: true, Icon: ChartIcon, tint: colors.gain, tintBg: colors.gainSoft },
+                    { name: 'Digital gold', sub: '45.2 g', amount: 315420, change: '+6.2%', gain: true, Icon: CoinIcon, tint: colors.warn, tintBg: colors.warnSoft },
+                    { name: 'Fixed deposits', sub: '3 FDs active', amount: 750000, change: '-7.1%', gain: false, Icon: BankIcon, tint: colors.accent, tintBg: colors.accentSoft },
+                ].map((asset, i) => (
+                    <View key={i} style={styles.assetCard}>
+                        <View style={[styles.assetIcon, { backgroundColor: asset.tintBg }]}>
+                            <asset.Icon c={asset.tint} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.assetName}>{asset.name}</Text>
+                            <Text style={styles.assetSub}>{asset.sub}</Text>
+                        </View>
+                        <View style={{ alignItems: 'flex-end' }}>
+                            <Text style={styles.assetAmt}>{currencySymbol}{asset.amount.toLocaleString('en-IN')}</Text>
+                            <Text style={[styles.assetChange, { color: asset.gain ? colors.gain : colors.loss }]}>{asset.change}</Text>
+                        </View>
+                    </View>
+                ))}
             </ScrollView>
 
-            {/* FAB */}
-            <TouchableOpacity style={styles.fab}>
-                <Text style={styles.fabText}>+</Text>
+            <TouchableOpacity style={styles.fab} activeOpacity={0.85}>
+                <Text style={styles.fabPlus}>+</Text>
             </TouchableOpacity>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-    },
-    headerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    logoIcon: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
-    logoText: {
-        color: colors.textPrimary,
-        fontSize: 12,
-        fontWeight: typography.bold,
-    },
-    headerTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    headerSubtitle: {
-        color: colors.textMuted,
-        fontSize: 10,
-        letterSpacing: 1,
-    },
-    headerRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    iconButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: colors.cardBackground,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
-    iconText: {
-        fontSize: 16,
-    },
-    avatarContainer: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    avatarText: {
-        fontSize: 16,
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: spacing.lg,
-    },
-    portfolioSection: {
-        marginBottom: spacing.lg,
-    },
-    portfolioLabel: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        letterSpacing: 0.3,
-        marginBottom: spacing.xs,
-    },
-    portfolioRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    rupeeSymbol: {
-        color: colors.textPrimary,
-        fontSize: typography.h1,
-        fontWeight: typography.bold,
-        marginRight: 4,
-        fontVariant: ['tabular-nums'],
-    },
-    portfolioValue: {
-        color: colors.textPrimary,
-        fontSize: typography.display,
-        fontWeight: typography.bold,
-        fontVariant: ['tabular-nums'],
-    },
-    changePositiveBadge: {
-        backgroundColor: colors.gainDim,
-        borderWidth: 1,
-        borderColor: 'rgba(0,200,150,0.25)',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 6,
-        marginLeft: spacing.sm,
-    },
-    changePositiveText: {
-        color: colors.gainText,
-        fontSize: typography.caption,
-        fontWeight: typography.semibold,
-        fontVariant: ['tabular-nums'],
-    },
-    dayChangeRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: spacing.xs,
-    },
-    dayChangeLabel: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-    },
-    dayChangeValue: {
-        color: colors.gainText,
-        fontSize: typography.caption,
-        fontWeight: typography.medium,
-        marginLeft: spacing.xs,
-        flex: 1,
-        fontVariant: ['tabular-nums'],
-    },
-    historyLink: {
-        color: colors.primary,
-        fontSize: typography.caption,
-        fontWeight: typography.semibold,
-    },
-    optimizerCard: {
-        backgroundColor: colors.primaryDim,
-        borderColor: 'rgba(61,142,248,0.25)',
-        marginBottom: spacing.lg,
-    },
-    optimizerHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: spacing.sm,
-    },
-    optimizerIcon: {
-        fontSize: 16,
-        marginRight: spacing.xs,
-    },
-    optimizerTitle: {
-        color: colors.gainText,
-        fontSize: typography.caption,
-        fontWeight: typography.semibold,
-        letterSpacing: 0.5,
-    },
-    optimizerText: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        lineHeight: 20,
-        marginBottom: spacing.md,
-    },
-    highlightText: {
-        color: colors.primary,
-        fontWeight: typography.medium,
-    },
-    rebalanceButton: {
-        backgroundColor: colors.warningDim,
-        borderWidth: 1,
-        borderColor: 'rgba(245,158,11,0.25)',
-        borderRadius: 14,
-        paddingVertical: spacing.sm,
-        alignItems: 'center',
-        minHeight: 44,
-        justifyContent: 'center',
-    },
-    rebalanceButtonText: {
-        color: colors.warningText,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.semibold,
-    },
-    assetSection: {
-        marginBottom: spacing.xxl,
-    },
-    sectionTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-        marginBottom: spacing.md,
-    },
-    fab: {
-        position: 'absolute',
-        bottom: spacing.xl,
-        right: spacing.lg,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 8,
-        shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.45,
-        shadowRadius: 12,
-    },
-    fabText: {
-        color: colors.textPrimary,
-        fontSize: 28,
-        fontWeight: '300',
-    },
-});
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flex: 1, backgroundColor: c.canvas },
+        header: {
+            flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
+            paddingHorizontal: 20, paddingTop: 8, paddingBottom: 6,
+        },
+        dateCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
+        greeting: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, letterSpacing: -0.4, marginTop: 2 },
+        searchBtn: {
+            width: 36, height: 36, borderRadius: 10,
+            backgroundColor: c.surface, borderWidth: 1, borderColor: c.border,
+            alignItems: 'center', justifyContent: 'center',
+        },
+
+        scroll: { paddingHorizontal: 20, paddingBottom: 100, gap: 14 },
+
+        hero: {
+            marginTop: 12,
+            backgroundColor: c.surface, borderRadius: 20,
+            borderWidth: 1, borderColor: c.border, padding: 18,
+        },
+        row: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+        heroCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
+        amountRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 6 },
+        heroSymbol: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, marginRight: 4 },
+        heroValue: { color: c.ink1, fontSize: 30, fontWeight: t.weightBold, letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
+        gainBadge: { backgroundColor: c.gainSoft, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
+        gainBadgeText: { color: c.gain, fontSize: 12, fontWeight: t.weightSemibold, fontVariant: ['tabular-nums'] },
+        axisRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+        axisText: { color: c.ink3, fontSize: 11 },
+
+        tipCard: {
+            backgroundColor: c.accentSoft, borderRadius: 16, padding: 14,
+        },
+        tipHeader: { color: c.accent, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
+        tipText: { color: c.ink1, fontSize: 14, lineHeight: 20, marginTop: 6 },
+        tipBtn: {
+            marginTop: 10, alignSelf: 'flex-start',
+            backgroundColor: c.surface, borderWidth: 1, borderColor: c.border,
+            paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10,
+        },
+        tipBtnText: { color: c.accent, fontSize: 13, fontWeight: t.weightSemibold },
+
+        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold, marginTop: 4, paddingHorizontal: 2 },
+
+        assetCard: {
+            backgroundColor: c.surface, borderRadius: 16, borderWidth: 1, borderColor: c.border,
+            padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12,
+        },
+        assetIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+        assetName: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        assetSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
+        assetAmt: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold, fontVariant: ['tabular-nums'] },
+        assetChange: { fontSize: 11, fontWeight: t.weightSemibold, marginTop: 2, fontVariant: ['tabular-nums'] },
+
+        fab: {
+            position: 'absolute', right: 20, bottom: 24,
+            width: 56, height: 56, borderRadius: 28,
+            backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center',
+            elevation: 8, shadowColor: c.shadow, shadowOpacity: 1, shadowRadius: 12, shadowOffset: { width: 0, height: 6 },
+        },
+        fabPlus: { color: c.accentInk, fontSize: 28, fontWeight: '300', lineHeight: 30 },
+    });

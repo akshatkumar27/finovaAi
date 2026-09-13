@@ -1,121 +1,65 @@
-import React from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    StatusBar,
-    ScrollView,
-} from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { BackButton, Header } from '../../components';
-import { colors, typography, spacing } from '../../constants';
+import { useTheme } from '../../theme';
+import { Palette } from '../../theme/palette';
+
+const SECTIONS = [
+    { title: 'Data collection', content: 'We only collect what\'s needed to give you personalized financial insights — income, expenses, goals. We never sell your data.' },
+    { title: 'Security', content: 'Your data is encrypted with AES-256 in transit and at rest. Access is restricted to authorized personnel.' },
+    { title: 'Your rights', content: 'You can access, correct, or delete your data any time. Request a copy or account deletion through our support team.' },
+    { title: 'Third-party services', content: 'We use trusted partners for analytics and payments. All are compliant with GDPR and other data protection rules.' },
+    { title: 'Policy updates', content: 'We\'ll notify you in the app or by email when this policy meaningfully changes.' },
+];
 
 export const PrivacySecurityScreen: React.FC = () => {
     const navigation = useNavigation();
-
-    const Section = ({ title, content }: { title: string, content: string }) => (
-        <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{title}</Text>
-            <Text style={styles.sectionContent}>{content}</Text>
-        </View>
-    );
+    const { colors, typography } = useTheme();
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <View style={styles.header}>
+                <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+                    <Text style={styles.backArrow}>←</Text>
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Privacy &amp; security</Text>
+                <View style={{ width: 34 }} />
+            </View>
 
-            <Header title="Privacy & Security" />
-
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                <Text style={styles.mainDescription}>
-                    At Finova AI, we take your privacy and security seriously. This document outlines how we protect your data and your rights as a user.
+            <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+                <Text style={styles.intro}>
+                    We take your privacy seriously. Here's how we protect your data and your rights as a user.
                 </Text>
 
-                <Section
-                    title="1. Data Collection & Usage"
-                    content="We only collect information necessary to provide you with personalized financial insights. This includes your income, expenses, and financial goals. We do not sell your personal data to third parties."
-                />
+                {SECTIONS.map((s, i) => (
+                    <View key={i} style={styles.section}>
+                        <Text style={styles.sectionTitle}>{s.title}</Text>
+                        <Text style={styles.sectionBody}>{s.content}</Text>
+                    </View>
+                ))}
 
-                <Section
-                    title="2. Data Security"
-                    content="Your data is encrypted using industry-standard AES-256 encryption both in transit and at rest. We use secure servers and restrict access to personal information to authorized personnel only."
-                />
-
-                <Section
-                    title="3. User Rights"
-                    content="You have the right to access, correct, or delete your personal data at any time. You can request a copy of your data or account deletion by contacting our support team."
-                />
-
-                <Section
-                    title="4. Third-Party Services"
-                    content="We may use trusted third-party services for analytics and payment processing. These services are compliant with GDPR and other data protection regulations."
-                />
-
-                <Section
-                    title="5. Updates to Policy"
-                    content="We may update this privacy policy from time to time. We will notify you of any significant changes through the app or via email."
-                />
-
-                <Text style={styles.footer}>
-                    Last updated: February 2026
-                </Text>
+                <Text style={styles.footer}>Last updated: February 2026</Text>
             </ScrollView>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-    },
-    headerTitle: {
-        flex: 1,
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        textAlign: 'center',
-    },
-    headerSpacer: {
-        width: 40,
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: spacing.lg,
-        paddingTop: spacing.md,
-    },
-    mainDescription: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        lineHeight: 24,
-        marginBottom: spacing.xl,
-    },
-    section: {
-        marginBottom: spacing.xl,
-    },
-    sectionTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        marginBottom: spacing.xs,
-    },
-    sectionContent: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        lineHeight: 24,
-    },
-    footer: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        textAlign: 'center',
-        marginTop: spacing.lg,
-        marginBottom: spacing.xxl,
-    },
-});
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flex: 1, backgroundColor: c.canvas },
+        header: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6,
+        },
+        back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
+        backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
+        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold },
+        scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32 },
+        intro: { color: c.ink2, fontSize: 15, lineHeight: 22, marginBottom: 20 },
+        section: { marginBottom: 20 },
+        sectionTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold, marginBottom: 6 },
+        sectionBody: { color: c.ink2, fontSize: 14, lineHeight: 21 },
+        footer: { color: c.ink3, fontSize: 12, textAlign: 'center', marginTop: 12 },
+    });
