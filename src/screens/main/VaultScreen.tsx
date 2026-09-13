@@ -7,24 +7,13 @@ import {
     ScrollView,
     TouchableOpacity,
 } from 'react-native';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+
 import { useCurrency } from '../../context/CurrencyContext';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { Icon, IconName } from '../../components';
 
-const BankIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 16 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Path d="M3 10l9-6 9 6" stroke={c} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
-        <Path d="M5 10v9M12 10v9M19 10v9M3 19h18" stroke={c} strokeWidth={1.8} strokeLinecap="round" />
-    </Svg>
-);
-const WalletIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 16 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Rect x={3} y={7} width={18} height={12} rx={2} stroke={c} strokeWidth={1.8} />
-        <Path d="M3 10h14" stroke={c} strokeWidth={1.8} />
-        <Circle cx={17} cy={14} r={1.2} fill={c} />
-    </Svg>
-);
+
 
 export const VaultScreen: React.FC = () => {
     const { currencySymbol } = useCurrency();
@@ -89,14 +78,14 @@ export const VaultScreen: React.FC = () => {
 
                 <View style={styles.card}>
                     {[
-                        { name: mode === 'linked' ? 'HDFC Bank' : 'Savings account', sub: mode === 'linked' ? '•••• 5829' : 'Updated 2 days ago', amount: 824500, Icon: BankIcon, tint: colors.accent, tintBg: colors.accentSoft },
-                        { name: mode === 'linked' ? 'ICICI Savings' : 'Cash in hand', sub: mode === 'linked' ? '•••• 0042' : 'Updated 12 days ago', amount: mode === 'linked' ? 312000 : 12000, Icon: WalletIcon, tint: colors.warn, tintBg: colors.warnSoft },
-                        { name: mode === 'linked' ? 'Paytm Wallet' : 'Digital wallet', sub: mode === 'linked' ? 'Mobile wallet' : 'Updated today', amount: 9100, Icon: WalletIcon, tint: colors.gain, tintBg: colors.gainSoft },
+                        { name: mode === 'linked' ? 'HDFC Bank' : 'Savings account', sub: mode === 'linked' ? '•••• 5829' : 'Updated 2 days ago', amount: 824500, Icon: 'landmark' as IconName, tint: colors.accent, tintBg: colors.accentSoft },
+                        { name: mode === 'linked' ? 'ICICI Savings' : 'Cash in hand', sub: mode === 'linked' ? '•••• 0042' : 'Updated 12 days ago', amount: mode === 'linked' ? 312000 : 12000, Icon: 'wallet' as IconName, tint: colors.warn, tintBg: colors.warnSoft },
+                        { name: mode === 'linked' ? 'Paytm Wallet' : 'Digital wallet', sub: mode === 'linked' ? 'Mobile wallet' : 'Updated today', amount: 9100, Icon: 'wallet' as IconName, tint: colors.gain, tintBg: colors.gainSoft },
                     ].map((a, i) => (
                         <View key={i}>
                             <View style={styles.acctRow}>
                                 <View style={[styles.acctIcon, { backgroundColor: a.tintBg }]}>
-                                    <a.Icon c={a.tint} />
+                                    <Icon name={a.Icon} color={a.tint} />
                                 </View>
                                 <View style={{ flex: 1 }}>
                                     <Text style={styles.acctName}>{a.name}</Text>

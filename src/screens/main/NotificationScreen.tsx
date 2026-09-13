@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+
 import { useNavigation } from '@react-navigation/native';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
-import { BackButton } from '../../components';
+import { BackButton, Icon, IconName } from '../../components';
 
 type NType = 'suggestion' | 'alert' | 'update' | 'achievement';
 interface NotificationItem {
@@ -18,34 +18,7 @@ interface NotificationItem {
     isRead: boolean;
 }
 
-const IconWarn = ({ c }: { c: string }) => (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-        <Path d="M12 2l10 18H2z" stroke={c} strokeWidth={1.8} strokeLinejoin="round" />
-        <Path d="M12 9v5" stroke={c} strokeWidth={1.8} strokeLinecap="round" />
-        <Circle cx={12} cy={17.5} r={1} fill={c} />
-    </Svg>
-);
-const IconCheck = ({ c }: { c: string }) => (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none"><Path d="M5 12l5 5L20 6" stroke={c} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></Svg>
-);
-const IconStar = ({ c }: { c: string }) => (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-        <Path d="M12 2l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6L3 9l6-1z" stroke={c} strokeWidth={1.8} strokeLinejoin="round" />
-    </Svg>
-);
-const IconIdea = ({ c }: { c: string }) => (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-        <Circle cx={12} cy={12} r={9} stroke={c} strokeWidth={1.8} />
-        <Path d="M9.5 9a2.5 2.5 0 015 0c0 2-2.5 2-2.5 4" stroke={c} strokeWidth={1.8} strokeLinecap="round" />
-        <Circle cx={12} cy={17} r={0.7} fill={c} />
-    </Svg>
-);
-const IconGear = ({ c }: { c: string }) => (
-    <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-        <Circle cx={12} cy={12} r={3} stroke={c} strokeWidth={1.8} />
-        <Path d="M19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4.9a7 7 0 00-1.7-1l-.4-2.5h-4l-.4 2.5a7 7 0 00-1.7 1L5.9 6l-2 3.4L5.9 11a7 7 0 000 2l-2 1.6 2 3.4 2.4-.9a7 7 0 001.7 1l.4 2.5h4l.4-2.5a7 7 0 001.7-1l2.4.9 2-3.4-2-1.6a7 7 0 00.1-1z" stroke={c} strokeWidth={1.4} strokeLinejoin="round" />
-    </Svg>
-);
+
 
 export const NotificationScreen: React.FC = () => {
     const navigation = useNavigation();
@@ -69,11 +42,11 @@ export const NotificationScreen: React.FC = () => {
 
     const iconForType = (type: NType) => {
         switch (type) {
-            case 'alert': return { bg: colors.warnSoft, fg: colors.warn, Icon: IconWarn };
-            case 'update': return { bg: colors.gainSoft, fg: colors.gain, Icon: IconCheck };
-            case 'achievement': return { bg: colors.accentSoft, fg: colors.accent, Icon: IconStar };
+            case 'alert': return { bg: colors.warnSoft, fg: colors.warn, iconName: 'alert-triangle' as IconName };
+            case 'update': return { bg: colors.gainSoft, fg: colors.gain, iconName: 'check' as IconName };
+            case 'achievement': return { bg: colors.accentSoft, fg: colors.accent, iconName: 'star' as IconName };
             case 'suggestion':
-            default: return { bg: colors.accentSoft, fg: colors.accent, Icon: IconIdea };
+            default: return { bg: colors.accentSoft, fg: colors.accent, iconName: 'lightbulb' as IconName };
         }
     };
 
@@ -83,7 +56,7 @@ export const NotificationScreen: React.FC = () => {
                 <BackButton onPress={() => navigation.goBack()} />
                 <Text style={styles.headerTitle}>Notifications</Text>
                 <TouchableOpacity onPress={() => navigation.navigate('NotificationSettings' as never)} activeOpacity={0.7} style={styles.back}>
-                    <IconGear c={colors.ink2} />
+                    <Icon name="settings" color="ink2" size="md" />
                 </TouchableOpacity>
             </View>
 
@@ -92,12 +65,12 @@ export const NotificationScreen: React.FC = () => {
                     <View key={group.head}>
                         <Text style={styles.sectionHead}>{group.head}</Text>
                         {group.items.map((n) => {
-                            const { bg, fg, Icon } = iconForType(n.type);
+                            const { bg, fg, iconName } = iconForType(n.type);
                             return (
                                 <View key={n.id} style={styles.card}>
                                     {!n.isRead && <View style={styles.unreadDot} />}
                                     <View style={[styles.iconWrap, { backgroundColor: bg }]}>
-                                        <Icon c={fg} />
+                                        <Icon name={iconName} color={fg} size="md" />
                                     </View>
                                     <View style={{ flex: 1 }}>
                                         <Text style={styles.title}>{n.title}</Text>

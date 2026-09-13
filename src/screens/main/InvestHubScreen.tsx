@@ -1,27 +1,12 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { Icon, IconName } from '../../components';
 
-const ChartIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 18 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Path d="M4 20V10M10 20V4M16 20v-8M22 20v-6" stroke={c} strokeWidth={1.8} strokeLinecap="round" />
-    </Svg>
-);
-const CoinIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 18 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Circle cx={12} cy={12} r={9} stroke={c} strokeWidth={1.8} />
-        <Path d="M9 9h4a2 2 0 010 4h-3a2 2 0 000 4h4" stroke={c} strokeWidth={1.8} strokeLinecap="round" />
-    </Svg>
-);
-const BankIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 18 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Rect x={3} y={6} width={18} height={12} rx={2} stroke={c} strokeWidth={1.8} />
-        <Path d="M3 10h18" stroke={c} strokeWidth={1.8} />
-    </Svg>
-);
+
 
 export const InvestHubScreen: React.FC = () => {
     const { currencySymbol } = useCurrency();
@@ -36,10 +21,7 @@ export const InvestHubScreen: React.FC = () => {
                     <Text style={styles.greeting}>Grow your money.</Text>
                 </View>
                 <TouchableOpacity style={styles.searchBtn} activeOpacity={0.7}>
-                    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-                        <Circle cx={11} cy={11} r={7} stroke={colors.ink2} strokeWidth={1.8} />
-                        <Path d="M20 20l-4-4" stroke={colors.ink2} strokeWidth={1.8} strokeLinecap="round" />
-                    </Svg>
+                    <Icon name="search" color="ink2" />
                 </TouchableOpacity>
             </View>
 
@@ -89,13 +71,13 @@ export const InvestHubScreen: React.FC = () => {
                 <Text style={styles.sectionHead}>YOUR ALLOCATION</Text>
 
                 {[
-                    { name: 'Mutual funds', sub: '10 active SIPs', amount: 1420000, change: '+18.4%', gain: true, Icon: ChartIcon, tint: colors.gain, tintBg: colors.gainSoft },
-                    { name: 'Digital gold', sub: '45.2 g', amount: 315420, change: '+6.2%', gain: true, Icon: CoinIcon, tint: colors.warn, tintBg: colors.warnSoft },
-                    { name: 'Fixed deposits', sub: '3 FDs active', amount: 750000, change: '-7.1%', gain: false, Icon: BankIcon, tint: colors.accent, tintBg: colors.accentSoft },
+                    { name: 'Mutual funds', sub: '10 active SIPs', amount: 1420000, change: '+18.4%', gain: true, Icon: 'bar-chart-3' as IconName, tint: colors.gain, tintBg: colors.gainSoft },
+                    { name: 'Digital gold', sub: '45.2 g', amount: 315420, change: '+6.2%', gain: true, Icon: 'circle-dollar-sign' as IconName, tint: colors.warn, tintBg: colors.warnSoft },
+                    { name: 'Fixed deposits', sub: '3 FDs active', amount: 750000, change: '-7.1%', gain: false, Icon: 'landmark' as IconName, tint: colors.accent, tintBg: colors.accentSoft },
                 ].map((asset, i) => (
                     <View key={i} style={styles.assetCard}>
                         <View style={[styles.assetIcon, { backgroundColor: asset.tintBg }]}>
-                            <asset.Icon c={asset.tint} />
+                            <Icon name={asset.Icon} color={asset.tint} />
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={styles.assetName}>{asset.name}</Text>

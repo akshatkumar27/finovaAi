@@ -11,12 +11,11 @@ import {
     DeviceEventEmitter,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Circle, Path } from 'react-native-svg';
 import Toast from 'react-native-toast-message';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
-import { ConfirmationModal, SkeletonLoader, BackButton } from '../../components';
+import { ConfirmationModal, SkeletonLoader, BackButton, Icon, IconName } from '../../components';
 import api from '../../services/api';
 import { formatCompactCurrency } from '../../utils';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -46,24 +45,7 @@ interface ModalState {
     onConfirm: () => void;
 }
 
-const CheckIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 14 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Path d="M5 12l5 5L20 6" stroke={c} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
-const WarnIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 14 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Path d="M12 2l10 18H2z" stroke={c} strokeWidth={1.8} strokeLinejoin="round" />
-        <Path d="M12 9v5" stroke={c} strokeWidth={1.8} strokeLinecap="round" />
-        <Circle cx={12} cy={17.5} r={1} fill={c} />
-    </Svg>
-);
-const ClockIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 14 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Circle cx={12} cy={12} r={9} stroke={c} strokeWidth={1.8} />
-        <Path d="M12 8v5l3 2" stroke={c} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
+
 
 export const ContributionsScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
@@ -374,7 +356,7 @@ export const ContributionsScreen: React.FC = () => {
                             <View style={styles.paymentRow}>
                                 <View style={{ flex: 1 }}>
                                     <View style={[styles.badge, styles.badgeGain]}>
-                                        <CheckIcon c={colors.gain} />
+                                        <Icon name="check" color="gain" size="sm" />
                                         <Text style={[styles.badgeText, { color: colors.gain }]}>Contributed</Text>
                                     </View>
                                     <Text style={styles.paymentTitle}>Next due</Text>
@@ -397,12 +379,12 @@ export const ContributionsScreen: React.FC = () => {
                                     <View style={{ flex: 1 }}>
                                         {paymentEnabled ? (
                                             <View style={[styles.badge, styles.badgeWarn]}>
-                                                <WarnIcon c={colors.warn} />
+                                                <Icon name="alert-triangle" color="warn" size="sm" />
                                                 <Text style={[styles.badgeText, { color: colors.warn }]}>Pending</Text>
                                             </View>
                                         ) : (
                                             <View style={[styles.badge, styles.badgeNeutral]}>
-                                                <ClockIcon c={colors.ink2} />
+                                                <Icon name="clock" color="ink2" size="sm" />
                                                 <Text style={[styles.badgeText, { color: colors.ink2 }]}>{daysUntilPayment} {daysUntilPayment === 1 ? 'day' : 'days'} left</Text>
                                             </View>
                                         )}
@@ -414,7 +396,7 @@ export const ContributionsScreen: React.FC = () => {
                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                             <Text style={styles.amountBig}>{formatCompactCurrency(editedContribution, currencySymbol)}</Text>
                                             <TouchableOpacity onPress={() => setIsEditing(!isEditing)} activeOpacity={0.7} style={{ marginLeft: 8, marginTop: -4 }}>
-                                                <Text style={styles.editIcon}>✎</Text>
+                                                <Icon name="pencil" color="ink3" size="md" />
                                             </TouchableOpacity>
                                         </View>
                                         {!isEditing && (
@@ -498,7 +480,7 @@ export const ContributionsScreen: React.FC = () => {
                                 return (
                                     <View key={item.id} style={styles.historyCard}>
                                         <View style={styles.historyIcon}>
-                                            <CheckIcon c={colors.gain} size={16} />
+                                            <Icon name="check" color="gain" size="md" />
                                         </View>
                                         <View style={{ flex: 1 }}>
                                             <View style={styles.historyTopRow}>

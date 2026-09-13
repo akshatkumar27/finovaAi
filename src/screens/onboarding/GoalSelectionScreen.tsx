@@ -8,11 +8,10 @@ import {
     ActivityIndicator,
     TouchableOpacity,
 } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
 import Toast from 'react-native-toast-message';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, BackButton } from '../../components';
+import { Button, BackButton, Icon } from '../../components';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../../services';
@@ -36,13 +35,7 @@ const parseTitle = (title: string) => {
     return { icon: '', text: title };
 };
 
-const TargetIcon: React.FC<{ color: string; size?: number }> = ({ color, size = 16 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Circle cx={12} cy={12} r={9} stroke={color} strokeWidth={1.8} />
-        <Circle cx={12} cy={12} r={4} stroke={color} strokeWidth={1.8} />
-        <Circle cx={12} cy={12} r={1.5} fill={color} />
-    </Svg>
-);
+
 
 export const GoalSelectionScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
@@ -135,7 +128,7 @@ export const GoalSelectionScreen: React.FC = () => {
                                     onPress={() => setSelectedGoal(index)}
                                 >
                                     <View style={styles.cardTop}>
-                                        <View style={styles.iconWrap}><TargetIcon color={colors.accent} size={16} /></View>
+                                        <View style={styles.iconWrap}><Icon name="target" color="accent" size="md" /></View>
                                         <View style={{ flex: 1 }}>
                                             <Text style={styles.cardTitle}>{text}</Text>
                                             <Text style={styles.cardSub}>{insight.target_months} {insight.target_months === 1 ? 'month' : 'months'} · {currencySymbol}{monthly.toLocaleString()}/mo</Text>

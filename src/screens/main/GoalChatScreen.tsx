@@ -7,7 +7,7 @@ import {
     TouchableOpacity,
     ActivityIndicator,
 } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Toast from 'react-native-toast-message';
@@ -15,19 +15,12 @@ import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
-import { BackButton } from '../../components';
+import { BackButton, Icon } from '../../components';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 type GoalChatRouteProp = RouteProp<MainStackParamList, 'GoalChat'>;
 
-const CoachIcon: React.FC<{ c: string; size?: number }> = ({ c, size = 28 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke={c} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
-        <Circle cx={9} cy={11} r={1} fill={c} />
-        <Circle cx={12} cy={11} r={1} fill={c} />
-        <Circle cx={15} cy={11} r={1} fill={c} />
-    </Svg>
-);
+
 
 export const GoalChatScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
@@ -70,7 +63,7 @@ export const GoalChatScreen: React.FC = () => {
 
             <View style={styles.content}>
                 <View style={styles.iconWrap}>
-                    <CoachIcon c={colors.accent} size={32} />
+                    <Icon name="message-square" color="accent" size="xl" />
                 </View>
                 <Text style={styles.title}>AI coach — coming soon.</Text>
                 <Text style={styles.subtitle}>

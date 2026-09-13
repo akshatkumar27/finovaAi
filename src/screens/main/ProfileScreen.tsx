@@ -18,25 +18,11 @@ import { useAppDispatch } from '../../store/hooks';
 import { clearFinancialData } from '../../store/slices/financialDataSlice';
 import { useTheme, ThemeMode } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { Icon } from '../../components';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
-const RowIcon: React.FC<{ children: React.ReactNode; c: Palette }> = ({ children, c }) => (
-    <View
-        style={{
-            width: 32, height: 32, borderRadius: 10,
-            backgroundColor: c.surfaceAlt,
-            alignItems: 'center', justifyContent: 'center',
-            marginRight: 12,
-        }}
-    >
-        <Text style={{ color: c.ink2, fontSize: 14, fontWeight: '600' }}>{children}</Text>
-    </View>
-);
 
-const Chevron: React.FC<{ c: Palette }> = ({ c }) => (
-    <Text style={{ color: c.ink3, fontSize: 18 }}>›</Text>
-);
 
 export const ProfileScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
@@ -156,21 +142,21 @@ export const ProfileScreen: React.FC = () => {
                 <Text style={styles.sectionHead}>ACCOUNT</Text>
                 <View style={styles.card}>
                     <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('PersonalInfo' as never)}>
-                        <RowIcon c={colors}>P</RowIcon>
+                        <View style={styles.rowIconWrap}><Icon name="user" color="ink2" size="sm" /></View>
                         <View style={{ flex: 1 }}><Text style={styles.rowTitle}>Personal info</Text></View>
-                        <Chevron c={colors} />
+                        <Icon name="chevron-right" color="ink3" size="md" />
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('PrivacySecurity' as never)}>
-                        <RowIcon c={colors}>S</RowIcon>
+                        <View style={styles.rowIconWrap}><Icon name="lock" color="ink2" size="sm" /></View>
                         <View style={{ flex: 1 }}><Text style={styles.rowTitle}>Privacy &amp; security</Text></View>
-                        <Chevron c={colors} />
+                        <Icon name="chevron-right" color="ink3" size="md" />
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('HelpSupport' as never)}>
-                        <RowIcon c={colors}>?</RowIcon>
+                        <View style={styles.rowIconWrap}><Icon name="help-circle" color="ink2" size="sm" /></View>
                         <View style={{ flex: 1 }}><Text style={styles.rowTitle}>Help &amp; support</Text></View>
-                        <Chevron c={colors} />
+                        <Icon name="chevron-right" color="ink3" size="md" />
                     </TouchableOpacity>
                 </View>
 
@@ -233,6 +219,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         rowTitle: { color: c.ink1, fontSize: 14, fontWeight: t.weightMedium },
         rowSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
+        rowIconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
         divider: { height: 1, backgroundColor: c.border },
 
         seg: {

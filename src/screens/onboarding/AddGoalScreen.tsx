@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { Button, BackButton } from '../../components';
+import { Button, BackButton, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
 import { formatCompactCurrency } from '../../utils';
@@ -362,7 +362,7 @@ export const AddGoalScreen: React.FC = () => {
                             <Text style={styles.dayPickerVal}>Every month</Text>
                             <Text style={styles.dayPickerHint}>Starting {MONTH_NAMES[selectedMonth]} {selectedYear}</Text>
                         </View>
-                        <Text style={styles.chevron}>›</Text>
+                        <Icon name="chevron-right" color="ink3" size="lg" />
                     </TouchableOpacity>
 
                     <Modal visible={calendarVisible} transparent animationType="fade" onRequestClose={() => setCalendarVisible(false)}>
@@ -373,11 +373,11 @@ export const AddGoalScreen: React.FC = () => {
 
                                 <View style={styles.calNav}>
                                     <TouchableOpacity onPress={handleCalendarPrev} style={[styles.calNavBtn, !canGoPrev && styles.calNavBtnOff]} disabled={!canGoPrev}>
-                                        <Text style={[styles.calNavArrow, !canGoPrev && styles.calNavArrowOff]}>‹</Text>
+                                        <Icon name="chevron-left" color={canGoPrev ? "ink1" : "ink3"} size="lg" />
                                     </TouchableOpacity>
                                     <Text style={styles.calMonthLabel}>{MONTH_NAMES[calendarMonth]} {calendarYear}</Text>
                                     <TouchableOpacity onPress={handleCalendarNext} style={[styles.calNavBtn, !canGoNext && styles.calNavBtnOff]} disabled={!canGoNext}>
-                                        <Text style={[styles.calNavArrow, !canGoNext && styles.calNavArrowOff]}>›</Text>
+                                        <Icon name="chevron-right" color={canGoNext ? "ink1" : "ink3"} size="lg" />
                                     </TouchableOpacity>
                                 </View>
 
