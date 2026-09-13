@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { MascotLoader } from '../../components';
+import { MascotLoader, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import Toast from 'react-native-toast-message';
 import { api } from '../../services';
@@ -69,26 +69,6 @@ const parseInsightTitle = (title: string) => {
 };
 
 // ── Line icons ───────────────────────────────────────────────────────────────
-const TargetIcon: React.FC<{ color: string; size?: number }> = ({ color, size = 14 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Circle cx={12} cy={12} r={9} stroke={color} strokeWidth={1.8} />
-        <Circle cx={12} cy={12} r={4} stroke={color} strokeWidth={1.8} />
-        <Circle cx={12} cy={12} r={1.5} fill={color} />
-    </Svg>
-);
-
-const BellIcon: React.FC<{ color: string; size?: number }> = ({ color, size = 16 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
-        <Path d="M13 21a2 2 0 01-2 0" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
-    </Svg>
-);
-
-const CoachIcon: React.FC<{ color: string; size?: number }> = ({ color, size = 14 }) => (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
 
 // ── Circular ring (pulse score) ──────────────────────────────────────────────
 const Ring: React.FC<{
@@ -248,13 +228,10 @@ export const GoalPulseScreen: React.FC = () => {
                 </View>
                 <View style={styles.headerActions}>
                     <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.7}>
-                        <BellIcon color={colors.ink2} />
+                        <Icon name="bell" color="ink2" />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Profile')} activeOpacity={0.7}>
-                        <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-                            <Circle cx={12} cy={8} r={4} stroke={colors.ink2} strokeWidth={1.8} />
-                            <Path d="M4 21a8 8 0 0116 0" stroke={colors.ink2} strokeWidth={1.8} strokeLinecap="round" />
-                        </Svg>
+                        <Icon name="user" color="ink2" />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -331,7 +308,7 @@ export const GoalPulseScreen: React.FC = () => {
                                         const { text } = parseInsightTitle(insight.title);
                                         return (
                                             <View key={idx} style={styles.suggestCard}>
-                                                <View style={styles.suggestIconWrap}><TargetIcon color={colors.accent} size={16} /></View>
+                                                <View style={styles.suggestIconWrap}><Icon name="target" color="accent" size="md" /></View>
                                                 <Text style={styles.suggestName} numberOfLines={2}>{text}</Text>
                                                 <Text style={styles.suggestAmount}>{currencySymbol}{insight.amount.toLocaleString()}</Text>
                                                 <Text style={styles.suggestMonths}>{insight.target_months} {insight.target_months === 1 ? 'month' : 'months'}</Text>
@@ -381,7 +358,7 @@ export const GoalPulseScreen: React.FC = () => {
                                         })}
                                     >
                                         <View style={styles.goalTop}>
-                                            <View style={styles.goalIconWrap}><TargetIcon color={colors.accent} size={14} /></View>
+                                            <View style={styles.goalIconWrap}><Icon name="target" color="accent" size="sm" /></View>
                                             <View style={{ flex: 1 }}>
                                                 <Text style={styles.goalName}>{goal.name}</Text>
                                                 <Text style={styles.goalSub}>
@@ -421,7 +398,7 @@ export const GoalPulseScreen: React.FC = () => {
                                                 activeOpacity={0.7}
                                                 style={styles.goalActionCoach}
                                             >
-                                                <CoachIcon color={colors.accent} size={13} />
+                                                <Icon name="message-square" color="accent" size="sm" />
                                                 <Text style={[styles.goalActionText, { color: colors.accent, marginLeft: 6 }]}>Ask coach</Text>
                                             </TouchableOpacity>
                                         </View>
@@ -434,7 +411,7 @@ export const GoalPulseScreen: React.FC = () => {
                     {/* Empty state */}
                     {goals.length === 0 && (
                         <View style={styles.empty}>
-                            <View style={styles.emptyIconWrap}><TargetIcon color={colors.accent} size={24} /></View>
+                            <View style={styles.emptyIconWrap}><Icon name="target" color="accent" size="xl" /></View>
                             <Text style={styles.emptyTitle}>Start your first goal.</Text>
                             <Text style={styles.emptyDesc}>Pick a suggestion above, or tap + to name your own. Consistency beats intensity.</Text>
                         </View>

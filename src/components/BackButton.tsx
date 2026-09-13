@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import { Icon } from './Icon';
 import { useTheme } from '../theme';
 import { Palette } from '../theme/palette';
 
@@ -14,15 +14,7 @@ export const BackButton: React.FC<BackButtonProps> = ({ onPress, style }) => {
     const styles = useMemo(() => makeStyles(colors), [colors]);
     return (
         <TouchableOpacity style={[styles.button, style]} onPress={onPress} activeOpacity={0.7}>
-            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-                <Path
-                    d="M15 18l-6-6 6-6"
-                    stroke={colors.ink1}
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-            </Svg>
+            <Icon name="chevron-left" size="lg" color="ink1" />
         </TouchableOpacity>
     );
 };

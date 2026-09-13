@@ -8,7 +8,7 @@ import {
     TouchableWithoutFeedback,
     ActivityIndicator,
 } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
+import { Icon, IconName } from './Icon';
 import { useTheme } from '../theme';
 import { Palette } from '../theme/palette';
 
@@ -25,32 +25,6 @@ interface ConfirmationModalProps {
     loading?: boolean;
 }
 
-const IconCheck: React.FC<{ c: string }> = ({ c }) => (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-        <Path d="M5 12l5 5L20 6" stroke={c} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
-const IconWarn: React.FC<{ c: string }> = ({ c }) => (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-        <Path d="M12 2l10 18H2z" stroke={c} strokeWidth={2} strokeLinejoin="round" />
-        <Path d="M12 9v5" stroke={c} strokeWidth={2} strokeLinecap="round" />
-        <Circle cx={12} cy={17.5} r={1.1} fill={c} />
-    </Svg>
-);
-const IconError: React.FC<{ c: string }> = ({ c }) => (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-        <Circle cx={12} cy={12} r={9} stroke={c} strokeWidth={2} />
-        <Path d="M9 9l6 6M15 9l-6 6" stroke={c} strokeWidth={2} strokeLinecap="round" />
-    </Svg>
-);
-const IconInfo: React.FC<{ c: string }> = ({ c }) => (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-        <Circle cx={12} cy={12} r={9} stroke={c} strokeWidth={2} />
-        <Path d="M12 12v5" stroke={c} strokeWidth={2} strokeLinecap="round" />
-        <Circle cx={12} cy={8} r={1.2} fill={c} />
-    </Svg>
-);
-
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     visible,
     title,
@@ -66,13 +40,13 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     const { colors, typography } = useTheme();
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
-    const iconMap = {
-        success: { Icon: IconCheck, tint: colors.gain, tintBg: colors.gainSoft, confirmBg: colors.accent },
-        error:   { Icon: IconError, tint: colors.loss, tintBg: colors.lossSoft, confirmBg: colors.loss },
-        warning: { Icon: IconWarn,  tint: colors.warn, tintBg: colors.warnSoft, confirmBg: colors.accent },
-        info:    { Icon: IconInfo,  tint: colors.accent, tintBg: colors.accentSoft, confirmBg: colors.accent },
-    } as const;
-    const { Icon, tint, tintBg, confirmBg } = iconMap[type];
+    const iconMap: Record<string, { icon: IconName; tint: string; tintBg: string; confirmBg: string }> = {
+        success: { icon: 'check', tint: colors.gain, tintBg: colors.gainSoft, confirmBg: colors.accent },
+        error:   { icon: 'x-circle', tint: colors.loss, tintBg: colors.lossSoft, confirmBg: colors.loss },
+        warning: { icon: 'alert-triangle', tint: colors.warn, tintBg: colors.warnSoft, confirmBg: colors.accent },
+        info:    { icon: 'info', tint: colors.accent, tintBg: colors.accentSoft, confirmBg: colors.accent },
+    };
+    const { icon, tint, tintBg, confirmBg } = iconMap[type];
 
     return (
         <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
@@ -81,7 +55,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     <TouchableWithoutFeedback>
                         <View style={styles.card}>
                             <View style={[styles.iconWrap, { backgroundColor: tintBg }]}>
-                                <Icon c={tint} />
+                                <Icon name={icon} size="lg" color={tint} />
                             </View>
 
                             <Text style={styles.title}>{title}</Text>
