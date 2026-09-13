@@ -151,8 +151,11 @@ export const OTPVerificationScreen: React.FC = () => {
                                     ? 'Sending…'
                                     : ' '}
                         </Text>
-                        <TouchableOpacity onPress={handleResend} disabled={timer > 0 || resending}>
-                            <Text style={[styles.link, (timer > 0 || resending) && styles.linkDisabled]}>
+                        <TouchableOpacity 
+                            onPress={timer > 0 ? () => navigation.goBack() : handleResend} 
+                            disabled={resending}
+                        >
+                            <Text style={[styles.link, resending && styles.linkDisabled]}>
                                 {timer > 0 ? 'Change email' : 'Resend code'}
                             </Text>
                         </TouchableOpacity>
