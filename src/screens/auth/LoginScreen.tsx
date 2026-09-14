@@ -1,14 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import {
-    View,
+import { View,
     Text,
     StyleSheet,
     SafeAreaView,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    TouchableOpacity,
-} from 'react-native';
+    TouchableOpacity, Image } from 'react-native';
 import { toast } from 'sonner-native';
 import axios from 'axios';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -28,7 +26,7 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, '
 
 export const LoginScreen: React.FC = () => {
     const navigation = useNavigation<LoginScreenNavigationProp>();
-    const { colors, typography } = useTheme();
+    const { colors, typography, isDark } = useTheme();
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -83,9 +81,11 @@ export const LoginScreen: React.FC = () => {
                 style={styles.flex}
             >
                 <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-                    <View style={styles.mark}>
-                        <Text style={styles.markText}>Fn</Text>
-                    </View>
+                    <Image
+                        source={isDark ? require('../../asset/logotrans-dark.png') : require('../../asset/logotrans-light.png')}
+                        style={styles.mark}
+                        resizeMode="contain"
+                    />
 
                     <Text style={styles.title}>Welcome to Finova.</Text>
                     <Text style={styles.subtitle}>
@@ -123,12 +123,7 @@ const makeStyles = (c: ReturnType<typeof useTheme>['colors'], t: ReturnType<type
         container: { flex: 1, backgroundColor: c.canvas },
         flex: { flex: 1 },
         scroll: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 32, paddingBottom: 24 },
-        mark: {
-            width: 44, height: 44, borderRadius: 12,
-            backgroundColor: c.ink1,
-            alignItems: 'center', justifyContent: 'center',
-        },
-        markText: { color: c.canvas, fontFamily: fontFor('bold'), fontSize: 15, letterSpacing: -0.4 },
+        mark: { width: 44, height: 44 },
         title: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginTop: 28, marginBottom: 6 },
         subtitle: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 24 },
         footer: { marginTop: 'auto' },

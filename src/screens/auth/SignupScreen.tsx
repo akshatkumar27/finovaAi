@@ -1,14 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import {
-    View,
+import { View,
     Text,
     StyleSheet,
     SafeAreaView,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    TouchableOpacity,
-} from 'react-native';
+    TouchableOpacity, Image } from 'react-native';
 import { toast } from 'sonner-native';
 import axios from 'axios';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -23,7 +21,7 @@ type SignupScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 
 
 export const SignupScreen: React.FC = () => {
     const navigation = useNavigation<SignupScreenNavigationProp>();
-    const { colors, typography } = useTheme();
+    const { colors, typography, isDark } = useTheme();
     const [email, setEmail] = useState('');
     const [fullName, setFullName] = useState('');
     const [age, setAge] = useState('');
@@ -89,7 +87,11 @@ export const SignupScreen: React.FC = () => {
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
                 <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
                     <BackButton onPress={() => navigation.goBack()} />
-                    <View style={styles.mark}><Text style={styles.markText}>Fn</Text></View>
+                    <Image
+                        source={isDark ? require('../../asset/logotrans-dark.png') : require('../../asset/logotrans-light.png')}
+                        style={styles.mark}
+                        resizeMode="contain"
+                    />
                     <Text style={styles.title}>Let's set you up.</Text>
                     <Text style={styles.subtitle}>Three things and you're in.</Text>
 
@@ -145,8 +147,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         scroll: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 24 },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        mark: { width: 44, height: 44, borderRadius: 12, backgroundColor: c.ink1, alignItems: 'center', justifyContent: 'center', marginTop: 20 },
-        markText: { color: c.canvas, fontFamily: fontFor('bold'), fontSize: 15, letterSpacing: -0.4 },
+        mark: { width: 44, height: 44, marginTop: 20 },
         title: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginTop: 24, marginBottom: 6 },
         subtitle: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 24 },
         footer: { marginTop: 'auto', paddingTop: 12, gap: 10 },
