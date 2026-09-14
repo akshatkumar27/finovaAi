@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StatusBar } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { StatusBar, BackHandler } from 'react-native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootNavigator } from './src/navigation';
 import { SplashScreen } from './src/components';
@@ -11,7 +11,7 @@ import { store, RootState } from './src/store';
 import { ThemeProvider, useTheme } from './src/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Toaster } from 'sonner-native';
+import { Toaster, toast } from 'sonner-native';
 import { login, logout } from './src/store/slices/authSlice';
 import { setCurrency } from './src/store/slices/settingsSlice';
 import { setFinancialProfilePresent, setFinancialData, clearFinancialData } from './src/store/slices/financialDataSlice';
@@ -38,6 +38,21 @@ const AppContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [initialRoute, setInitialRoute] = useState<string | undefined>(undefined);
   const [initialParams, setInitialParams] = useState<any>(undefined);
+  const navigationRef = useNavigationContainerRef();
+
+  // Double-tap back-to-exit — anywhere back would close the app, prompt once.
+  useEffect(() => {
+    let lastBackPressAt = 0;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (navigationRef.canGoBack()) return false;
+      const now = Date.now();
+      if (now - lastBackPressAt < 2000) return false;
+      lastBackPressAt = now;
+      toast('Press back again to exit');
+      return true;
+    });
+    return () => sub.remove();
+  }, [navigationRef]);
 
   useEffect(() => {
     checkAuthStatus();
@@ -188,7 +203,7 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <ThemedStatusBar />
       <RootNavigator
         isLoggedIn={isLoggedIn}
