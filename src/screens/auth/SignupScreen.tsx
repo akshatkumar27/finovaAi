@@ -87,11 +87,13 @@ export const SignupScreen: React.FC = () => {
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
                 <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
                     <BackButton onPress={() => navigation.goBack()} />
-                    <Image
-                        source={isDark ? require('../../asset/logotrans-dark.png') : require('../../asset/logotrans-light.png')}
-                        style={styles.mark}
-                        resizeMode="contain"
-                    />
+                    <View style={styles.mark}>
+                        <Image
+                            source={require('../../asset/logo-white.png')}
+                            style={styles.markInner}
+                            resizeMode="contain"
+                        />
+                    </View>
                     <Text style={styles.title}>Let's set you up.</Text>
                     <Text style={styles.subtitle}>Three things and you're in.</Text>
 
@@ -147,7 +149,8 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         scroll: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 24 },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        mark: { width: 44, height: 44, marginTop: 20 },
+        mark: { width: 44, height: 44, borderRadius: 12, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', marginTop: 20 },
+        markInner: { width: 28, height: 28 },
         title: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginTop: 24, marginBottom: 6 },
         subtitle: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 24 },
         footer: { marginTop: 'auto', paddingTop: 12, gap: 10 },
