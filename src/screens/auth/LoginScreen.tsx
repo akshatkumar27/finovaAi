@@ -16,7 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Input, Button } from '../../components';
 import { API_BASE_URL } from '../../constants';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 
 type AuthStackParamList = {
     Login: undefined;
@@ -128,11 +128,11 @@ const makeStyles = (c: ReturnType<typeof useTheme>['colors'], t: ReturnType<type
             backgroundColor: c.ink1,
             alignItems: 'center', justifyContent: 'center',
         },
-        markText: { color: c.canvas, fontWeight: t.weightBold, fontSize: 15, letterSpacing: -0.4 },
-        title: { color: c.ink1, fontSize: 26, fontWeight: t.weightBold, letterSpacing: -0.5, marginTop: 28, marginBottom: 6 },
+        markText: { color: c.canvas, fontFamily: fontFor('bold'), fontSize: 15, letterSpacing: -0.4 },
+        title: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginTop: 28, marginBottom: 6 },
         subtitle: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 24 },
         footer: { marginTop: 'auto' },
         signup: { alignItems: 'center', marginTop: 16 },
         signupText: { color: c.ink3, fontSize: 13 },
-        signupLink: { color: c.accent, fontWeight: t.weightMedium },
+        signupLink: { color: c.accent, fontFamily: fontFor('medium') },
     });

@@ -21,7 +21,7 @@ import { formatCompactNumber } from '../../utils/formatNumber';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { shallowEqual } from 'react-redux';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
@@ -95,10 +95,10 @@ const Ring: React.FC<{
                 />
             </Svg>
             <View style={{ position: 'absolute', alignItems: 'center' }}>
-                <Text style={{ color: progressColor, fontSize: size >= 100 ? 28 : 24, fontWeight: '700', letterSpacing: -0.5 }}>
+                <Text style={{ color: progressColor, fontSize: size >= 100 ? 28 : 24, fontFamily: fontFor('bold'), letterSpacing: -0.5 }}>
                     {Math.round(progress)}
                 </Text>
-                {label && <Text style={{ color: progressColor, fontSize: 9, letterSpacing: 1.4, marginTop: -2, opacity: 0.9, fontWeight: '600' }}>{label}</Text>}
+                {label && <Text style={{ color: progressColor, fontSize: 9, letterSpacing: 1.4, marginTop: -2, opacity: 0.9, fontFamily: fontFor('semibold') }}>{label}</Text>}
             </View>
         </View>
     );
@@ -444,8 +444,8 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
             paddingHorizontal: 20, paddingTop: 8, paddingBottom: 6,
         },
-        dateCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
-        greeting: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, letterSpacing: -0.4, marginTop: 2 },
+        dateCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
+        greeting: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), letterSpacing: -0.4, marginTop: 2 },
         notifBtn: {
             width: 36, height: 36, borderRadius: 10,
             backgroundColor: c.surface, borderWidth: 1, borderColor: c.border,
@@ -469,21 +469,21 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             padding: 18,
         },
         heroRow: { flexDirection: 'row', alignItems: 'center' },
-        heroCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
-        heroTitle: { color: c.ink1, fontSize: 18, fontWeight: t.weightBold, letterSpacing: -0.3, marginTop: 4 },
+        heroCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
+        heroTitle: { color: c.ink1, fontSize: 18, fontFamily: fontFor('bold'), letterSpacing: -0.3, marginTop: 4 },
         heroSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
         heroFooter: {
             flexDirection: 'row', alignItems: 'center',
             marginTop: 16, paddingTop: 14,
             borderTopWidth: 1, borderTopColor: c.border,
         },
-        heroFooterCap: { color: c.ink3, fontSize: 10, letterSpacing: 1.2, fontWeight: t.weightSemibold },
-        heroFooterAmount: { color: c.ink1, fontSize: 20, fontWeight: t.weightBold, letterSpacing: -0.4, marginTop: 2 },
+        heroFooterCap: { color: c.ink3, fontSize: 10, letterSpacing: 1.2, fontFamily: fontFor('semibold') },
+        heroFooterAmount: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), letterSpacing: -0.4, marginTop: 2 },
         heroDivider: { width: 1, height: 32, backgroundColor: c.border, marginHorizontal: 16 },
 
         sectionHead: {
             color: c.ink3, fontSize: 11, letterSpacing: 1.4,
-            fontWeight: t.weightSemibold,
+            fontFamily: fontFor('semibold'),
             marginTop: 8, marginBottom: 8, paddingHorizontal: 2,
         },
         sectionHeadRow: {
@@ -492,7 +492,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         pill: {
             color: c.gain, backgroundColor: c.gainSoft,
-            fontSize: 11, fontWeight: t.weightSemibold,
+            fontSize: 11, fontFamily: fontFor('semibold'),
             paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, overflow: 'hidden',
         },
 
@@ -508,15 +508,15 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.accentSoft,
             alignItems: 'center', justifyContent: 'center',
         },
-        suggestName: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold, marginTop: 10, lineHeight: 18 },
-        suggestAmount: { color: c.ink1, fontSize: 18, fontWeight: t.weightBold, letterSpacing: -0.3, marginTop: 8 },
+        suggestName: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold'), marginTop: 10, lineHeight: 18 },
+        suggestAmount: { color: c.ink1, fontSize: 18, fontFamily: fontFor('bold'), letterSpacing: -0.3, marginTop: 8 },
         suggestMonths: { color: c.ink3, fontSize: 11, marginTop: 2 },
         suggestDesc: { color: c.ink2, fontSize: 12, lineHeight: 16, marginTop: 8, marginBottom: 12 },
         suggestBtn: {
             backgroundColor: c.accentSoft,
             paddingVertical: 8, borderRadius: 10, alignItems: 'center',
         },
-        suggestBtnText: { color: c.accent, fontSize: 12, fontWeight: t.weightSemibold },
+        suggestBtnText: { color: c.accent, fontSize: 12, fontFamily: fontFor('semibold') },
 
         goalCard: {
             backgroundColor: c.surface, borderRadius: 16,
@@ -529,10 +529,10 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.accentSoft,
             alignItems: 'center', justifyContent: 'center',
         },
-        goalName: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        goalName: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
         goalSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
-        goalPct: { color: c.ink1, fontSize: 15, fontWeight: t.weightBold, letterSpacing: -0.3 },
-        goalStatus: { fontSize: 10, fontWeight: t.weightSemibold, marginTop: 2, letterSpacing: 0.3 },
+        goalPct: { color: c.ink1, fontSize: 15, fontFamily: fontFor('bold'), letterSpacing: -0.3 },
+        goalStatus: { fontSize: 10, fontFamily: fontFor('semibold'), marginTop: 2, letterSpacing: 0.3 },
 
         progTrack: { height: 6, borderRadius: 999, backgroundColor: c.surfaceAlt, marginTop: 12, overflow: 'hidden' },
         progFill: { height: '100%', borderRadius: 999 },
@@ -540,7 +540,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         goalActions: { flexDirection: 'row', marginTop: 12, gap: 20, alignItems: 'center' },
         goalAction: { paddingVertical: 2 },
         goalActionCoach: { flexDirection: 'row', alignItems: 'center', paddingVertical: 2 },
-        goalActionText: { color: c.ink2, fontSize: 12, fontWeight: t.weightMedium },
+        goalActionText: { color: c.ink2, fontSize: 12, fontFamily: fontFor('medium') },
 
         empty: {
             alignItems: 'center', paddingHorizontal: 24, paddingVertical: 48,
@@ -550,7 +550,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center',
             marginBottom: 16,
         },
-        emptyTitle: { color: c.ink1, fontSize: 20, fontWeight: t.weightBold, letterSpacing: -0.3, textAlign: 'center' },
+        emptyTitle: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), letterSpacing: -0.3, textAlign: 'center' },
         emptyDesc: { color: c.ink2, fontSize: 14, textAlign: 'center', lineHeight: 20, marginTop: 6 },
 
         fab: {
@@ -561,5 +561,5 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             shadowColor: c.shadow, shadowOpacity: 1, shadowRadius: 12, shadowOffset: { width: 0, height: 6 },
             elevation: 8,
         },
-        fabPlus: { color: c.accentInk, fontSize: 28, fontWeight: '300', lineHeight: 30 },
+        fabPlus: { color: c.accentInk, fontSize: 28, fontFamily: fontFor('regular'), lineHeight: 30 },
     });

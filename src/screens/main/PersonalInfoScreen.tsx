@@ -19,7 +19,7 @@ import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { shallowEqual } from 'react-redux';
 import { clearFinancialData } from '../../store/slices/financialDataSlice';
 import { logout } from '../../store/slices/authSlice';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { BackButton } from '../../components';
 
@@ -158,19 +158,19 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
         loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
         scroll: { paddingHorizontal: 20, paddingBottom: 40, gap: 12 },
-        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold, marginTop: 8, paddingHorizontal: 2 },
+        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold'), marginTop: 8, paddingHorizontal: 2 },
         sectionHeadRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
-        editLink: { color: c.accent, fontSize: 13, fontWeight: t.weightMedium },
+        editLink: { color: c.accent, fontSize: 13, fontFamily: fontFor('medium') },
 
         card: { backgroundColor: c.surface, borderRadius: 16, borderWidth: 1, borderColor: c.border, paddingHorizontal: 16 },
         kv: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14 },
         kvKey: { color: c.ink2, fontSize: 13 },
-        kvValue: { color: c.ink1, fontSize: 14, fontWeight: t.weightMedium, maxWidth: '60%' },
-        kvValueMono: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold, fontVariant: ['tabular-nums'] },
+        kvValue: { color: c.ink1, fontSize: 14, fontFamily: fontFor('medium'), maxWidth: '60%' },
+        kvValueMono: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold'), fontVariant: ['tabular-nums'] },
         divider: { height: 1, backgroundColor: c.border },
 
         dangerBtn: {
@@ -178,7 +178,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong,
             alignItems: 'center',
         },
-        dangerText: { color: c.loss, fontSize: 14, fontWeight: t.weightSemibold },
+        dangerText: { color: c.loss, fontSize: 14, fontFamily: fontFor('semibold') },
 
         modalOverlay: {
             flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
@@ -189,11 +189,11 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             paddingVertical: 24, paddingHorizontal: 20, width: '100%',
             borderWidth: 1, borderColor: c.border,
         },
-        modalTitle: { color: c.ink1, fontSize: 18, fontWeight: t.weightBold, marginBottom: 6 },
+        modalTitle: { color: c.ink1, fontSize: 18, fontFamily: fontFor('bold'), marginBottom: 6 },
         modalMessage: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 20 },
         modalButtons: { flexDirection: 'row', gap: 10 },
         modalCancel: { flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong, alignItems: 'center' },
-        modalCancelText: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        modalCancelText: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
         modalConfirm: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: c.loss, alignItems: 'center' },
-        modalConfirmText: { color: '#FFFFFF', fontSize: 14, fontWeight: t.weightSemibold },
+        modalConfirmText: { color: '#FFFFFF', fontSize: 14, fontFamily: fontFor('semibold') },
     });

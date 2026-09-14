@@ -13,7 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { toast } from 'sonner-native';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { BackButton, Icon } from '../../components';
 
@@ -116,7 +116,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
 
         content: { flex: 1, paddingHorizontal: 24, paddingTop: 32, alignItems: 'center' },
         iconWrap: {
@@ -124,7 +124,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center',
             marginBottom: 24,
         },
-        title: { color: c.ink1, fontSize: 24, fontWeight: t.weightBold, letterSpacing: -0.5, textAlign: 'center' },
+        title: { color: c.ink1, fontSize: 24, fontFamily: fontFor('bold'), letterSpacing: -0.5, textAlign: 'center' },
         subtitle: { color: c.ink2, fontSize: 14, lineHeight: 21, textAlign: 'center', marginTop: 8, maxWidth: 320 },
 
         features: { marginTop: 32, width: '100%', gap: 12 },
@@ -137,12 +137,12 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.accent, paddingVertical: 14, borderRadius: 12,
             alignItems: 'center', justifyContent: 'center', minHeight: 52,
         },
-        buttonText: { color: c.accentInk, fontSize: 14, fontWeight: t.weightSemibold },
+        buttonText: { color: c.accentInk, fontSize: 14, fontFamily: fontFor('semibold') },
 
         joinedCard: {
             marginTop: 'auto', marginBottom: 24, width: '100%',
             backgroundColor: c.gainSoft, borderRadius: 12, padding: 16, alignItems: 'center',
         },
-        joinedText: { color: c.gain, fontSize: 15, fontWeight: t.weightSemibold },
+        joinedText: { color: c.gain, fontSize: 15, fontFamily: fontFor('semibold') },
         joinedSub: { color: c.ink2, fontSize: 12, marginTop: 4 },
     });

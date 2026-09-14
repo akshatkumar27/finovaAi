@@ -19,7 +19,7 @@ import { ConfirmationModal, SkeletonLoader, BackButton, Icon, IconName } from '.
 import api from '../../services/api';
 import { formatCompactCurrency } from '../../utils';
 import { useAppSelector } from '../../store/hooks';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
@@ -516,7 +516,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold, flex: 1, textAlign: 'center', marginHorizontal: 10 },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold'), flex: 1, textAlign: 'center', marginHorizontal: 10 },
 
         scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32 },
 
@@ -535,12 +535,12 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         badgeGain: { backgroundColor: c.gainSoft },
         badgeWarn: { backgroundColor: c.warnSoft },
         badgeNeutral: { backgroundColor: c.surfaceAlt },
-        badgeText: { fontSize: 12, fontWeight: t.weightSemibold },
+        badgeText: { fontSize: 12, fontFamily: fontFor('semibold') },
 
-        paymentTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold, marginTop: 2 },
+        paymentTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold'), marginTop: 2 },
         paymentSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
 
-        amountBig: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, letterSpacing: -0.4, fontVariant: ['tabular-nums'] },
+        amountBig: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), letterSpacing: -0.4, fontVariant: ['tabular-nums'] },
         paymentHint: { color: c.ink3, fontSize: 11, marginTop: 4 },
         editIcon: { color: c.ink3, fontSize: 18 },
 
@@ -550,7 +550,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             alignItems: 'center', justifyContent: 'center',
         },
         payBtnDisabled: { backgroundColor: c.surfaceAlt },
-        payBtnText: { color: c.accentInk, fontSize: 13, fontWeight: t.weightSemibold },
+        payBtnText: { color: c.accentInk, fontSize: 13, fontFamily: fontFor('semibold') },
 
         editorRow: {
             flexDirection: 'row', gap: 10, marginTop: 12,
@@ -561,10 +561,10 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.surfaceAlt, borderRadius: 12,
             paddingHorizontal: 14, minHeight: 44,
         },
-        editorSymbol: { color: c.ink1, fontSize: 16, fontWeight: t.weightSemibold, marginRight: 4 },
+        editorSymbol: { color: c.ink1, fontSize: 16, fontFamily: fontFor('semibold'), marginRight: 4 },
         editorField: { flex: 1, color: c.ink1, fontSize: 16, fontVariant: ['tabular-nums'], padding: 0 },
         editorDone: { backgroundColor: c.accent, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10 },
-        editorDoneText: { color: c.accentInk, fontSize: 13, fontWeight: t.weightSemibold },
+        editorDoneText: { color: c.accentInk, fontSize: 13, fontFamily: fontFor('semibold') },
 
         // Progress card
         progressCard: {
@@ -573,23 +573,23 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             marginBottom: 14,
         },
         progressHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-        progressLabel: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
+        progressLabel: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
         progressPct: { backgroundColor: c.accentSoft, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
-        progressPctText: { color: c.accent, fontSize: 12, fontWeight: t.weightSemibold, fontVariant: ['tabular-nums'] },
+        progressPctText: { color: c.accent, fontSize: 12, fontFamily: fontFor('semibold'), fontVariant: ['tabular-nums'] },
         progressTrack: { height: 8, borderRadius: 999, backgroundColor: c.surfaceAlt, overflow: 'hidden' },
         progressFill: { height: '100%', borderRadius: 999, backgroundColor: c.accent },
         progressAmounts: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-        progressSaved: { color: c.ink1, fontSize: 13, fontWeight: t.weightSemibold, fontVariant: ['tabular-nums'] },
+        progressSaved: { color: c.ink1, fontSize: 13, fontFamily: fontFor('semibold'), fontVariant: ['tabular-nums'] },
         progressTarget: { color: c.ink3, fontSize: 12 },
         dividerH: { height: 1, backgroundColor: c.border, marginVertical: 16 },
 
         statsRow: { flexDirection: 'row', flexWrap: 'wrap' },
         statItem: { width: '50%', marginBottom: 12 },
-        statValue: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold, fontVariant: ['tabular-nums'] },
+        statValue: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold'), fontVariant: ['tabular-nums'] },
         statLabel: { color: c.ink3, fontSize: 11, letterSpacing: 0.2, marginTop: 2 },
 
         // History
-        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold, marginTop: 6, marginBottom: 10, paddingHorizontal: 2 },
+        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold'), marginTop: 6, marginBottom: 10, paddingHorizontal: 2 },
         historyCard: {
             flexDirection: 'row', alignItems: 'center', gap: 12,
             backgroundColor: c.surface, borderRadius: 14,
@@ -602,24 +602,24 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         historyTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
         historyBottomRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 },
-        historyMonth: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
-        historyAmount: { color: c.gain, fontSize: 14, fontWeight: t.weightSemibold, fontVariant: ['tabular-nums'] },
+        historyMonth: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
+        historyAmount: { color: c.gain, fontSize: 14, fontFamily: fontFor('semibold'), fontVariant: ['tabular-nums'] },
         historyDate: { color: c.ink3, fontSize: 12 },
-        historyEdit: { color: c.accent, fontSize: 12, fontWeight: t.weightMedium },
+        historyEdit: { color: c.accent, fontSize: 12, fontFamily: fontFor('medium') },
 
         // Modal
         modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
         modalCard: { backgroundColor: c.surface, borderRadius: 20, padding: 20, width: '100%', borderWidth: 1, borderColor: c.border },
-        modalTitle: { color: c.ink1, fontSize: 18, fontWeight: t.weightBold, letterSpacing: -0.3 },
+        modalTitle: { color: c.ink1, fontSize: 18, fontFamily: fontFor('bold'), letterSpacing: -0.3 },
         modalSub: { color: c.ink2, fontSize: 13, marginTop: 4, marginBottom: 16 },
         modalInputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.surfaceAlt, borderRadius: 12, paddingHorizontal: 16, minHeight: 52 },
-        modalSymbol: { color: c.ink1, fontSize: 20, fontWeight: t.weightBold, marginRight: 4 },
-        modalInput: { flex: 1, color: c.ink1, fontSize: 20, fontWeight: t.weightBold, fontVariant: ['tabular-nums'], padding: 0 },
+        modalSymbol: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), marginRight: 4 },
+        modalInput: { flex: 1, color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), fontVariant: ['tabular-nums'], padding: 0 },
         modalErrorText: { color: c.loss, fontSize: 12, marginTop: 8 },
         modalHint: { color: c.ink3, fontSize: 12, marginTop: 8 },
         modalButtons: { flexDirection: 'row', gap: 10, marginTop: 16 },
         modalCancel: { flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong, alignItems: 'center' },
-        modalCancelText: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        modalCancelText: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
         modalConfirm: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: c.accent, alignItems: 'center' },
-        modalConfirmText: { color: c.accentInk, fontSize: 14, fontWeight: t.weightSemibold },
+        modalConfirmText: { color: c.accentInk, fontSize: 14, fontFamily: fontFor('semibold') },
     });

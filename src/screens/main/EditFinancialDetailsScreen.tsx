@@ -19,7 +19,7 @@ import { formatNumberInput } from '../../utils/formatNumber';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { shallowEqual } from 'react-redux';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { BackButton } from '../../components';
 
@@ -207,7 +207,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
 
         scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
 
@@ -216,10 +216,10 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             borderWidth: 1, borderColor: c.border,
             padding: 18, marginBottom: 20,
         },
-        summaryCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
+        summaryCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
         summaryRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 6 },
-        summarySymbol: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, marginRight: 4 },
-        summaryValue: { color: c.ink1, fontSize: 30, fontWeight: t.weightBold, letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
+        summarySymbol: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), marginRight: 4 },
+        summaryValue: { color: c.ink1, fontSize: 30, fontFamily: fontFor('bold'), letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
         summarySub: { color: c.ink3, fontSize: 12, marginLeft: 6 },
         summaryBar: { height: 8, borderRadius: 999, overflow: 'hidden', flexDirection: 'row', marginTop: 14 },
         barSeg: { height: '100%' },
@@ -229,7 +229,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         legendText: { color: c.ink2, fontSize: 12 },
 
         field: { marginBottom: 14 },
-        label: { color: c.ink2, fontSize: 12, fontWeight: t.weightMedium, letterSpacing: 0.4, marginBottom: 6 },
+        label: { color: c.ink2, fontSize: 12, fontFamily: fontFor('medium'), letterSpacing: 0.4, marginBottom: 6 },
         input: {
             flexDirection: 'row', alignItems: 'center',
             backgroundColor: c.surfaceAlt, borderRadius: 12,
@@ -237,9 +237,9 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             borderWidth: 1, borderColor: 'transparent',
         },
         inputError: { borderColor: c.loss, backgroundColor: c.lossSoft },
-        currency: { color: c.ink1, fontSize: 18, fontWeight: t.weightSemibold, marginRight: 4 },
+        currency: { color: c.ink1, fontSize: 18, fontFamily: fontFor('semibold'), marginRight: 4 },
         inputText: {
-            flex: 1, color: c.ink1, fontSize: 18, fontWeight: t.weightSemibold,
+            flex: 1, color: c.ink1, fontSize: 18, fontFamily: fontFor('semibold'),
             fontVariant: ['tabular-nums'], padding: 0,
         },
         errorText: { color: c.loss, fontSize: 12, marginTop: 4 },
@@ -256,5 +256,5 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             alignItems: 'center', justifyContent: 'center', minHeight: 52,
         },
         saveBtnDisabled: { opacity: 0.5 },
-        saveBtnText: { color: c.accentInk, fontSize: 14, fontWeight: t.weightSemibold },
+        saveBtnText: { color: c.accentInk, fontSize: 14, fontFamily: fontFor('semibold') },
     });

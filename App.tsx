@@ -16,6 +16,15 @@ import { login, logout } from './src/store/slices/authSlice';
 import { setCurrency } from './src/store/slices/settingsSlice';
 import { setFinancialProfilePresent, setFinancialData, clearFinancialData } from './src/store/slices/financialDataSlice';
 
+// Default all Text to Inter Regular so unweighted text picks up the bundled font.
+// Weighted styles override via fontFamily = 'Inter-Medium' | 'Inter-SemiBold' | ...
+import { Text as RNText } from 'react-native';
+(RNText as any).defaultProps = (RNText as any).defaultProps || {};
+(RNText as any).defaultProps.style = [
+  { fontFamily: 'Inter-Regular' },
+  ((RNText as any).defaultProps.style || null),
+];
+
 const ThemedStatusBar: React.FC = () => {
   const { isDark, colors } = useTheme();
   return <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.canvas} />;

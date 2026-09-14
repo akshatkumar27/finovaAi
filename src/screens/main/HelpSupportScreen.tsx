@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { BackButton } from '../../components';
 
@@ -100,10 +100,10 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
         scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32 },
         hero: { marginBottom: 16 },
-        heroTitle: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, letterSpacing: -0.4 },
+        heroTitle: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), letterSpacing: -0.4 },
         heroSub: { color: c.ink2, fontSize: 13, marginTop: 4, lineHeight: 18 },
 
         contactRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
@@ -111,11 +111,11 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             flex: 1, backgroundColor: c.surface, borderRadius: 16,
             borderWidth: 1, borderColor: c.border, padding: 14,
         },
-        contactLabel: { color: c.ink3, fontSize: 11, letterSpacing: 1.2, fontWeight: t.weightSemibold },
-        contactValue: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold, marginTop: 4 },
+        contactLabel: { color: c.ink3, fontSize: 11, letterSpacing: 1.2, fontFamily: fontFor('semibold') },
+        contactValue: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold'), marginTop: 4 },
         contactHint: { color: c.ink3, fontSize: 11, marginTop: 2 },
 
-        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold, marginBottom: 8, paddingHorizontal: 2 },
+        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold'), marginBottom: 8, paddingHorizontal: 2 },
         faqCard: {
             backgroundColor: c.surface, borderRadius: 16,
             borderWidth: 1, borderColor: c.border,
@@ -125,7 +125,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
             paddingVertical: 14,
         },
-        faqQuestion: { color: c.ink1, fontSize: 14, fontWeight: t.weightMedium, flex: 1, marginRight: 12 },
+        faqQuestion: { color: c.ink1, fontSize: 14, fontFamily: fontFor('medium'), flex: 1, marginRight: 12 },
         faqIcon: { color: c.ink2, fontSize: 20, width: 22, textAlign: 'center' },
         faqAnswer: { color: c.ink2, fontSize: 13, lineHeight: 20, paddingBottom: 14 },
         faqDivider: { height: 1, backgroundColor: c.border },

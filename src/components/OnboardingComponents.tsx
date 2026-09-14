@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle } from 'react-native';
 import { colors, typography } from '../constants';
+import { fontFor } from '../theme/tokens';
 
 interface SelectOptionProps {
     icon?: string;
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
     counterButtonText: {
         color: colors.textPrimary,
         fontSize: 24,
-        fontWeight: '300',
+        fontFamily: fontFor('regular'),
     },
     counterValue: {
         color: colors.textPrimary,

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } fr
 
 import { useNavigation } from '@react-navigation/native';
 import { useAppSelector } from '../../store/hooks';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { BackButton, Icon, IconName } from '../../components';
 
@@ -103,10 +103,10 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
 
         scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32, gap: 12 },
-        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold, marginTop: 4, marginBottom: 8, paddingHorizontal: 2 },
+        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold'), marginTop: 4, marginBottom: 8, paddingHorizontal: 2 },
 
         card: {
             backgroundColor: c.surface, borderRadius: 16,
@@ -123,11 +123,11 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             width: 36, height: 36, borderRadius: 10,
             alignItems: 'center', justifyContent: 'center',
         },
-        title: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold, marginRight: 16 },
+        title: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold'), marginRight: 16 },
         desc: { color: c.ink2, fontSize: 13, lineHeight: 18, marginTop: 4 },
         time: { color: c.ink3, fontSize: 11, marginTop: 6 },
 
         empty: { paddingVertical: 60, alignItems: 'center' },
-        emptyTitle: { color: c.ink1, fontSize: 18, fontWeight: t.weightBold, letterSpacing: -0.3 },
+        emptyTitle: { color: c.ink1, fontSize: 18, fontFamily: fontFor('bold'), letterSpacing: -0.3 },
         emptyDesc: { color: c.ink2, fontSize: 14, textAlign: 'center', marginTop: 6, lineHeight: 20 },
     });

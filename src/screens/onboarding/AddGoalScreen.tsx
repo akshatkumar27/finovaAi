@@ -22,7 +22,7 @@ import { formatNumberInput, formatCompactNumber } from '../../utils/formatNumber
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { updateUser } from '../../store/slices/authSlice';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 
 const DURATION_OPTIONS = [
@@ -407,7 +407,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
 
         scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24, gap: 4 },
 
@@ -423,11 +423,11 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             padding: 14, marginBottom: 8,
             flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
         },
-        budgetLabel: { color: c.ink3, fontSize: 11, letterSpacing: 1.2, fontWeight: t.weightSemibold },
-        budgetAmount: { color: c.ink1, fontSize: 20, fontWeight: t.weightBold, letterSpacing: -0.4, marginTop: 2, fontVariant: ['tabular-nums'] },
+        budgetLabel: { color: c.ink3, fontSize: 11, letterSpacing: 1.2, fontFamily: fontFor('semibold') },
+        budgetAmount: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), letterSpacing: -0.4, marginTop: 2, fontVariant: ['tabular-nums'] },
         budgetSub: { color: c.ink3, fontSize: 11 },
 
-        inputLabel: { color: c.ink2, fontSize: 12, fontWeight: t.weightMedium, letterSpacing: 0.4, marginTop: 12, marginBottom: 6 },
+        inputLabel: { color: c.ink2, fontSize: 12, fontFamily: fontFor('medium'), letterSpacing: 0.4, marginTop: 12, marginBottom: 6 },
         input: {
             backgroundColor: c.surfaceAlt,
             borderRadius: 12,
@@ -441,9 +441,9 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             borderWidth: 1, borderColor: 'transparent',
         },
         moneyInputAccent: { backgroundColor: c.accentSoft },
-        moneySymbol: { color: c.ink1, fontSize: 20, fontWeight: t.weightBold, marginRight: 4 },
+        moneySymbol: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), marginRight: 4 },
         moneyText: {
-            flex: 1, color: c.ink1, fontSize: 20, fontWeight: t.weightBold,
+            flex: 1, color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'),
             letterSpacing: -0.4, fontVariant: ['tabular-nums'], padding: 0,
         },
 
@@ -453,7 +453,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.surfaceAlt, borderRadius: 999,
         },
         chipActive: { backgroundColor: c.accent },
-        chipText: { color: c.ink2, fontSize: 13, fontWeight: t.weightMedium },
+        chipText: { color: c.ink2, fontSize: 13, fontFamily: fontFor('medium') },
         chipTextActive: { color: c.accentInk },
 
         customInput: {
@@ -477,9 +477,9 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center',
             flexDirection: 'row',
         },
-        dayCircleNum: { color: c.accent, fontSize: 22, fontWeight: t.weightBold, letterSpacing: -0.4, fontVariant: ['tabular-nums'] },
-        dayCircleOrd: { color: c.accent, fontSize: 10, fontWeight: t.weightSemibold, marginTop: -8, marginLeft: 1 },
-        dayPickerVal: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        dayCircleNum: { color: c.accent, fontSize: 22, fontFamily: fontFor('bold'), letterSpacing: -0.4, fontVariant: ['tabular-nums'] },
+        dayCircleOrd: { color: c.accent, fontSize: 10, fontFamily: fontFor('semibold'), marginTop: -8, marginLeft: 1 },
+        dayPickerVal: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
         dayPickerHint: { color: c.ink3, fontSize: 12, marginTop: 2 },
         chevron: { color: c.ink3, fontSize: 22 },
 
@@ -494,26 +494,26 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.surface, borderRadius: 20, padding: 20, width: '100%',
             borderWidth: 1, borderColor: c.border,
         },
-        modalTitle: { color: c.ink1, fontSize: 18, fontWeight: t.weightBold, letterSpacing: -0.3 },
+        modalTitle: { color: c.ink1, fontSize: 18, fontFamily: fontFor('bold'), letterSpacing: -0.3 },
         modalSub: { color: c.ink2, fontSize: 13, marginTop: 4, marginBottom: 16 },
         calNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
         calNavBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
         calNavBtnOff: { opacity: 0.4 },
         calNavArrow: { color: c.ink1, fontSize: 20, lineHeight: 20 },
         calNavArrowOff: { color: c.ink3 },
-        calMonthLabel: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold },
+        calMonthLabel: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
         calWeek: { flexDirection: 'row', marginBottom: 6 },
-        calWeekDay: { flex: 1, color: c.ink3, fontSize: 11, fontWeight: t.weightSemibold, textAlign: 'center', letterSpacing: 0.4 },
+        calWeekDay: { flex: 1, color: c.ink3, fontSize: 11, fontFamily: fontFor('semibold'), textAlign: 'center', letterSpacing: 0.4 },
         calCell: { flex: 1, alignItems: 'center', paddingVertical: 4 },
         calDay: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
         calDaySelected: { backgroundColor: c.accent },
         calDayDisabled: { opacity: 0.3 },
         calDayText: { color: c.ink1, fontSize: 14, fontVariant: ['tabular-nums'] },
-        calDayTextSelected: { color: c.accentInk, fontWeight: t.weightSemibold },
+        calDayTextSelected: { color: c.accentInk, fontFamily: fontFor('semibold') },
         calDayTextDisabled: { color: c.ink3 },
         modalClose: {
             marginTop: 16, alignItems: 'center', paddingVertical: 12,
             borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong,
         },
-        modalCloseText: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        modalCloseText: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
     });

@@ -17,7 +17,7 @@ import { api } from '../../services';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import { RootState } from '../../store';
 import { updateUser } from '../../store/slices/authSlice';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 
 interface Insight {
@@ -168,9 +168,9 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        stepCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
+        stepCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
         scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
-        title: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, letterSpacing: -0.4 },
+        title: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), letterSpacing: -0.4 },
         helper: { color: c.ink2, fontSize: 13, marginTop: 6, lineHeight: 18, marginBottom: 16 },
 
         loadingWrap: { alignItems: 'center', paddingTop: 40, gap: 12 },
@@ -189,7 +189,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             width: 36, height: 36, borderRadius: 10,
             backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center',
         },
-        cardTitle: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        cardTitle: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
         cardSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
         check: {
             width: 22, height: 22, borderRadius: 11,
@@ -197,9 +197,9 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             alignItems: 'center', justifyContent: 'center',
         },
         checkOn: { borderColor: c.accent, backgroundColor: c.accent },
-        checkTick: { color: c.accentInk, fontSize: 12, fontWeight: '700' },
+        checkTick: { color: c.accentInk, fontSize: 12, fontFamily: fontFor('bold') },
 
-        cardAmount: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, letterSpacing: -0.4, marginTop: 12, fontVariant: ['tabular-nums'] },
+        cardAmount: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), letterSpacing: -0.4, marginTop: 12, fontVariant: ['tabular-nums'] },
         cardDesc: { color: c.ink2, fontSize: 13, lineHeight: 18, marginTop: 6 },
 
         emptyCard: {

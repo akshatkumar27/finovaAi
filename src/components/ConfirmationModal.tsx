@@ -9,7 +9,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { Icon, IconName } from './Icon';
-import { useTheme } from '../theme';
+import { useTheme, fontFor } from '../theme';
 import { Palette } from '../theme/palette';
 
 interface ConfirmationModalProps {
@@ -127,7 +127,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         title: {
             color: c.ink1,
             fontSize: 18,
-            fontWeight: t.weightBold,
+            fontFamily: fontFor('bold'),
             letterSpacing: -0.3,
             marginBottom: 6,
         },
@@ -151,7 +151,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         cancelText: {
             color: c.ink1,
             fontSize: 14,
-            fontWeight: t.weightSemibold,
+            fontFamily: fontFor('semibold'),
         },
         confirmBtn: {
             flex: 1,
@@ -163,6 +163,6 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         confirmText: {
             fontSize: 14,
-            fontWeight: t.weightSemibold,
+            fontFamily: fontFor('semibold'),
         },
     });

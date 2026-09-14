@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { BackButton } from '../../components';
 
@@ -54,11 +54,11 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
         scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32 },
         intro: { color: c.ink2, fontSize: 15, lineHeight: 22, marginBottom: 20 },
         section: { marginBottom: 20 },
-        sectionTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold, marginBottom: 6 },
+        sectionTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold'), marginBottom: 6 },
         sectionBody: { color: c.ink2, fontSize: 14, lineHeight: 21 },
         footer: { color: c.ink3, fontSize: 12, textAlign: 'center', marginTop: 12 },
     });

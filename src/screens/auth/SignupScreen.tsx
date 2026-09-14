@@ -16,7 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Input, Button, BackButton } from '../../components';
 import { API_BASE_URL } from '../../constants';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 
 type SignupScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Signup'>;
@@ -146,13 +146,13 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
         mark: { width: 44, height: 44, borderRadius: 12, backgroundColor: c.ink1, alignItems: 'center', justifyContent: 'center', marginTop: 20 },
-        markText: { color: c.canvas, fontWeight: t.weightBold, fontSize: 15, letterSpacing: -0.4 },
-        title: { color: c.ink1, fontSize: 26, fontWeight: t.weightBold, letterSpacing: -0.5, marginTop: 24, marginBottom: 6 },
+        markText: { color: c.canvas, fontFamily: fontFor('bold'), fontSize: 15, letterSpacing: -0.4 },
+        title: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginTop: 24, marginBottom: 6 },
         subtitle: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 24 },
         footer: { marginTop: 'auto', paddingTop: 12, gap: 10 },
         legal: { color: c.ink3, fontSize: 12, lineHeight: 18 },
-        legalLink: { color: c.accent, fontWeight: t.weightMedium },
+        legalLink: { color: c.accent, fontFamily: fontFor('medium') },
         altLink: { alignItems: 'center', marginTop: 4 },
         altText: { color: c.ink3, fontSize: 13 },
-        altAccent: { color: c.accent, fontWeight: t.weightMedium },
+        altAccent: { color: c.accent, fontFamily: fontFor('medium') },
     });

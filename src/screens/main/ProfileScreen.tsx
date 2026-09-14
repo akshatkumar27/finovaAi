@@ -17,7 +17,7 @@ import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { clearFinancialData } from '../../store/slices/financialDataSlice';
 import { logout } from '../../store/slices/authSlice';
-import { useTheme, ThemeMode } from '../../theme';
+import { useTheme, ThemeMode, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { Icon } from '../../components';
 
@@ -165,7 +165,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
             paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6,
         },
-        headerTitle: { color: c.ink1, fontSize: 15, fontWeight: t.weightSemibold, letterSpacing: -0.2 },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold'), letterSpacing: -0.2 },
         content: { paddingHorizontal: 20, paddingBottom: 40, gap: 12 },
 
         profileCard: {
@@ -181,13 +181,13 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.accent,
             alignItems: 'center', justifyContent: 'center',
         },
-        avatarText: { color: c.accentInk, fontSize: 24, fontWeight: t.weightBold, letterSpacing: -0.4 },
-        userName: { color: c.ink1, fontSize: 16, fontWeight: t.weightSemibold, marginTop: 10 },
+        avatarText: { color: c.accentInk, fontSize: 24, fontFamily: fontFor('bold'), letterSpacing: -0.4 },
+        userName: { color: c.ink1, fontSize: 16, fontFamily: fontFor('semibold'), marginTop: 10 },
         userEmail: { color: c.ink3, fontSize: 12, marginTop: 2 },
 
         sectionHead: {
             color: c.ink3,
-            fontSize: 11, fontWeight: t.weightSemibold, letterSpacing: 1.2,
+            fontSize: 11, fontFamily: fontFor('semibold'), letterSpacing: 1.2,
             marginTop: 12, marginBottom: -4, paddingHorizontal: 4,
         },
 
@@ -205,7 +205,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             flexDirection: 'row', alignItems: 'center',
             paddingVertical: 12,
         },
-        rowTitle: { color: c.ink1, fontSize: 14, fontWeight: t.weightMedium },
+        rowTitle: { color: c.ink1, fontSize: 14, fontFamily: fontFor('medium') },
         rowSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
         rowIconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
         divider: { height: 1, backgroundColor: c.border },
@@ -217,7 +217,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         segBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
         segBtnActive: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.border },
-        segBtnText: { color: c.ink2, fontSize: 12, fontWeight: t.weightMedium },
+        segBtnText: { color: c.ink2, fontSize: 12, fontFamily: fontFor('medium') },
         segBtnTextActive: { color: c.ink1 },
 
         signOut: {
@@ -227,7 +227,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             borderWidth: 1, borderColor: c.borderStrong,
             alignItems: 'center',
         },
-        signOutText: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        signOutText: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
 
         version: { color: c.ink3, fontSize: 11, textAlign: 'center', marginTop: 24 },
 
@@ -241,11 +241,11 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             width: '100%',
             borderWidth: 1, borderColor: c.border,
         },
-        modalTitle: { color: c.ink1, fontSize: 18, fontWeight: t.weightBold, marginBottom: 6 },
+        modalTitle: { color: c.ink1, fontSize: 18, fontFamily: fontFor('bold'), marginBottom: 6 },
         modalMessage: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 20 },
         modalButtons: { flexDirection: 'row', gap: 10 },
         modalCancel: { flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong, alignItems: 'center' },
-        modalCancelText: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        modalCancelText: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
         modalConfirm: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: c.loss, alignItems: 'center' },
-        modalConfirmText: { color: '#FFFFFF', fontSize: 14, fontWeight: t.weightSemibold },
+        modalConfirmText: { color: '#FFFFFF', fontSize: 14, fontFamily: fontFor('semibold') },
     });

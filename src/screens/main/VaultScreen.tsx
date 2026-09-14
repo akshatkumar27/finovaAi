@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import { useAppSelector } from '../../store/hooks';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { Icon, IconName } from '../../components';
 
@@ -151,12 +151,12 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
             paddingHorizontal: 20, paddingTop: 8, paddingBottom: 6,
         },
-        dateCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
-        greeting: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, letterSpacing: -0.4, marginTop: 2 },
+        dateCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
+        greeting: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), letterSpacing: -0.4, marginTop: 2 },
         seg: { flexDirection: 'row', backgroundColor: c.surfaceAlt, borderRadius: 10, padding: 3 },
         segBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
         segBtnActive: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.border },
-        segText: { color: c.ink2, fontSize: 12, fontWeight: t.weightMedium },
+        segText: { color: c.ink2, fontSize: 12, fontFamily: fontFor('medium') },
         segTextActive: { color: c.ink1 },
 
         scroll: { paddingHorizontal: 20, paddingBottom: 40, gap: 14 },
@@ -166,36 +166,36 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.surface, borderRadius: 20,
             borderWidth: 1, borderColor: c.border, padding: 18,
         },
-        heroCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
+        heroCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
         amountRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 6 },
-        heroSymbol: { color: c.ink1, fontSize: 24, fontWeight: t.weightBold, marginRight: 4 },
-        heroValue: { color: c.ink1, fontSize: 32, fontWeight: t.weightBold, letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
+        heroSymbol: { color: c.ink1, fontSize: 24, fontFamily: fontFor('bold'), marginRight: 4 },
+        heroValue: { color: c.ink1, fontSize: 32, fontFamily: fontFor('bold'), letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
         heroFooter: {
             flexDirection: 'row', alignItems: 'center',
             marginTop: 16, paddingTop: 14,
             borderTopWidth: 1, borderTopColor: c.border,
         },
-        footerCap: { color: c.ink3, fontSize: 10, letterSpacing: 1.2, fontWeight: t.weightSemibold },
-        footerVal: { color: c.ink1, fontSize: 16, fontWeight: t.weightSemibold, marginTop: 2, fontVariant: ['tabular-nums'] },
+        footerCap: { color: c.ink3, fontSize: 10, letterSpacing: 1.2, fontFamily: fontFor('semibold') },
+        footerVal: { color: c.ink1, fontSize: 16, fontFamily: fontFor('semibold'), marginTop: 2, fontVariant: ['tabular-nums'] },
         heroDivider: { width: 1, height: 30, backgroundColor: c.border, marginHorizontal: 16 },
 
         sectionHeadRow: {
             flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
             marginTop: 8, marginBottom: 8, paddingHorizontal: 2,
         },
-        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
+        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
         pill: {
             color: c.ink2, backgroundColor: c.surfaceAlt,
             fontSize: 11, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, overflow: 'hidden',
         },
-        spendTotal: { color: c.ink1, fontSize: 14, fontWeight: t.weightBold, fontVariant: ['tabular-nums'] },
+        spendTotal: { color: c.ink1, fontSize: 14, fontFamily: fontFor('bold'), fontVariant: ['tabular-nums'] },
 
         card: { backgroundColor: c.surface, borderRadius: 16, borderWidth: 1, borderColor: c.border, paddingHorizontal: 14, paddingVertical: 6 },
         acctRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
         acctIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-        acctName: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold },
+        acctName: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
         acctSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
-        acctAmt: { color: c.ink1, fontSize: 14, fontWeight: t.weightSemibold, fontVariant: ['tabular-nums'] },
+        acctAmt: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold'), fontVariant: ['tabular-nums'] },
         divider: { height: 1, backgroundColor: c.border },
 
         spendBar: { height: 8, borderRadius: 999, overflow: 'hidden', flexDirection: 'row', marginTop: 8, marginBottom: 12 },
@@ -204,11 +204,11 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         legendRow: { flexDirection: 'row', alignItems: 'center' },
         legendDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
         legendLabel: { color: c.ink2, fontSize: 13, flex: 1 },
-        legendVal: { color: c.ink1, fontSize: 13, fontWeight: t.weightSemibold, fontVariant: ['tabular-nums'] },
+        legendVal: { color: c.ink1, fontSize: 13, fontFamily: fontFor('semibold'), fontVariant: ['tabular-nums'] },
 
         addBtn: {
             marginTop: 4, backgroundColor: c.accentSoft,
             paddingVertical: 14, borderRadius: 12, alignItems: 'center',
         },
-        addBtnText: { color: c.accent, fontSize: 14, fontWeight: t.weightSemibold },
+        addBtnText: { color: c.accent, fontSize: 14, fontFamily: fontFor('semibold') },
     });

@@ -17,7 +17,7 @@ import { API_BASE_URL } from '../../constants';
 import { api } from '../../services';
 import { notificationService } from '../../services/NotificationService';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { useDispatch } from 'react-redux';
 import { login } from '../../store/slices/authSlice';
@@ -174,17 +174,17 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
         content: { flex: 1, paddingHorizontal: 24, paddingTop: 20 },
-        title: { color: c.ink1, fontSize: 26, fontWeight: t.weightBold, letterSpacing: -0.5, marginBottom: 8 },
+        title: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginBottom: 8 },
         subtitle: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 24 },
-        strong: { color: c.ink1, fontWeight: t.weightSemibold },
+        strong: { color: c.ink1, fontFamily: fontFor('semibold') },
         otpWrap: { marginTop: 8 },
         resendRow: {
             flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
             marginTop: 20,
         },
         resendText: { color: c.ink3, fontSize: 13 },
-        timer: { color: c.ink1, fontVariant: ['tabular-nums'], fontWeight: t.weightSemibold },
-        link: { color: c.accent, fontSize: 13, fontWeight: t.weightMedium },
+        timer: { color: c.ink1, fontVariant: ['tabular-nums'], fontFamily: fontFor('semibold') },
+        link: { color: c.accent, fontSize: 13, fontFamily: fontFor('medium') },
         linkDisabled: { color: c.ink3 },
         footer: { paddingHorizontal: 24, paddingBottom: 24 },
     });

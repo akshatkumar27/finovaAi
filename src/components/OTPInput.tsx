@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
-import { useTheme } from '../theme';
+import { useTheme, fontFor } from '../theme';
 import { Palette } from '../theme/palette';
 
 interface OTPInputProps {
@@ -68,7 +68,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         digit: {
             color: c.ink1,
             fontSize: 22,
-            fontWeight: t.weightBold,
+            fontFamily: fontFor('bold'),
             letterSpacing: -0.5,
         },
         hidden: { position: 'absolute', opacity: 0, height: 0, width: 0 },

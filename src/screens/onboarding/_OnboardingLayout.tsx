@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Button, BackButton } from '../../components';
-import { useTheme } from '../../theme';
+import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { useAppSelector } from '../../store/hooks';
 
@@ -159,12 +159,12 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
-        stepCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontWeight: t.weightSemibold },
+        stepCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
         skipBtn: { paddingVertical: 6, paddingHorizontal: 6 },
-        skipText: { color: c.accent, fontSize: 13, fontWeight: t.weightMedium },
+        skipText: { color: c.accent, fontSize: 13, fontFamily: fontFor('medium') },
 
         scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
-        title: { color: c.ink1, fontSize: 22, fontWeight: t.weightBold, letterSpacing: -0.4 },
+        title: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), letterSpacing: -0.4 },
         helper: { color: c.ink2, fontSize: 13, marginTop: 6, lineHeight: 18 },
 
         heroCard: {
@@ -175,13 +175,13 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             paddingVertical: 20, paddingHorizontal: 16,
             alignItems: 'center',
         },
-        heroCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.2, fontWeight: t.weightSemibold },
+        heroCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.2, fontFamily: fontFor('semibold') },
         amountRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 6 },
-        heroSymbol: { color: c.ink1, fontSize: 26, fontWeight: t.weightBold, letterSpacing: -0.5, marginRight: 4 },
+        heroSymbol: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginRight: 4 },
         heroInput: {
             color: c.ink1,
             fontSize: 36,
-            fontWeight: t.weightBold,
+            fontFamily: fontFor('bold'),
             letterSpacing: -1,
             minWidth: 60,
             padding: 0,
@@ -203,7 +203,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             borderRadius: 999,
         },
         chipActive: { backgroundColor: c.accent },
-        chipText: { color: c.ink2, fontSize: 13, fontWeight: t.weightMedium, fontVariant: ['tabular-nums'] },
+        chipText: { color: c.ink2, fontSize: 13, fontFamily: fontFor('medium'), fontVariant: ['tabular-nums'] },
         chipTextActive: { color: c.accentInk },
 
         footer: { paddingHorizontal: 20, paddingBottom: 20, gap: 10 },
