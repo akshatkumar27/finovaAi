@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StatusBar, View, ActivityIndicator, StyleSheet } from 'react-native';
+import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootNavigator } from './src/navigation';
-import { Logo } from './src/components';
+import { SplashScreen } from './src/components';
 import { notificationService } from './src/services/NotificationService';
 import { api } from './src/services';
 import { Provider, useDispatch, useSelector } from 'react-redux';
@@ -30,18 +30,6 @@ const ThemedStatusBar: React.FC = () => {
   return <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.canvas} />;
 };
 
-const SplashScreen: React.FC = () => {
-  const { isDark, colors } = useTheme();
-  return (
-    <View style={[styles.loadingContainer, { backgroundColor: colors.canvas }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.canvas} />
-      <View style={styles.splashContent}>
-        <Logo size="large" />
-        <ActivityIndicator size="small" color={colors.accent} style={styles.splashSpinner} />
-      </View>
-    </View>
-  );
-};
 const AppContent: React.FC = () => {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
@@ -227,18 +215,5 @@ function App(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-  },
-  splashContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  splashSpinner: {
-    marginTop: 24,
-  },
-});
 
 export default App;

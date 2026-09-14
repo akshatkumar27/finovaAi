@@ -16,3 +16,4 @@ export { MascotLoader } from './MascotLoader';
 
 
 export * from './Header';
+export { SplashScreen } from './SplashScreen';
