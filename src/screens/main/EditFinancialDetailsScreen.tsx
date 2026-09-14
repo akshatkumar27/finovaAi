@@ -17,6 +17,7 @@ import Toast from 'react-native-toast-message';
 import { api } from '../../services/api';
 import { formatNumberInput } from '../../utils/formatNumber';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { shallowEqual } from 'react-redux';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
@@ -29,7 +30,7 @@ export const EditFinancialDetailsScreen: React.FC = () => {
     const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
     const { colors, typography } = useTheme();
     const dispatch = useAppDispatch();
-    const financialData = useAppSelector((state) => state.financialData);
+    const financialData = useAppSelector((state) => state.financialData, shallowEqual);
 
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 

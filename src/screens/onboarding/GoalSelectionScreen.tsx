@@ -14,7 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, BackButton, Icon } from '../../components';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import { api } from '../../services';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import { RootState } from '../../store';
 import { updateUser } from '../../store/slices/authSlice';
 import { useTheme } from '../../theme';
@@ -42,7 +42,7 @@ export const GoalSelectionScreen: React.FC = () => {
     const dispatch = useDispatch();
     const navigation = useNavigation<NavigationProp>();
     const currencySymbol = useSelector((state: RootState) => state.settings.appCurrency);
-    const { monthlyIncome, monthlyExpenses, monthlyEmi, emiOutstanding, monthlyInvestment } = useSelector((state: RootState) => state.financialData);
+    const { monthlyIncome, monthlyExpenses, monthlyEmi, emiOutstanding, monthlyInvestment } = useSelector((state: RootState) => state.financialData, shallowEqual);
     const { colors, typography } = useTheme();
     const [selectedGoal, setSelectedGoal] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(true);

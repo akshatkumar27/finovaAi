@@ -6,7 +6,7 @@ import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import { api } from '../../services';
 import { formatNumberInput } from '../../utils/formatNumber';
 import { OnboardingAmountScreen } from './_OnboardingLayout';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import { RootState } from '../../store';
 import { setFinancialData, setFinancialProfilePresent } from '../../store/slices/financialDataSlice';
 import { updateUser } from '../../store/slices/authSlice';
@@ -19,7 +19,7 @@ export const MonthlyInvestmentScreen: React.FC = () => {
     const dispatch = useDispatch();
     const navigation = useNavigation<NavigationProp>();
     const currencySymbol = useSelector((state: RootState) => state.settings.appCurrency);
-    const { monthlyIncome, monthlyExpenses, monthlyEmi, emiOutstanding } = useSelector((state: RootState) => state.financialData);
+    const { monthlyIncome, monthlyExpenses, monthlyEmi, emiOutstanding } = useSelector((state: RootState) => state.financialData, shallowEqual);
     const [amount, setAmount] = useState('');
     const [saving, setSaving] = useState(false);
     const available = monthlyIncome - monthlyExpenses - monthlyEmi;

@@ -19,6 +19,7 @@ import Toast from 'react-native-toast-message';
 import { api } from '../../services';
 import { formatCompactNumber } from '../../utils/formatNumber';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { shallowEqual } from 'react-redux';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
 import { useTheme } from '../../theme';
 import { Palette } from '../../theme/palette';
@@ -107,7 +108,7 @@ const Ring: React.FC<{
 export const GoalPulseScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
     const dispatch = useAppDispatch();
-    const financialData = useAppSelector(state => state.financialData);
+    const financialData = useAppSelector(state => state.financialData, shallowEqual);
     const { colors, typography } = useTheme();
     const currencySymbol = useAppSelector(state => state.settings.appCurrency);
 

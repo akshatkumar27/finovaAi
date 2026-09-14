@@ -16,6 +16,7 @@ import { formatCurrency } from '../../utils';
 import { api } from '../../services/api';
 import { notificationService } from '../../services/NotificationService';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { shallowEqual } from 'react-redux';
 import { clearFinancialData } from '../../store/slices/financialDataSlice';
 import { logout } from '../../store/slices/authSlice';
 import { useTheme } from '../../theme';
@@ -32,7 +33,7 @@ export const PersonalInfoScreen: React.FC = () => {
     const user = useAppSelector((state) => state.auth.user) || {};
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const financialData = useAppSelector((state) => state.financialData);
+    const financialData = useAppSelector((state) => state.financialData, shallowEqual);
 
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
