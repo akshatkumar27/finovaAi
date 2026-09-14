@@ -40,7 +40,7 @@ export const HelpSupportScreen: React.FC = () => {
     };
 
     const openChat = () => Linking.openURL('https://wa.me/919569937537?text=Hello%20Finova%20AI%20Support');
-    const openEmail = () => Linking.openURL('mailto:help@finova.app');
+    const openEmail = () => Linking.openURL('mailto:finovaai.official@gmail.com');
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -64,7 +64,7 @@ export const HelpSupportScreen: React.FC = () => {
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.contactCard} onPress={openEmail} activeOpacity={0.85}>
                         <Text style={styles.contactLabel}>Email</Text>
-                        <Text style={styles.contactValue}>help@finova.app</Text>
+                        <Text style={styles.contactValue}>finovaai.official@gmail.com</Text>
                         <Text style={styles.contactHint}>~1 day reply</Text>
                     </TouchableOpacity>
                 </View>
