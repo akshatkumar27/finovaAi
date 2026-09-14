@@ -1,5 +1,7 @@
 # ios-setup
 
+> **Requires Xcode locally.** If you do NOT have Xcode installed on this Mac, use `ios-eas-build` instead — it drives EAS Build (Expo's cloud-mac service) and never needs a local Xcode.
+
 Companion to `ios-readiness`. Takes the app from "never built on iOS" → first successful simulator run + submittable state.
 
 ## Design principles
