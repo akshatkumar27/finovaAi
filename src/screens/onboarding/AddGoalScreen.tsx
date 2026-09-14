@@ -11,7 +11,7 @@ import {
     Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import { api } from '../../services';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -147,11 +147,11 @@ export const AddGoalScreen: React.FC = () => {
     };
 
     const handleSaveGoal = async () => {
-        if (!name.trim()) { Toast.show({ type: 'error', text1: 'Missing name', text2: 'Give this goal a name.' }); return; }
-        if (!target.trim() || targetAmount <= 0) { Toast.show({ type: 'error', text1: 'Missing target', text2: 'Enter a target amount.' }); return; }
-        if (achieveInMonths <= 0) { Toast.show({ type: 'error', text1: 'Invalid duration', text2: 'Enter how long you\'ll save for.' }); return; }
+        if (!name.trim()) { toast.error('Missing name', { description: 'Give this goal a name.' }); return; }
+        if (!target.trim() || targetAmount <= 0) { toast.error('Missing target', { description: 'Enter a target amount.' }); return; }
+        if (achieveInMonths <= 0) { toast.error('Invalid duration', { description: 'Enter how long you\'ll save for.' }); return; }
         if (exceedsBudget) {
-            Toast.show({ type: 'error', text1: 'Too high', text2: `Can't exceed ${formatCompactCurrency(availableForNewGoals ?? 0, currencySymbol)}/mo available.` });
+            toast.error('Too high', { description: `Can't exceed ${formatCompactCurrency(availableForNewGoals ?? 0, currencySymbol)}/mo available.` });
             return;
         }
 
@@ -181,7 +181,7 @@ export const AddGoalScreen: React.FC = () => {
             navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
         } catch (error) {
             console.error('Save goal error:', error);
-            Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to save your goal.' });
+            toast.error('Error', { description: 'Failed to save your goal.' });
         } finally { setIsLoading(false); }
     };
 

@@ -15,5 +15,4 @@ export { ConfirmationModal } from './ConfirmationModal';
 export { MascotLoader } from './MascotLoader';
 
 
-export { toastConfig } from './CustomToast';
 export * from './Header';

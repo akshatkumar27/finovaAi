@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
@@ -24,11 +24,11 @@ export const MonthlyExpensesScreen: React.FC = () => {
 
     const handleContinue = () => {
         if (!amount.trim() || value <= 0) {
-            Toast.show({ type: 'error', text1: 'Invalid input', text2: 'Enter an amount greater than 0.' });
+            toast.error('Invalid input', { description: 'Enter an amount greater than 0.' });
             return;
         }
         if (exceedsIncome) {
-            Toast.show({ type: 'error', text1: 'Too high', text2: `Expenses can't exceed your income (${currencySymbol}${monthlyIncome.toLocaleString()}).` });
+            toast.error('Too high', { description: `Expenses can't exceed your income (${currencySymbol}${monthlyIncome.toLocaleString()}).` });
             return;
         }
         dispatch(setFinancialData({ monthlyExpenses: value }));

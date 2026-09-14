@@ -9,7 +9,7 @@ import {
     ScrollView,
     TouchableOpacity,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import axios from 'axios';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -56,7 +56,7 @@ export const LoginScreen: React.FC = () => {
 
     const handleContinue = async () => {
         if (!validateEmail(email)) {
-            Toast.show({ type: 'error', text1: 'Invalid Email', text2: emailError || 'Please enter a valid email address.' });
+            toast.error('Invalid Email', { description: emailError || 'Please enter a valid email address.' });
             return;
         }
         setLoading(true);
@@ -67,9 +67,9 @@ export const LoginScreen: React.FC = () => {
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 const errorMessage = error.response?.data?.message || 'Failed to send OTP. Please try again.';
-                Toast.show({ type: 'error', text1: 'Error', text2: errorMessage });
+                toast.error('Error', { description: errorMessage });
             } else {
-                Toast.show({ type: 'error', text1: 'Error', text2: 'Something went wrong. Please try again.' });
+                toast.error('Error', { description: 'Something went wrong. Please try again.' });
             }
         } finally {
             setLoading(false);

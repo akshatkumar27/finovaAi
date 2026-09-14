@@ -8,7 +8,7 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -93,9 +93,9 @@ export const OTPVerificationScreen: React.FC = () => {
         } catch (error) {
             setOtp('');
             if (axios.isAxiosError(error)) {
-                Toast.show({ type: 'error', text1: 'Invalid code', text2: error.response?.data?.message || 'Try again.' });
+                toast.error('Invalid code', { description: error.response?.data?.message || 'Try again.' });
             } else {
-                Toast.show({ type: 'error', text1: 'Error', text2: 'Something went wrong.' });
+                toast.error('Error', { description: 'Something went wrong.' });
             }
         } finally { setLoading(false); }
     };
@@ -107,12 +107,12 @@ export const OTPVerificationScreen: React.FC = () => {
             const response = await axios.post(`${API_BASE_URL}/api/auth/send-otp`, { email });
             setOtpToken(response.data.otpToken);
             setTimer(54);
-            Toast.show({ type: 'success', text1: 'Sent', text2: 'A new code is on the way.' });
+            toast.success('Sent', { description: 'A new code is on the way.' });
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                Toast.show({ type: 'error', text1: 'Error', text2: error.response?.data?.message || 'Failed to resend.' });
+                toast.error('Error', { description: error.response?.data?.message || 'Failed to resend.' });
             } else {
-                Toast.show({ type: 'error', text1: 'Error', text2: 'Something went wrong.' });
+                toast.error('Error', { description: 'Something went wrong.' });
             }
         } finally { setResending(false); }
     };

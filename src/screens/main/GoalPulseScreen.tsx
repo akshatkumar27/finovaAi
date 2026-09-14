@@ -15,7 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { MascotLoader, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import { api } from '../../services';
 import { formatCompactNumber } from '../../utils/formatNumber';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -426,11 +426,7 @@ export const GoalPulseScreen: React.FC = () => {
                     if (availableBudget > 0) {
                         navigation.navigate('AddGoal', { availableForNewGoals: availableBudget });
                     } else {
-                        Toast.show({
-                            type: 'error',
-                            text1: 'No budget available',
-                            text2: 'No room in your budget to create a new goal.',
-                        });
+                        toast.error('No budget available', { description: 'No room in your budget to create a new goal.' });
                     }
                 }}
             >

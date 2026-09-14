@@ -11,7 +11,7 @@ import {
     DeviceEventEmitter,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
@@ -258,7 +258,7 @@ export const ContributionsScreen: React.FC = () => {
     };
 
     const handleSaveContribution = () => {
-        if (!paymentEnabled) { Toast.show({ type: 'error', text1: 'Not due yet', text2: 'This contribution isn\'t due yet.' }); return; }
+        if (!paymentEnabled) { toast.error('Not due yet', { description: 'This contribution isn\'t due yet.' }); return; }
         if (isSaving) return;
         setModalState({
             visible: true, type: 'warning', title: 'Confirm payment',

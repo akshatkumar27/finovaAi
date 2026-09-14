@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
@@ -25,11 +25,11 @@ export const MonthlyEMIScreen: React.FC = () => {
 
     const handleContinue = () => {
         if (amount.trim() === '') {
-            Toast.show({ type: 'error', text1: 'Fill this in', text2: 'Enter your EMI (0 is fine).' });
+            toast.error('Fill this in', { description: 'Enter your EMI (0 is fine).' });
             return;
         }
         if (exceeds) {
-            Toast.show({ type: 'error', text1: 'Too high', text2: `EMI can't exceed available (${currencySymbol}${available.toLocaleString()}).` });
+            toast.error('Too high', { description: `EMI can't exceed available (${currencySymbol}${available.toLocaleString()}).` });
             return;
         }
         dispatch(setFinancialData({ monthlyEmi: value }));

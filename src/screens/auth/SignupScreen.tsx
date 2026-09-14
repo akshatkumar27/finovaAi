@@ -9,7 +9,7 @@ import {
     ScrollView,
     TouchableOpacity,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import axios from 'axios';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -58,12 +58,12 @@ export const SignupScreen: React.FC = () => {
 
     const handleContinue = async () => {
         if (!email.trim() || !fullName.trim() || !age.trim()) {
-            Toast.show({ type: 'error', text1: 'Incomplete', text2: 'Please fill out both fields.' });
+            toast.error('Incomplete', { description: 'Please fill out both fields.' });
             return;
         }
         const ok = validateEmail(email) && validateFullName(fullName) && validateAge(age);
         if (!ok) {
-            Toast.show({ type: 'error', text1: 'Invalid input', text2: 'Please fix the errors and try again.' });
+            toast.error('Invalid input', { description: 'Please fix the errors and try again.' });
             return;
         }
         setLoading(true);
@@ -77,9 +77,9 @@ export const SignupScreen: React.FC = () => {
             });
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                Toast.show({ type: 'error', text1: 'Error', text2: error.response?.data?.message || 'Failed to send code.' });
+                toast.error('Error', { description: error.response?.data?.message || 'Failed to send code.' });
             } else {
-                Toast.show({ type: 'error', text1: 'Error', text2: 'Something went wrong.' });
+                toast.error('Error', { description: 'Something went wrong.' });
             }
         } finally { setLoading(false); }
     };

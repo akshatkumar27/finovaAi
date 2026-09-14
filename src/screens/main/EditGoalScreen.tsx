@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import { Button, BackButton, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
@@ -246,7 +246,7 @@ export const EditGoalScreen: React.FC = () => {
         if (contributionAmount <= 0) { setMonthlyContributionError('Enter a valid amount.'); ok = false; }
         else if (contributionAmount > targetAmount) { setMonthlyContributionError('Contribution exceeds target.'); ok = false; }
         if (netChange > availableForNewGoals) {
-            Toast.show({ type: 'error', text1: 'Budget exceeded', text2: `Only ${currencySymbol}${availableForNewGoals.toLocaleString()} available for increases.` });
+            toast.error('Budget exceeded', { description: `Only ${currencySymbol}${availableForNewGoals.toLocaleString()} available for increases.` });
             ok = false;
         }
         if (!ok) return;
@@ -269,14 +269,14 @@ export const EditGoalScreen: React.FC = () => {
             const response = await api.put(`/api/goals/${goalId}`, payload);
             if (response.data.success) {
                 DeviceEventEmitter.emit('refreshGoals');
-                Toast.show({ type: 'success', text1: 'Saved', text2: 'Goal updated.' });
+                toast.success('Saved', { description: 'Goal updated.' });
                 navigation.goBack();
             } else {
-                Toast.show({ type: 'error', text1: 'Update failed', text2: 'Try again.' });
+                toast.error('Update failed', { description: 'Try again.' });
             }
         } catch (error) {
             console.error('Error updating goal:', error);
-            Toast.show({ type: 'error', text1: 'Error', text2: 'Something went wrong.' });
+            toast.error('Error', { description: 'Something went wrong.' });
         } finally { setIsLoading(false); }
     };
 
@@ -288,14 +288,14 @@ export const EditGoalScreen: React.FC = () => {
             if (response.data.success) {
                 DeviceEventEmitter.emit('refreshGoals');
                 setShowDeleteModal(false);
-                Toast.show({ type: 'success', text1: 'Deleted', text2: 'Goal removed.' });
+                toast.success('Deleted', { description: 'Goal removed.' });
                 navigation.goBack();
             } else {
-                Toast.show({ type: 'error', text1: 'Delete failed', text2: 'Try again.' });
+                toast.error('Delete failed', { description: 'Try again.' });
             }
         } catch (error) {
             console.error('Error deleting goal:', error);
-            Toast.show({ type: 'error', text1: 'Error', text2: 'Something went wrong.' });
+            toast.error('Error', { description: 'Something went wrong.' });
         } finally { setIsDeleting(false); }
     };
 

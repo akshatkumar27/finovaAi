@@ -9,7 +9,7 @@ import {
     Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { formatCurrency } from '../../utils';
@@ -49,12 +49,12 @@ export const PersonalInfoScreen: React.FC = () => {
             dispatch(clearFinancialData());
             dispatch(logout());
             setDeleteModalVisible(false);
-            Toast.show({ type: 'success', text1: 'Account deleted', text2: 'Your account is gone.' });
+            toast.success('Account deleted', { description: 'Your account is gone.' });
         } catch (error) {
             console.error('Error deleting account:', error);
             setIsDeleting(false);
             setDeleteModalVisible(false);
-            Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to delete. Please try again.' });
+            toast.error('Error', { description: 'Failed to delete. Please try again.' });
         }
     };
 

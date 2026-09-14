@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
@@ -28,11 +28,11 @@ export const MonthlyInvestmentScreen: React.FC = () => {
 
     const handleComplete = async () => {
         if (amount.trim() === '') {
-            Toast.show({ type: 'error', text1: 'Fill this in', text2: 'Enter a monthly amount (0 is fine).' });
+            toast.error('Fill this in', { description: 'Enter a monthly amount (0 is fine).' });
             return;
         }
         if (exceeds) {
-            Toast.show({ type: 'error', text1: 'Too high', text2: `Can't exceed available (${currencySymbol}${available.toLocaleString()}).` });
+            toast.error('Too high', { description: `Can't exceed available (${currencySymbol}${available.toLocaleString()}).` });
             return;
         }
         setSaving(true);
@@ -54,7 +54,7 @@ export const MonthlyInvestmentScreen: React.FC = () => {
             navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
         } catch (error) {
             console.error('Onboarding submit error:', error);
-            Toast.show({ type: 'error', text1: 'Error', text2: 'Something went wrong. Please try again.' });
+            toast.error('Error', { description: 'Something went wrong. Please try again.' });
         } finally { setSaving(false); }
     };
 

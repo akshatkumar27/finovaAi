@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
@@ -21,7 +21,7 @@ export const EMIOutstandingScreen: React.FC = () => {
 
     const handleContinue = () => {
         if (amount.trim() === '') {
-            Toast.show({ type: 'error', text1: 'Fill this in', text2: 'Enter your outstanding EMI (0 is fine).' });
+            toast.error('Fill this in', { description: 'Enter your outstanding EMI (0 is fine).' });
             return;
         }
         dispatch(setFinancialData({ emiOutstanding: value }));

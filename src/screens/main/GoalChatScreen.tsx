@@ -10,7 +10,7 @@ import {
 
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
 import { useTheme } from '../../theme';
@@ -39,16 +39,16 @@ export const GoalChatScreen: React.FC = () => {
             const response = await api.post('/api/waitlist/join', { feature: 'ai_goals' });
             if (response.data.success) {
                 setJoined(true);
-                Toast.show({ type: 'success', text1: 'You\'re on the list', text2: 'We\'ll ping you when AI Coach opens.' });
+                toast.success('You\'re on the list', { description: 'We\'ll ping you when AI Coach opens.' });
             } else {
-                Toast.show({ type: 'error', text1: 'Try again', text2: response.data.message || 'Something went wrong.' });
+                toast.error('Try again', { description: response.data.message || 'Something went wrong.' });
             }
         } catch (error: any) {
             if (error.response?.status === 409) {
                 setJoined(true);
-                Toast.show({ type: 'info', text1: 'Already joined', text2: 'You\'re already on the waitlist.' });
+                toast('Already joined', { description: 'You\'re already on the waitlist.' });
             } else {
-                Toast.show({ type: 'error', text1: 'Connection error', text2: 'Check your internet and try again.' });
+                toast.error('Connection error', { description: 'Check your internet and try again.' });
             }
         } finally { setIsLoading(false); }
     };

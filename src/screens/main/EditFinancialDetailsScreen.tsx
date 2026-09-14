@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import { api } from '../../services/api';
 import { formatNumberInput } from '../../utils/formatNumber';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -83,8 +83,8 @@ export const EditFinancialDetailsScreen: React.FC = () => {
     };
 
     const handleSave = async () => {
-        if (!hasChanges) { Toast.show({ type: 'info', text1: 'No changes', text2: 'Nothing to save yet.' }); return; }
-        if (!isValid) { Toast.show({ type: 'error', text1: 'Fix errors', text2: 'Some fields need attention.' }); return; }
+        if (!hasChanges) { toast('No changes', { description: 'Nothing to save yet.' }); return; }
+        if (!isValid) { toast.error('Fix errors', { description: 'Some fields need attention.' }); return; }
 
         setIsSaving(true);
         try {
@@ -101,11 +101,11 @@ export const EditFinancialDetailsScreen: React.FC = () => {
             dispatch(setFinancialData({
                 monthlyIncome: income, monthlyExpenses: expenses, monthlyEmi: emi, emiOutstanding: outstanding, monthlyInvestment: investment,
             }));
-            Toast.show({ type: 'success', text1: 'Saved', text2: 'Your financial details are updated.' });
+            toast.success('Saved', { description: 'Your financial details are updated.' });
             navigation.goBack();
         } catch (error) {
             console.error('Error updating financials:', error);
-            Toast.show({ type: 'error', text1: 'Sync failed', text2: 'Local saved; server sync will retry.' });
+            toast.error('Sync failed', { description: 'Local saved; server sync will retry.' });
             navigation.goBack();
         } finally {
             setIsSaving(false);

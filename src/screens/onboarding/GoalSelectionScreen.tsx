@@ -8,7 +8,7 @@ import {
     ActivityIndicator,
     TouchableOpacity,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, BackButton, Icon } from '../../components';
@@ -67,7 +67,7 @@ export const GoalSelectionScreen: React.FC = () => {
             if (res.data.success && res.data.insights) setInsights(res.data.insights);
         } catch (error) {
             console.error('Insights API error:', error);
-            Toast.show({ type: 'info', text1: 'Heads up', text2: 'Couldn\'t load personalized suggestions.' });
+            toast('Heads up', { description: 'Couldn\'t load personalized suggestions.' });
         } finally { setIsLoading(false); }
     };
 
@@ -88,7 +88,7 @@ export const GoalSelectionScreen: React.FC = () => {
             navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
         } catch (error) {
             console.error('Save goal error:', error);
-            Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to save your goal.' });
+            toast.error('Error', { description: 'Failed to save your goal.' });
             setIsSaving(false);
         }
     };

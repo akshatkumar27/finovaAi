@@ -3,13 +3,15 @@ import { StatusBar, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootNavigator } from './src/navigation';
-import Toast from 'react-native-toast-message';
-import { toastConfig, Logo } from './src/components';
+import { Logo } from './src/components';
 import { notificationService } from './src/services/NotificationService';
 import { api } from './src/services';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store, RootState } from './src/store';
 import { ThemeProvider, useTheme } from './src/theme';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Toaster } from 'sonner-native';
 import { login, logout } from './src/store/slices/authSlice';
 import { setCurrency } from './src/store/slices/settingsSlice';
 import { setFinancialProfilePresent, setFinancialData, clearFinancialData } from './src/store/slices/financialDataSlice';
@@ -197,18 +199,22 @@ const AppContent: React.FC = () => {
         initialRouteName={initialRoute}
         initialParams={initialParams}
       />
-      <Toast config={toastConfig} position="bottom" bottomOffset={40} visibilityTime={4000} />
+      <Toaster position="bottom-center" />
     </NavigationContainer>
   );
 };
 
 function App(): React.JSX.Element {
   return (
-    <Provider store={store}>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
-    </Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <ThemeProvider>
+          <SafeAreaProvider>
+            <AppContent />
+          </SafeAreaProvider>
+        </ThemeProvider>
+      </Provider>
+    </GestureHandlerRootView>
   );
 }
 
