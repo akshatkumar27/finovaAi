@@ -117,7 +117,8 @@ export const EditFinancialDetailsScreen: React.FC = () => {
     const expenses = asNum(form.monthly_expenses);
     const emi = asNum(form.monthly_emi);
     const investment = asNum(form.monthly_investment);
-    const free = Math.max(0, income - expenses - emi - investment);
+    const available = Math.max(0, income - expenses - emi);
+    const unassigned = Math.max(0, available - investment);
 
     const fields: { key: FieldKey; label: string }[] = [
         { key: 'monthly_income', label: 'MONTHLY INCOME' },
@@ -139,24 +140,28 @@ export const EditFinancialDetailsScreen: React.FC = () => {
                 <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
                     {income > 0 && (
                         <View style={styles.summary}>
-                            <Text style={styles.summaryCap}>FREE AFTER COMMITMENTS</Text>
+                            <Text style={styles.summaryCap}>AVAILABLE TO ALLOCATE</Text>
                             <View style={styles.summaryRow}>
                                 <Text style={styles.summarySymbol}>{currencySymbol}</Text>
-                                <Text style={styles.summaryValue}>{free.toLocaleString('en-IN')}</Text>
+                                <Text style={styles.summaryValue}>{available.toLocaleString('en-IN')}</Text>
                                 <Text style={styles.summarySub}>/month</Text>
                             </View>
                             <View style={styles.summaryBar}>
                                 {expenses > 0 && <View style={[styles.barSeg, { flex: expenses, backgroundColor: colors.loss }]} />}
                                 {emi > 0 && <View style={[styles.barSeg, { flex: emi, backgroundColor: colors.warn }]} />}
-                                {investment > 0 && <View style={[styles.barSeg, { flex: investment, backgroundColor: colors.accent }]} />}
-                                {free > 0 && <View style={[styles.barSeg, { flex: free, backgroundColor: colors.gain }]} />}
+                                {available > 0 && <View style={[styles.barSeg, { flex: available, backgroundColor: colors.gain }]} />}
                             </View>
                             <View style={styles.legendRow}>
                                 <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.loss }]} /><Text style={styles.legendText}>Expenses</Text></View>
                                 <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.warn }]} /><Text style={styles.legendText}>EMI</Text></View>
-                                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.accent }]} /><Text style={styles.legendText}>Invest</Text></View>
-                                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.gain }]} /><Text style={styles.legendText}>Free</Text></View>
+                                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.gain }]} /><Text style={styles.legendText}>Available</Text></View>
                             </View>
+                            {available > 0 && (investment > 0 || unassigned > 0) && (
+                                <Text style={styles.summarySplit}>
+                                    {investment > 0 ? `${currencySymbol}${investment.toLocaleString('en-IN')} to investment · ` : ''}
+                                    {`${currencySymbol}${unassigned.toLocaleString('en-IN')} unassigned`}
+                                </Text>
+                            )}
                         </View>
                     )}
 
@@ -221,6 +226,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         summarySymbol: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), marginRight: 4, includeFontPadding: false, },
         summaryValue: { color: c.ink1, fontSize: 30, fontFamily: fontFor('bold'), letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
         summarySub: { color: c.ink3, fontSize: 12, marginLeft: 6 },
+        summarySplit: { color: c.ink3, fontSize: 12, marginTop: 10, letterSpacing: 0.1 },
         summaryBar: { height: 8, borderRadius: 999, overflow: 'hidden', flexDirection: 'row', marginTop: 14 },
         barSeg: { height: '100%' },
         legendRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 12 },
