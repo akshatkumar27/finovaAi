@@ -83,7 +83,7 @@ export const LoginScreen: React.FC = () => {
                 <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
                     <View style={styles.mark}>
                         <Image
-                            source={require('../../asset/logo-white.png')}
+                            source={require('../../asset/logo-white-tight.png')}
                             style={styles.markInner}
                             resizeMode="contain"
                         />
@@ -126,7 +126,7 @@ const makeStyles = (c: ReturnType<typeof useTheme>['colors'], t: ReturnType<type
         flex: { flex: 1 },
         scroll: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 32, paddingBottom: 24 },
         mark: { width: 44, height: 44, borderRadius: 12, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
-        markInner: { width: 28, height: 28 },
+        markInner: { width: 32, height: 32 },
         title: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginTop: 28, marginBottom: 6 },
         subtitle: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 24 },
         footer: { marginTop: 'auto' },
