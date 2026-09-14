@@ -18,6 +18,19 @@ const ThemedStatusBar: React.FC = () => {
   const { isDark, colors } = useTheme();
   return <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.canvas} />;
 };
+
+const SplashScreen: React.FC = () => {
+  const { isDark, colors } = useTheme();
+  return (
+    <View style={[styles.loadingContainer, { backgroundColor: colors.canvas }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.canvas} />
+      <View style={styles.splashContent}>
+        <Logo size="large" />
+        <ActivityIndicator size="small" color={colors.accent} style={styles.splashSpinner} />
+      </View>
+    </View>
+  );
+};
 const AppContent: React.FC = () => {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
@@ -172,15 +185,7 @@ const AppContent: React.FC = () => {
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <StatusBar barStyle="light-content" backgroundColor="#0a0a14" />
-        <View style={styles.splashContent}>
-          <Logo size="large" />
-          <ActivityIndicator size="small" color="#1192e9ff" style={styles.splashSpinner} />
-        </View>
-      </View>
-    );
+    return <SplashScreen />;
   }
 
   return (
@@ -210,7 +215,6 @@ function App(): React.JSX.Element {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0a0a14',
   },
   splashContent: {
     flex: 1,

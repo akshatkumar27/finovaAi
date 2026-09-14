@@ -51,6 +51,7 @@ export const ProfileScreen: React.FC = () => {
         try { await AsyncStorage.clear(); } catch (e) { console.error(e); }
         dispatch(clearFinancialData());
         dispatch(logout());
+    };
 
     const initials = (() => {
         if (!userName) return 'U';
