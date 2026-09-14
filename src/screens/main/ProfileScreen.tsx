@@ -50,7 +50,7 @@ export const ProfileScreen: React.FC = () => {
         }
         try { await AsyncStorage.clear(); } catch (e) { console.error(e); }
         dispatch(clearFinancialData());
-        dispatch(logout());
+        dispatch(logout({ targetScreen: 'Login' }));
     };
 
     const initials = (() => {

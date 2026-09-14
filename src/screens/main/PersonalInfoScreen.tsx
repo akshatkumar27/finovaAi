@@ -47,7 +47,7 @@ export const PersonalInfoScreen: React.FC = () => {
             await api.post('/api/user/delete');
             await AsyncStorage.clear();
             dispatch(clearFinancialData());
-            dispatch(logout());
+            dispatch(logout({ targetScreen: 'Signup' }));
             setDeleteModalVisible(false);
             toast.success('Account deleted', { description: 'Your account is gone.' });
         } catch (error) {
