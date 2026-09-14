@@ -116,8 +116,8 @@ const makeStyles = (c: Palette) =>
             paddingHorizontal: 24,
         },
         mark: {
-            width: 96,
-            height: 96,
+            width: 80,
+            height: 80,
             marginBottom: 20,
         },
         wordmark: {

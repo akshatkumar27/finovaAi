@@ -126,7 +126,7 @@ const makeStyles = (c: ReturnType<typeof useTheme>['colors'], t: ReturnType<type
         flex: { flex: 1 },
         scroll: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 32, paddingBottom: 24 },
         mark: { width: 36, height: 36, borderRadius: 10, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
-        markInner: { width: 24, height: 24 },
+        markInner: { width: 20, height: 20 },
         title: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginTop: 28, marginBottom: 6 },
         subtitle: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 24 },
         footer: { marginTop: 'auto' },

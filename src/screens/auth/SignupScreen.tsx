@@ -150,7 +150,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
         backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
         mark: { width: 36, height: 36, borderRadius: 10, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', marginTop: 20 },
-        markInner: { width: 24, height: 24 },
+        markInner: { width: 20, height: 20 },
         title: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginTop: 24, marginBottom: 6 },
         subtitle: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 24 },
         footer: { marginTop: 'auto', paddingTop: 12, gap: 10 },
