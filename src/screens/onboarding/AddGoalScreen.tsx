@@ -441,7 +441,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             borderWidth: 1, borderColor: 'transparent',
         },
         moneyInputAccent: { backgroundColor: c.accentSoft },
-        moneySymbol: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), marginRight: 4 },
+        moneySymbol: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), marginRight: 4, includeFontPadding: false, },
         moneyText: {
             flex: 1, color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'),
             letterSpacing: -0.4, fontVariant: ['tabular-nums'], padding: 0,
@@ -461,7 +461,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             backgroundColor: c.surfaceAlt, borderRadius: 12, paddingHorizontal: 16,
             minHeight: 48, marginTop: 8,
         },
-        customField: { flex: 1, color: c.ink1, fontSize: 15, padding: 0, fontVariant: ['tabular-nums'] },
+        customField: { flex: 1, color: c.ink1, fontSize: 15, padding: 0, fontVariant: ['tabular-nums'], includeFontPadding: false, textAlignVertical: 'center', },
         customLabel: { color: c.ink3, fontSize: 13 },
 
         errorBanner: { marginTop: 8, backgroundColor: c.lossSoft, borderRadius: 10, padding: 10 },

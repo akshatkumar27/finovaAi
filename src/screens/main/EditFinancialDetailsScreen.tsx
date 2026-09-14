@@ -218,7 +218,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         summaryCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
         summaryRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 6 },
-        summarySymbol: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), marginRight: 4 },
+        summarySymbol: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), marginRight: 4, includeFontPadding: false, },
         summaryValue: { color: c.ink1, fontSize: 30, fontFamily: fontFor('bold'), letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
         summarySub: { color: c.ink3, fontSize: 12, marginLeft: 6 },
         summaryBar: { height: 8, borderRadius: 999, overflow: 'hidden', flexDirection: 'row', marginTop: 14 },
@@ -237,7 +237,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             borderWidth: 1, borderColor: 'transparent',
         },
         inputError: { borderColor: c.loss, backgroundColor: c.lossSoft },
-        currency: { color: c.ink1, fontSize: 18, fontFamily: fontFor('semibold'), marginRight: 4 },
+        currency: { color: c.ink1, fontSize: 18, fontFamily: fontFor('semibold'), marginRight: 4, includeFontPadding: false, },
         inputText: {
             flex: 1, color: c.ink1, fontSize: 18, fontFamily: fontFor('semibold'),
             fontVariant: ['tabular-nums'], padding: 0,

@@ -177,7 +177,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         },
         heroCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.2, fontFamily: fontFor('semibold') },
         amountRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 6 },
-        heroSymbol: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginRight: 4 },
+        heroSymbol: { color: c.ink1, fontSize: 36, fontFamily: fontFor('bold'), letterSpacing: -1, marginRight: 4, includeFontPadding: false },
         heroInput: {
             color: c.ink1,
             fontSize: 36,
@@ -186,6 +186,8 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             minWidth: 60,
             padding: 0,
             fontVariant: ['tabular-nums'],
+            includeFontPadding: false,
+            textAlignVertical: 'center',
         },
 
         errorBanner: {

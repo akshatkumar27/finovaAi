@@ -562,7 +562,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
             paddingHorizontal: 14, minHeight: 44,
         },
         editorSymbol: { color: c.ink1, fontSize: 16, fontFamily: fontFor('semibold'), marginRight: 4 },
-        editorField: { flex: 1, color: c.ink1, fontSize: 16, fontVariant: ['tabular-nums'], padding: 0 },
+        editorField: { flex: 1, color: c.ink1, fontSize: 16, fontVariant: ['tabular-nums'], padding: 0, includeFontPadding: false, textAlignVertical: 'center', },
         editorDone: { backgroundColor: c.accent, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10 },
         editorDoneText: { color: c.accentInk, fontSize: 13, fontFamily: fontFor('semibold') },
 
@@ -613,7 +613,7 @@ const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
         modalTitle: { color: c.ink1, fontSize: 18, fontFamily: fontFor('bold'), letterSpacing: -0.3 },
         modalSub: { color: c.ink2, fontSize: 13, marginTop: 4, marginBottom: 16 },
         modalInputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.surfaceAlt, borderRadius: 12, paddingHorizontal: 16, minHeight: 52 },
-        modalSymbol: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), marginRight: 4 },
+        modalSymbol: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), marginRight: 4, includeFontPadding: false, },
         modalInput: { flex: 1, color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), fontVariant: ['tabular-nums'], padding: 0 },
         modalErrorText: { color: c.loss, fontSize: 12, marginTop: 8 },
         modalHint: { color: c.ink3, fontSize: 12, marginTop: 8 },
