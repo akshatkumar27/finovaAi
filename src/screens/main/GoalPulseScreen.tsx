@@ -227,9 +227,9 @@ export const GoalPulseScreen: React.FC = () => {
                     <Text style={styles.greeting}>Your goals.</Text>
                 </View>
                 <View style={styles.headerActions}>
-                    <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.7}>
+                    {/* <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.7}>
                         <Icon name="bell" color="ink2" />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Profile')} activeOpacity={0.7}>
                         <Icon name="user" color="ink2" />
                     </TouchableOpacity>
