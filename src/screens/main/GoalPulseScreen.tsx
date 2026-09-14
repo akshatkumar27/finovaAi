@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { MascotLoader, Icon } from '../../components';
+import { Loader, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { toast } from 'sonner-native';
 import { api } from '../../services';
@@ -238,7 +238,7 @@ export const GoalPulseScreen: React.FC = () => {
 
             {isLoading || refreshing ? (
                 <View style={styles.loaderWrap}>
-                    <MascotLoader size={140} />
+                    <Loader size={80} />
                 </View>
             ) : (
                 <ScrollView

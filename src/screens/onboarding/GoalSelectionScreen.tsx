@@ -11,7 +11,7 @@ import {
 import { toast } from 'sonner-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, BackButton, Icon } from '../../components';
+import { Button, BackButton, Icon, Loader } from '../../components';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import { api } from '../../services';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
@@ -107,7 +107,7 @@ export const GoalSelectionScreen: React.FC = () => {
 
                 {isLoading ? (
                     <View style={styles.loadingWrap}>
-                        <ActivityIndicator size="large" color={colors.accent} />
+                        <Loader size={64} />
                         <Text style={styles.loadingText}>Analyzing your finances…</Text>
                     </View>
                 ) : (
