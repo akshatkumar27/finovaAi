@@ -127,7 +127,7 @@ export const OTPVerificationScreen: React.FC = () => {
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
                 <View style={styles.header}>
-                    <BackButton onPress={() => navigation.goBack()} />
+                    <BackButton onPress={loading ? () => {} : () => navigation.goBack()} />
                 </View>
 
                 <View style={styles.content}>
@@ -150,9 +150,9 @@ export const OTPVerificationScreen: React.FC = () => {
                         </Text>
                         <TouchableOpacity 
                             onPress={timer > 0 ? () => navigation.goBack() : handleResend} 
-                            disabled={resending}
+                            disabled={resending || loading}
                         >
-                            <Text style={[styles.link, resending && styles.linkDisabled]}>
+                            <Text style={[styles.link, (resending || loading) && styles.linkDisabled]}>
                                 {timer > 0 ? 'Change email' : 'Resend code'}
                             </Text>
                         </TouchableOpacity>
