@@ -57,15 +57,7 @@ export type MainStackParamList = {
     PrivacySecurity: undefined;
     HelpSupport: undefined;
     NotificationSettings: undefined;
-    EditFinancialDetails: {
-        onboardingData: {
-            monthly_income?: number;
-            monthly_expenses?: number;
-            monthly_emi?: number;
-            emi_outstanding?: number;
-            monthly_investment?: number;
-        };
-    };
+    EditFinancialDetails: undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();

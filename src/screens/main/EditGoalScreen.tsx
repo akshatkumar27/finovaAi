@@ -1,9 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    StatusBar,
     TouchableOpacity,
     TextInput,
     KeyboardAvoidingView,
@@ -14,118 +13,103 @@ import {
     DeviceEventEmitter,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
+
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Toast from 'react-native-toast-message';
-import { colors, typography, spacing } from '../../constants';
-import { Header, Button, AnimatedMascot } from '../../components';
+import { toast } from 'sonner-native';
+import { Button, BackButton, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
 import { formatNumberInput } from '../../utils/formatNumber';
-import { formatCurrency } from '../../utils';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useAppSelector } from '../../store/hooks';
+import { useTheme, fontFor } from '../../theme';
+import { Palette } from '../../theme/palette';
 
-// Time duration options in months
 const DURATION_OPTIONS = [
-    { label: '6 months', value: 6 },
-    { label: '1 year', value: 12 },
-    { label: '2 years', value: 24 },
-    { label: '3 years', value: 36 },
-    { label: '5 years', value: 60 },
+    { label: '6 mo', value: 6 },
+    { label: '1 yr', value: 12 },
+    { label: '2 yr', value: 24 },
+    { label: '3 yr', value: 36 },
+    { label: '5 yr', value: 60 },
 ];
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const ordinal = (d: number) => (d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th');
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 type EditGoalRouteProp = RouteProp<MainStackParamList, 'EditGoal'>;
 
+const sanitize = (val: number | string | undefined, fallback: string) => {
+    if (val === undefined || val === null) return fallback;
+    const num = typeof val === 'string' ? parseFloat(val) : val;
+    return formatNumberInput(Math.round(num).toString());
+};
+
 export const EditGoalScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
     const route = useRoute<EditGoalRouteProp>();
-    const { currencySymbol } = useCurrency();
-    console.log("-->", route.params)
-    // Initialize state
-    const [name, setName] = useState(route.params?.name || 'Emergency fund');
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
+    const { colors, typography } = useTheme();
 
-    // Helper to sanitize initial numeric values
-    const sanitizeInitialValue = (val: number | string | undefined, fallback: string) => {
-        if (val === undefined || val === null) return fallback;
-        const num = typeof val === 'string' ? parseFloat(val) : val;
-        // Round to nearest integer and format
-        return formatNumberInput(Math.round(num).toString());
-    };
-
-    const [target, setTarget] = useState(sanitizeInitialValue(route.params?.target, '5000'));
-    const [selectedDuration, setSelectedDuration] = useState<number | 'custom'>('custom');
-    const [customMonths, setCustomMonths] = useState(route.params?.achieveIn?.toString() || '24');
-    const [monthlyContribution, setMonthlyContribution] = useState(
-        sanitizeInitialValue(route.params?.monthlyContribution, '500')
-    );
-    const [isLoading, setIsLoading] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [targetError, setTargetError] = useState<string | null>(null);
-    const [monthlyContributionError, setMonthlyContributionError] = useState<string | null>(null);
-    const [isContributionManuallyEdited, setIsContributionManuallyEdited] = useState(false);
-    const [contributionDay, setContributionDay] = useState(() => {
-        const dateStr = route.params?.contributionDay;
-        if (dateStr) {
-            const day = new Date(dateStr).getDate();
-            return isNaN(day) ? new Date().getDate() : day;
-        }
-        return new Date().getDate();
-    });
-    const [selectedMonth, setSelectedMonth] = useState(() => {
-        const dateStr = route.params?.contributionDay;
-        if (dateStr) {
-            const m = new Date(dateStr).getMonth();
-            return isNaN(m) ? new Date().getMonth() : m;
-        }
-        return new Date().getMonth();
-    });
-    const [selectedYear, setSelectedYear] = useState(() => {
-        const dateStr = route.params?.contributionDay;
-        if (dateStr) {
-            const y = new Date(dateStr).getFullYear();
-            return isNaN(y) ? new Date().getFullYear() : y;
-        }
-        return new Date().getFullYear();
-    });
-    const [calendarVisible, setCalendarVisible] = useState(false);
-    const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
-    const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
     const goalId = route.params?.goalId;
     const savedAmount = route.params?.savedAmount || 0;
     const availableForNewGoals = route.params?.availableForNewGoals || 0;
     const initialMonthlyContribution = parseFloat(route.params?.monthlyContribution?.toString() || '0');
 
-    // Store initial values to detect changes
+    const [name, setName] = useState(route.params?.name || 'Emergency fund');
+    const [target, setTarget] = useState(sanitize(route.params?.target, '5000'));
+    const [selectedDuration, setSelectedDuration] = useState<number | 'custom'>('custom');
+    const [customMonths, setCustomMonths] = useState(route.params?.achieveIn?.toString() || '24');
+    const [monthlyContribution, setMonthlyContribution] = useState(sanitize(route.params?.monthlyContribution, '500'));
+    const [isLoading, setIsLoading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [targetError, setTargetError] = useState<string | null>(null);
+    const [monthlyContributionError, setMonthlyContributionError] = useState<string | null>(null);
+    const [isContributionManuallyEdited, setIsContributionManuallyEdited] = useState(false);
+
+    const [contributionDay, setContributionDay] = useState(() => {
+        const s = route.params?.contributionDay;
+        if (!s) return new Date().getDate();
+        const d = new Date(s).getDate();
+        return isNaN(d) ? new Date().getDate() : d;
+    });
+    const [selectedMonth, setSelectedMonth] = useState(() => {
+        const s = route.params?.contributionDay;
+        if (!s) return new Date().getMonth();
+        const m = new Date(s).getMonth();
+        return isNaN(m) ? new Date().getMonth() : m;
+    });
+    const [selectedYear, setSelectedYear] = useState(() => {
+        const s = route.params?.contributionDay;
+        if (!s) return new Date().getFullYear();
+        const y = new Date(s).getFullYear();
+        return isNaN(y) ? new Date().getFullYear() : y;
+    });
+    const [calendarVisible, setCalendarVisible] = useState(false);
+    const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
+    const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+
     const initialName = useRef(route.params?.name || 'Emergency fund');
-    const initialTarget = useRef(sanitizeInitialValue(route.params?.target, '5000'));
-    const initialContribution = useRef(sanitizeInitialValue(route.params?.monthlyContribution, '500'));
+    const initialTarget = useRef(sanitize(route.params?.target, '5000'));
+    const initialContribution = useRef(sanitize(route.params?.monthlyContribution, '500'));
     const initialAchieveIn = useRef(parseInt(route.params?.achieveIn?.toString() || '0'));
     const initialContributionDay = useRef((() => {
-        const dateStr = route.params?.contributionDay;
-        if (dateStr) {
-            const day = new Date(dateStr).getDate();
-            return isNaN(day) ? 1 : day;
-        }
-        return 1;
+        const s = route.params?.contributionDay;
+        if (!s) return 1;
+        const d = new Date(s).getDate();
+        return isNaN(d) ? 1 : d;
     })());
 
-    // Derived achieveInMonths
-    const achieveInMonths = selectedDuration === 'custom'
-        ? (parseInt(customMonths) || 0)
-        : selectedDuration;
-
+    const achieveInMonths = selectedDuration === 'custom' ? (parseInt(customMonths) || 0) : selectedDuration;
     const targetAmount = parseInt(target.replace(/,/g, '')) || 0;
     const contributionAmount = parseInt(monthlyContribution.replace(/,/g, '')) || 0;
-
-    // Derived state for budget check
     const netChange = contributionAmount - initialMonthlyContribution;
     const isBudgetExceeded = netChange > availableForNewGoals;
 
-    // Has anything actually changed from the initial values?
     const hasChanges =
         name !== initialName.current ||
         target !== initialTarget.current ||
@@ -135,140 +119,80 @@ export const EditGoalScreen: React.FC = () => {
 
     const isSaveDisabled = isLoading || !!targetError || !!monthlyContributionError || isBudgetExceeded || !hasChanges;
 
-    // Load initial duration selection
-    React.useEffect(() => {
+    useEffect(() => {
         const initialMonths = parseInt(route.params?.achieveIn?.toString() || '0');
         if (initialMonths > 0) {
-            const matchedOption = DURATION_OPTIONS.find(opt => opt.value === initialMonths);
-            if (matchedOption) {
-                setSelectedDuration(matchedOption.value);
-                setCustomMonths('');
-            } else {
-                setSelectedDuration('custom');
-                setCustomMonths(initialMonths.toString());
-            }
+            const matched = DURATION_OPTIONS.find((o) => o.value === initialMonths);
+            if (matched) { setSelectedDuration(matched.value); setCustomMonths(''); }
+            else { setSelectedDuration('custom'); setCustomMonths(initialMonths.toString()); }
         }
     }, [route.params?.achieveIn]);
 
-    // Auto-calculate monthly contribution when target or duration changes
-    React.useEffect(() => {
+    useEffect(() => {
         if (!isContributionManuallyEdited && targetAmount > 0 && achieveInMonths > 0) {
-            const calculated = Math.ceil(targetAmount / achieveInMonths);
-            setMonthlyContribution(formatNumberInput(calculated.toString()));
-
-            // Clear errors if auto-calculated
+            const calc = Math.ceil(targetAmount / achieveInMonths);
+            setMonthlyContribution(formatNumberInput(calc.toString()));
             if (monthlyContributionError) setMonthlyContributionError(null);
         }
     }, [targetAmount, achieveInMonths, isContributionManuallyEdited]);
-
 
     const handleTargetChange = (text: string) => {
         const formatted = formatNumberInput(text);
         setTarget(formatted);
         const newTarget = parseInt(formatted.replace(/,/g, '')) || 0;
-
-        // Target validation
         if (newTarget > 0 && newTarget < savedAmount) {
-            setTargetError(`Target amount cannot be less than saved amount (£${savedAmount})`);
-        } else {
-            setTargetError(null);
-        }
-
-        // Re-validate monthly contribution against new target
+            setTargetError(`Target can't be less than saved (${currencySymbol}${savedAmount.toLocaleString()}).`);
+        } else { setTargetError(null); }
         if (newTarget > 0 && contributionAmount > newTarget) {
-            setMonthlyContributionError('Monthly contribution cannot exceed target amount');
-        } else if (monthlyContributionError === 'Monthly contribution cannot exceed target amount') {
+            setMonthlyContributionError('Contribution exceeds target.');
+        } else if (monthlyContributionError === 'Contribution exceeds target.') {
             setMonthlyContributionError(null);
         }
     };
 
-    const handleDurationSelect = (value: number) => {
-        setSelectedDuration(value);
-        setCustomMonths('');
-        setIsContributionManuallyEdited(false);
-    };
-
-    const handleCustomSelect = () => {
-        setSelectedDuration('custom');
-        setIsContributionManuallyEdited(false);
-    };
-
-    const handleCustomMonthsChange = (value: string) => {
-        setCustomMonths(value);
-        setIsContributionManuallyEdited(false);
-    };
-
-    const handleMonthlyContributionChange = (text: string) => {
+    const handleContributionChange = (text: string) => {
         const formatted = formatNumberInput(text);
         setMonthlyContribution(formatted);
         setIsContributionManuallyEdited(true);
-
         const newMonthly = parseInt(formatted.replace(/,/g, '')) || 0;
-
-        // Validation: Max limit
         if (targetAmount > 0 && newMonthly > targetAmount) {
-            setMonthlyContributionError('Monthly contribution cannot exceed target amount');
-        } else {
-            setMonthlyContributionError(null);
-        }
-
-        // Validation: Budget check (Net Change)
-        // Handled by derived state isBudgetExceeded
-
-        // Auto-calculate Duration (Achieve In) based on new contribution
+            setMonthlyContributionError('Contribution exceeds target.');
+        } else { setMonthlyContributionError(null); }
         if (newMonthly > 0 && targetAmount > 0) {
-            const calculatedMonths = Math.ceil(targetAmount / newMonthly);
-            if (calculatedMonths > 0 && calculatedMonths <= 600) {
+            const months = Math.ceil(targetAmount / newMonthly);
+            if (months > 0 && months <= 600) {
                 setSelectedDuration('custom');
-                setCustomMonths(calculatedMonths.toString());
+                setCustomMonths(months.toString());
             }
         }
-    }
+    };
 
-    // Calendar helpers
+    // ── Calendar helpers ──────────────────────────────────────────
     const today = new Date();
     const todayDate = today.getDate();
     const todayMonth = today.getMonth();
     const todayYear = today.getFullYear();
-
     const maxMonth = todayMonth + 1 > 11 ? 0 : todayMonth + 1;
     const maxYear = todayMonth + 1 > 11 ? todayYear + 1 : todayYear;
-
     const canGoNext = !(calendarMonth === maxMonth && calendarYear === maxYear);
     const canGoPrev = !(calendarMonth === todayMonth && calendarYear === todayYear);
-
-    const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-    const getCalendarDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
-    const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
-
-    const isDateDisabled = (day: number, month: number, year: number): boolean => {
+    const getDaysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
+    const getFirstDayOfMonth = (y: number, m: number) => new Date(y, m, 1).getDay();
+    const isDateDisabled = (day: number, month: number, year: number) => {
         const d = new Date(year, month, day);
         const t = new Date(todayYear, todayMonth, todayDate);
         return d < t;
     };
-
     const handleCalendarPrev = () => {
         if (!canGoPrev) return;
-        if (calendarMonth === 0) {
-            setCalendarMonth(11);
-            setCalendarYear(calendarYear - 1);
-        } else {
-            setCalendarMonth(calendarMonth - 1);
-        }
+        if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(calendarYear - 1); }
+        else { setCalendarMonth(calendarMonth - 1); }
     };
-
     const handleCalendarNext = () => {
         if (!canGoNext) return;
-        if (calendarMonth === 11) {
-            setCalendarMonth(0);
-            setCalendarYear(calendarYear + 1);
-        } else {
-            setCalendarMonth(calendarMonth + 1);
-        }
+        if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(calendarYear + 1); }
+        else { setCalendarMonth(calendarMonth + 1); }
     };
-
     const handleDateSelect = (day: number) => {
         setContributionDay(day);
         setSelectedMonth(calendarMonth);
@@ -277,114 +201,63 @@ export const EditGoalScreen: React.FC = () => {
     };
 
     const renderCalendarGrid = () => {
-        const daysInMonth = getCalendarDaysInMonth(calendarYear, calendarMonth);
+        const daysInMonth = getDaysInMonth(calendarYear, calendarMonth);
         const firstDay = getFirstDayOfMonth(calendarYear, calendarMonth);
         const rows: React.ReactNode[] = [];
-
         rows.push(
-            <View key="weekdays" style={calendarStyles.weekRow}>
-                {WEEKDAYS.map(d => (
-                    <Text key={d} style={calendarStyles.weekDayText}>{d}</Text>
-                ))}
-            </View>
+            <View key="wk" style={styles.calWeek}>
+                {WEEKDAYS.map((d) => <Text key={d} style={styles.calWeekDay}>{d}</Text>)}
+            </View>,
         );
-
         let cells: React.ReactNode[] = [];
-        for (let i = 0; i < firstDay; i++) {
-            cells.push(<View key={`empty-${i}`} style={calendarStyles.dayCell} />);
-        }
-
+        for (let i = 0; i < firstDay; i++) cells.push(<View key={`e-${i}`} style={styles.calCell} />);
         for (let day = 1; day <= daysInMonth; day++) {
             const disabled = isDateDisabled(day, calendarMonth, calendarYear);
-            const isSelected = day === contributionDay && calendarMonth === selectedMonth && calendarYear === selectedYear;
-
+            const selected = day === contributionDay && calendarMonth === selectedMonth && calendarYear === selectedYear;
             cells.push(
                 <TouchableOpacity
                     key={day}
-                    style={[
-                        calendarStyles.dayCell,
-                        isSelected && calendarStyles.dayCellSelected,
-                        disabled && calendarStyles.dayCellDisabled,
-                    ]}
+                    style={styles.calCell}
                     onPress={() => !disabled && handleDateSelect(day)}
                     disabled={disabled}
                     activeOpacity={0.6}
                 >
-                    <Text
-                        style={[
-                            calendarStyles.calDayText,
-                            isSelected && calendarStyles.dayTextSelected,
-                            disabled && calendarStyles.dayTextDisabled,
-                        ]}
-                    >
-                        {day}
-                    </Text>
-                </TouchableOpacity>
-            );
-
-            if ((firstDay + day) % 7 === 0 || day === daysInMonth) {
-                while (cells.length < 7) {
-                    cells.push(<View key={`pad-${cells.length}`} style={calendarStyles.dayCell} />);
-                }
-                rows.push(
-                    <View key={`row-${day}`} style={calendarStyles.weekRow}>
-                        {cells}
+                    <View style={[styles.calDay, selected && styles.calDaySelected, disabled && styles.calDayDisabled]}>
+                        <Text style={[styles.calDayText, selected && styles.calDayTextSelected, disabled && styles.calDayTextDisabled]}>{day}</Text>
                     </View>
-                );
+                </TouchableOpacity>,
+            );
+            if ((firstDay + day) % 7 === 0 || day === daysInMonth) {
+                while (cells.length < 7) cells.push(<View key={`p-${cells.length}`} style={styles.calCell} />);
+                rows.push(<View key={`r-${day}`} style={styles.calWeek}>{cells}</View>);
                 cells = [];
             }
         }
-
         return rows;
     };
 
     const handleSave = async () => {
-        if (!goalId) {
-            console.error('No goal ID provided');
-            return;
-        }
-
-        let isValid = true;
-
-        // Validation - Target
+        if (!goalId) return;
+        let ok = true;
         if (targetAmount <= 0 || targetAmount < savedAmount) {
-            setTargetError(`Target amount cannot be less than saved amount (£${savedAmount})`);
-            isValid = false;
+            setTargetError(`Target can't be less than saved (${currencySymbol}${savedAmount.toLocaleString()}).`);
+            ok = false;
         }
-
-        // Validation - Monthly Contribution
-        if (contributionAmount <= 0) {
-            setMonthlyContributionError('Please enter a valid amount');
-            isValid = false;
-        } else if (contributionAmount > targetAmount) {
-            setMonthlyContributionError('Monthly contribution cannot exceed target amount');
-            isValid = false;
-        }
-
-        // Validation - Budget
-        const netChange = contributionAmount - initialMonthlyContribution;
+        if (contributionAmount <= 0) { setMonthlyContributionError('Enter a valid amount.'); ok = false; }
+        else if (contributionAmount > targetAmount) { setMonthlyContributionError('Contribution exceeds target.'); ok = false; }
         if (netChange > availableForNewGoals) {
-            Toast.show({
-                type: 'error',
-                text1: 'Budget Exceeded',
-                text2: `You only have ${currencySymbol}${availableForNewGoals} available for increases.`,
-            });
-            isValid = false;
+            toast.error('Budget exceeded', { description: `Only ${currencySymbol}${availableForNewGoals.toLocaleString()} available for increases.` });
+            ok = false;
         }
-
-        if (!isValid) return;
-
+        if (!ok) return;
         setIsLoading(true);
         try {
-            // Build contribution start date from selected calendar day
             const startDate = new Date(selectedYear, selectedMonth, contributionDay);
             const yyyy = startDate.getFullYear();
             const mm = String(startDate.getMonth() + 1).padStart(2, '0');
             const dd = String(startDate.getDate()).padStart(2, '0');
             const contributionStartDate = `${yyyy}-${mm}-${dd}`;
-
             const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
             const payload = {
                 name,
                 target_amount: targetAmount,
@@ -393,348 +266,192 @@ export const EditGoalScreen: React.FC = () => {
                 contribution_start_date: contributionStartDate,
                 timezone,
             };
-
             const response = await api.put(`/api/goals/${goalId}`, payload);
-
             if (response.data.success) {
                 DeviceEventEmitter.emit('refreshGoals');
-                Toast.show({
-                    type: 'success',
-                    text1: 'Goal Updated',
-                    text2: 'Your goal has been successfully updated.',
-                });
+                toast.success('Saved', { description: 'Goal updated.' });
                 navigation.goBack();
             } else {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Update Failed',
-                    text2: 'Failed to update goal. Please try again.',
-                });
+                toast.error('Update failed', { description: 'Try again.' });
             }
         } catch (error) {
             console.error('Error updating goal:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: 'An error occurred while updating the goal.',
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleDelete = () => {
-        if (!goalId) return;
-        setShowDeleteModal(true);
+            toast.error('Error', { description: 'Something went wrong.' });
+        } finally { setIsLoading(false); }
     };
 
     const confirmDelete = async () => {
+        if (!goalId) return;
         setIsDeleting(true);
         try {
             const response = await api.delete(`/api/goals/${goalId}`);
             if (response.data.success) {
                 DeviceEventEmitter.emit('refreshGoals');
                 setShowDeleteModal(false);
-                Toast.show({
-                    type: 'success',
-                    text1: 'Goal Deleted',
-                    text2: 'Your goal has been successfully deleted.',
-                });
+                toast.success('Deleted', { description: 'Goal removed.' });
                 navigation.goBack();
             } else {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Delete Failed',
-                    text2: 'Failed to delete goal. Please try again.',
-                });
+                toast.error('Delete failed', { description: 'Try again.' });
             }
         } catch (error) {
             console.error('Error deleting goal:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: 'An error occurred while deleting the goal.',
-            });
-        } finally {
-            setIsDeleting(false);
-        }
+            toast.error('Error', { description: 'Something went wrong.' });
+        } finally { setIsDeleting(false); }
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <View style={styles.header}>
+                <BackButton onPress={() => navigation.goBack()} />
+                <Text style={styles.headerTitle}>Edit goal</Text>
+                <TouchableOpacity style={styles.trashBtn} onPress={() => setShowDeleteModal(true)} disabled={isLoading} activeOpacity={0.7}>
+                    <Icon name="trash-2" color="loss" size="md" />
+                </TouchableOpacity>
+            </View>
 
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.keyboardView}
-            >
-                <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-                    {/* Header */}
-                    <Header
-                        title="Edit your goal"
-                        rightElement={
-                            <TouchableOpacity
-                                style={styles.trashButton}
-                                onPress={handleDelete}
-                                disabled={isLoading}
-                            >
-                                <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-                                    <Path d="M3 6h18" stroke="#ef4444" strokeWidth={2} strokeLinecap="round" />
-                                    <Path d="M8 6V4h8v2" stroke="#ef4444" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                                    <Path d="M19 6l-1 14H6L5 6" stroke="#ef4444" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                                    <Path d="M10 11v6M14 11v6" stroke="#ef4444" strokeWidth={2} strokeLinecap="round" />
-                                </Svg>
-                            </TouchableOpacity>
-                        }
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+                <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                    <Text style={styles.label}>GOAL NAME</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={name}
+                        onChangeText={setName}
+                        placeholder="Goal name"
+                        placeholderTextColor={colors.ink3}
                     />
 
-                    {/* Form Card */}
-                    <View style={styles.formCard}>
-                        {/* Name Field */}
-                        <View style={{ marginBottom: spacing.lg }}>
-                            <Text style={styles.fieldLabel}>Name</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                value={name}
-                                onChangeText={setName}
-                                placeholderTextColor={colors.textMuted}
-                            />
-                        </View>
-
-                        {/* Target Field */}
-                        <View style={styles.fieldContainer}>
-                            <View style={styles.rowFieldContainer}>
-                                <Text style={styles.fieldLabel}>Target</Text>
-                                <View style={styles.compactInput}>
-                                    <Text style={styles.currencyPrefix}>{currencySymbol}</Text>
-                                    <TextInput
-                                        style={styles.compactInputText2}
-                                        value={target}
-                                        onChangeText={handleTargetChange}
-                                        keyboardType="number-pad"
-                                        placeholder="5000"
-                                        placeholderTextColor={colors.textMuted}
-                                    />
-                                </View>
-                            </View>
-                            {targetError && <Text style={styles.errorText}>{targetError}</Text>}
-                        </View>
-
-                        {/* Achieve In Field */}
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.fieldLabel}>Achieve in</Text>
-                            <View style={styles.durationContainer}>
-                                {DURATION_OPTIONS.map((option) => (
-                                    <TouchableOpacity
-                                        key={option.value}
-                                        style={[
-                                            styles.durationOption,
-                                            selectedDuration === option.value && styles.durationOptionSelected,
-                                        ]}
-                                        onPress={() => handleDurationSelect(option.value)}
-                                    >
-                                        <Text
-                                            style={[
-                                                styles.durationText,
-                                                selectedDuration === option.value && styles.durationTextSelected,
-                                            ]}
-                                        >
-                                            {option.label}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                                {/* Custom Option */}
-                                <TouchableOpacity
-                                    style={[
-                                        styles.durationOption,
-                                        selectedDuration === 'custom' && styles.durationOptionSelected,
-                                    ]}
-                                    onPress={handleCustomSelect}
-                                >
-                                    <Text
-                                        style={[
-                                            styles.durationText,
-                                            selectedDuration === 'custom' && styles.durationTextSelected,
-                                        ]}
-                                    >
-                                        Custom
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-
-                            {/* Custom months input */}
-                            {selectedDuration === 'custom' && (
-                                <View style={styles.customInputContainer}>
-                                    <TextInput
-                                        style={styles.customMonthsInput}
-                                        value={customMonths}
-                                        onChangeText={handleCustomMonthsChange}
-                                        keyboardType="number-pad"
-                                        placeholder="Enter months"
-                                        placeholderTextColor={colors.textMuted}
-                                    />
-                                    <Text style={styles.customMonthsLabel}>{customMonths === '1' ? 'month' : 'months'}</Text>
-                                </View>
-                            )}
-                        </View>
-
-                        {/* Monthly Contribution Field */}
-                        <View style={styles.fieldContainer}>
-                            <View style={styles.rowFieldContainer}>
-                                <Text style={styles.fieldLabel}>Monthly contribution</Text>
-                                <View style={[styles.compactInput, styles.highlightedInput,]}>
-                                    <Text style={[styles.currencyPrefix, styles.highlightedText]}>{currencySymbol}</Text>
-                                    <TextInput
-                                        style={[styles.compactInputText, styles.highlightedText]}
-                                        value={monthlyContribution}
-                                        onChangeText={handleMonthlyContributionChange}
-                                        keyboardType="number-pad"
-                                        placeholder="500"
-                                    />
-                                </View>
-                            </View>
-                            {monthlyContributionError && <Text style={styles.errorText}>{monthlyContributionError}</Text>}
-
-                            {/* Budget Exceeded Mascot Warning */}
-                            {isBudgetExceeded && !monthlyContributionError && (
-                                <View style={styles.mascotContainer}>
-                                    <AnimatedMascot
-                                        text={`You only have ${currencySymbol}${availableForNewGoals} available for increases.`}
-                                    />
-                                </View>
-                            )}
-                        </View>
-
-                        {/* Contribution Day Picker */}
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.fieldLabel}>Contribution day of month</Text>
-                            <TouchableOpacity
-                                style={calendarStyles.dayPickerCard}
-                                onPress={() => {
-                                    setCalendarMonth(todayMonth);
-                                    setCalendarYear(todayYear);
-                                    setCalendarVisible(true);
-                                }}
-                                activeOpacity={0.7}
-                            >
-                                <View style={calendarStyles.dayPickerLeft}>
-                                    <View style={calendarStyles.dateCircle}>
-                                        <Text style={calendarStyles.dateCircleText}>{contributionDay}</Text>
-                                        <View style={calendarStyles.ordinalBadge}>
-                                            <Text style={calendarStyles.ordinalText}>
-                                                {contributionDay === 1 ? 'st' : contributionDay === 2 ? 'nd' : contributionDay === 3 ? 'rd' : 'th'}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                    <View style={calendarStyles.dayPickerTextContainer}>
-                                        <Text style={calendarStyles.dayPickerValue}>Of every month</Text>
-                                        <Text style={calendarStyles.dayPickerHint}>Tap to change</Text>
-                                    </View>
-                                </View>
-                                <Text style={calendarStyles.changeText}>›</Text>
-                            </TouchableOpacity>
-                            <View style={calendarStyles.noteContainer}>
-                                <Text style={calendarStyles.noteIcon}>Note: </Text>
-                                <Text style={calendarStyles.noteText}>
-                                    Your first contribution starts on{' '}
-                                    <Text style={calendarStyles.noteHighlight}>
-                                        {contributionDay} {MONTH_NAMES[selectedMonth]} {selectedYear}
-                                    </Text>
-                                </Text>
-                            </View>
-                        </View>
-
-                        {/* Calendar Modal */}
-                        <Modal
-                            visible={calendarVisible}
-                            transparent
-                            animationType="fade"
-                            onRequestClose={() => setCalendarVisible(false)}
-                        >
-                            <View style={calendarStyles.modalOverlay}>
-                                <View style={calendarStyles.modalContent}>
-                                    <Text style={calendarStyles.modalTitle}>Select Contribution Day</Text>
-                                    <Text style={calendarStyles.modalSubtitle}>Pick a future date for your monthly contribution</Text>
-
-                                    {/* Month navigation */}
-                                    <View style={calendarStyles.monthNav}>
-                                        <TouchableOpacity
-                                            onPress={handleCalendarPrev}
-                                            style={[calendarStyles.navBtn, !canGoPrev && calendarStyles.navBtnDisabled]}
-                                            disabled={!canGoPrev}
-                                        >
-                                            <Text style={[calendarStyles.navBtnText, !canGoPrev && calendarStyles.navBtnTextDisabled]}>‹</Text>
-                                        </TouchableOpacity>
-                                        <Text style={calendarStyles.monthLabel}>
-                                            {MONTH_NAMES[calendarMonth]} {calendarYear}
-                                        </Text>
-                                        <TouchableOpacity
-                                            onPress={handleCalendarNext}
-                                            style={[calendarStyles.navBtn, !canGoNext && calendarStyles.navBtnDisabled]}
-                                            disabled={!canGoNext}
-                                        >
-                                            <Text style={[calendarStyles.navBtnText, !canGoNext && calendarStyles.navBtnTextDisabled]}>›</Text>
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    {/* Calendar grid */}
-                                    {renderCalendarGrid()}
-
-                                    {/* Close button */}
-                                    <TouchableOpacity
-                                        style={calendarStyles.closeBtn}
-                                        onPress={() => setCalendarVisible(false)}
-                                    >
-                                        <Text style={calendarStyles.closeBtnText}>Cancel</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </Modal>
-
-                        {/* Save Button */}
-                        <Button
-                            title={isLoading ? 'Saving...' : 'Save'}
-                            onPress={handleSave}
-                            disabled={isLoading}
-                            style={{ marginTop: spacing.xl }}
+                    <Text style={styles.label}>TARGET AMOUNT</Text>
+                    <View style={[styles.moneyInput, !!targetError && styles.errorField]}>
+                        <Text style={styles.moneySymbol}>{currencySymbol}</Text>
+                        <TextInput
+                            style={styles.moneyText}
+                            value={target}
+                            onChangeText={handleTargetChange}
+                            keyboardType="number-pad"
+                            placeholder="0"
+                            placeholderTextColor={colors.ink3}
                         />
                     </View>
+                    {!!targetError && <Text style={styles.errorText}>{targetError}</Text>}
+
+                    <Text style={styles.label}>ACHIEVE IN</Text>
+                    <View style={styles.chipRow}>
+                        {DURATION_OPTIONS.map((option) => {
+                            const active = selectedDuration === option.value;
+                            return (
+                                <TouchableOpacity
+                                    key={option.value}
+                                    style={[styles.chip, active && styles.chipActive]}
+                                    onPress={() => { setSelectedDuration(option.value); setCustomMonths(''); setIsContributionManuallyEdited(false); }}
+                                    activeOpacity={0.85}
+                                >
+                                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{option.label}</Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+                        <TouchableOpacity
+                            style={[styles.chip, selectedDuration === 'custom' && styles.chipActive]}
+                            onPress={() => { setSelectedDuration('custom'); setIsContributionManuallyEdited(false); }}
+                            activeOpacity={0.85}
+                        >
+                            <Text style={[styles.chipText, selectedDuration === 'custom' && styles.chipTextActive]}>Custom</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {selectedDuration === 'custom' && (
+                        <View style={styles.customInput}>
+                            <TextInput
+                                style={styles.customField}
+                                value={customMonths}
+                                onChangeText={(v) => { setCustomMonths(v); setIsContributionManuallyEdited(false); }}
+                                keyboardType="number-pad"
+                                placeholder="12"
+                                placeholderTextColor={colors.ink3}
+                            />
+                            <Text style={styles.customLabel}>{customMonths === '1' ? 'month' : 'months'}</Text>
+                        </View>
+                    )}
+
+                    <Text style={styles.label}>MONTHLY CONTRIBUTION</Text>
+                    <View style={[styles.moneyInput, styles.moneyInputAccent, !!monthlyContributionError && styles.errorField]}>
+                        <Text style={[styles.moneySymbol, { color: colors.accent }]}>{currencySymbol}</Text>
+                        <TextInput
+                            style={[styles.moneyText, { color: colors.accent }]}
+                            value={monthlyContribution}
+                            onChangeText={handleContributionChange}
+                            keyboardType="number-pad"
+                            placeholder="0"
+                            placeholderTextColor={colors.accent}
+                        />
+                    </View>
+                    {!!monthlyContributionError && <Text style={styles.errorText}>{monthlyContributionError}</Text>}
+                    {isBudgetExceeded && (
+                        <View style={styles.errorBanner}>
+                            <Text style={styles.errorBannerText}>
+                                Only {currencySymbol}{availableForNewGoals.toLocaleString()} available for increases.
+                            </Text>
+                        </View>
+                    )}
+
+                    <Text style={styles.label}>CONTRIBUTION DAY</Text>
+                    <TouchableOpacity
+                        style={styles.dayPicker}
+                        onPress={() => {
+                            setCalendarMonth(todayMonth);
+                            setCalendarYear(todayYear);
+                            setCalendarVisible(true);
+                        }}
+                        activeOpacity={0.7}
+                    >
+                        <View style={styles.dayCircle}>
+                            <Text style={styles.dayCircleNum}>{contributionDay}</Text>
+                            <Text style={styles.dayCircleOrd}>{ordinal(contributionDay)}</Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.dayPickerVal}>Every month</Text>
+                            <Text style={styles.dayPickerHint}>{MONTH_NAMES[selectedMonth]} {selectedYear}</Text>
+                        </View>
+                        <Icon name="chevron-right" color="ink3" size="lg" />
+                    </TouchableOpacity>
+
+                    <Modal visible={calendarVisible} transparent animationType="fade" onRequestClose={() => setCalendarVisible(false)}>
+                        <View style={styles.modalOverlay}>
+                            <View style={styles.modalCard}>
+                                <Text style={styles.modalTitle}>Contribution day</Text>
+                                <Text style={styles.modalSub}>Pick a future date.</Text>
+                                <View style={styles.calNav}>
+                                    <TouchableOpacity onPress={handleCalendarPrev} style={[styles.calNavBtn, !canGoPrev && styles.calNavBtnOff]} disabled={!canGoPrev}>
+                                        <Icon name="chevron-left" color={canGoPrev ? "ink1" : "ink3"} size="lg" />
+                                    </TouchableOpacity>
+                                    <Text style={styles.calMonthLabel}>{MONTH_NAMES[calendarMonth]} {calendarYear}</Text>
+                                    <TouchableOpacity onPress={handleCalendarNext} style={[styles.calNavBtn, !canGoNext && styles.calNavBtnOff]} disabled={!canGoNext}>
+                                        <Icon name="chevron-right" color={canGoNext ? "ink1" : "ink3"} size="lg" />
+                                    </TouchableOpacity>
+                                </View>
+                                {renderCalendarGrid()}
+                                <TouchableOpacity style={styles.modalClose} onPress={() => setCalendarVisible(false)}>
+                                    <Text style={styles.modalCloseText}>Cancel</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
                 </ScrollView>
+
+                <View style={styles.footer}>
+                    <Button title="Save changes" onPress={handleSave} loading={isLoading} disabled={isSaveDisabled} />
+                </View>
             </KeyboardAvoidingView>
 
-            {/* Delete Confirmation Modal */}
-            <Modal
-                visible={showDeleteModal}
-                transparent
-                animationType="fade"
-                onRequestClose={() => setShowDeleteModal(false)}
-            >
+            <Modal visible={showDeleteModal} transparent animationType="fade" onRequestClose={() => setShowDeleteModal(false)}>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalCard}>
-                        <Text style={styles.modalIcon}>🗑️</Text>
-                        <Text style={styles.modalTitle}>Delete Goal</Text>
-                        <Text style={styles.modalMessage}>
-                            Are you sure you want to delete{' '}
-                            <Text style={styles.modalGoalName}>{name}</Text>?
-                            {' '}This action cannot be undone.
-                        </Text>
-                        <View style={styles.modalActions}>
-                            <TouchableOpacity
-                                style={styles.modalCancelBtn}
-                                onPress={() => setShowDeleteModal(false)}
-                                disabled={isDeleting}
-                            >
+                        <Text style={styles.modalTitle}>Delete goal?</Text>
+                        <Text style={styles.modalSub}>This can't be undone. Your saved amount stays in your budget.</Text>
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity style={styles.modalCancel} onPress={() => setShowDeleteModal(false)} disabled={isDeleting}>
                                 <Text style={styles.modalCancelText}>Cancel</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.modalDeleteBtn}
-                                onPress={confirmDelete}
-                                disabled={isDeleting}
-                            >
-                                {isDeleting
-                                    ? <ActivityIndicator size="small" color="#fff" />
-                                    : <Text style={styles.modalDeleteText}>Delete</Text>
-                                }
+                            <TouchableOpacity style={styles.modalConfirm} onPress={confirmDelete} disabled={isDeleting}>
+                                {isDeleting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.modalConfirmText}>Delete</Text>}
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -744,437 +461,103 @@ export const EditGoalScreen: React.FC = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    keyboardView: {
-        flex: 1,
-    },
-    scrollView: {
-        flex: 1,
-        // paddingHorizontal: spacing.lg,
-    },
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flex: 1, backgroundColor: c.canvas },
+        header: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6,
+        },
+        back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
+        backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
+        trashBtn: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.lossSoft, alignItems: 'center', justifyContent: 'center' },
 
-    formCard: {
-        // backgroundColor: colors.cardBackground,
-        // borderRadius: 16,
-        // borderWidth: 1,
-        borderColor: colors.border,
-        // padding: spacing.lg,
-        marginTop: spacing.md,
-        marginHorizontal: spacing.lg,
-    },
-    fieldContainer: {
-        // marginBottom: spacing.lg,
-    },
-    inputGroup: {
-        marginBottom: spacing.lg,
-    },
-    fieldLabel: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        marginBottom: spacing.sm,
-    },
-    textInput: {
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 8,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        color: colors.textPrimary,
-        fontSize: typography.body,
-    },
-    rowFieldContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: spacing.lg,
-        marginTop: spacing.md,
-    },
-    compactInput: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.cardBackground,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 8,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        maxWidth: 150,
-    },
-    compactInputText: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        textAlign: 'right',
-        minWidth: 60,
-        paddingVertical: 0,
-        flex: 1,
-    },
-    compactInputText2: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        paddingHorizontal: spacing.md,
-        paddingVertical: 0,
-        minWidth: 60,
-        flex: 1,
-    },
-    currencyPrefix: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        marginRight: spacing.xs,
-    },
-    highlightedInput: {
-        backgroundColor: colors.primary + '10',
-        borderColor: colors.primary + '40',
-    },
-    highlightedText: {
-        color: colors.primary,
-    },
-    durationContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: spacing.sm,
-        marginBottom: spacing.sm,
-    },
-    durationOption: {
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        borderRadius: 20,
-        backgroundColor: colors.cardBackground,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    durationOptionSelected: {
-        backgroundColor: colors.primary + '20',
-        borderColor: colors.primary,
-    },
-    durationText: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium,
-    },
-    durationTextSelected: {
-        color: colors.primary,
-    },
-    customInputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: spacing.xs,
-    },
-    customMonthsInput: {
-        backgroundColor: colors.cardBackground,
-        borderWidth: 1,
-        borderColor: colors.primary,
-        borderRadius: 8,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        width: 100,
-        textAlign: 'center',
-    },
-    customMonthsLabel: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        marginLeft: spacing.sm,
-    },
-    inputError: {
-        borderColor: colors.error,
-    },
-    errorText: {
-        color: colors.error,
-        fontSize: typography.caption,
-        marginTop: 4,
-        alignSelf: 'flex-end',
-    },
-    mascotContainer: {
-        marginTop: spacing.md,
-        alignItems: 'center',
-    },
-    trashButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: 'rgba(239, 68, 68, 0.12)',
-        borderWidth: 1,
-        borderColor: 'rgba(239, 68, 68, 0.3)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+        scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
 
-    // Delete Confirmation Modal
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: spacing.xl,
-    },
-    modalCard: {
-        backgroundColor: '#1a1a2e',
-        borderRadius: 20,
-        padding: spacing.xl,
-        width: '100%',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#2a2a4a',
-    },
-    modalIcon: {
-        fontSize: 40,
-        marginBottom: spacing.md,
-    },
-    modalTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold as any,
-        marginBottom: spacing.sm,
-    },
-    modalMessage: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        textAlign: 'center',
-        lineHeight: 22,
-        marginBottom: spacing.xl,
-    },
-    modalGoalName: {
-        color: colors.textPrimary,
-        fontWeight: typography.semibold as any,
-    },
-    modalActions: {
-        flexDirection: 'row',
-        gap: spacing.md,
-        width: '100%',
-    },
-    modalCancelBtn: {
-        flex: 1,
-        paddingVertical: spacing.md,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: colors.border,
-        alignItems: 'center',
-        backgroundColor: colors.cardBackground,
-    },
-    modalCancelText: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        fontWeight: typography.medium as any,
-    },
-    modalDeleteBtn: {
-        flex: 1,
-        paddingVertical: spacing.md,
-        borderRadius: 10,
-        alignItems: 'center',
-        backgroundColor: '#ef4444',
-    },
-    modalDeleteText: {
-        color: '#fff',
-        fontSize: typography.body,
-        fontWeight: typography.semibold as any,
-    },
-});
+        label: { color: c.ink2, fontSize: 12, fontFamily: fontFor('medium'), letterSpacing: 0.4, marginTop: 12, marginBottom: 6 },
+        input: {
+            backgroundColor: c.surfaceAlt, borderRadius: 12,
+            paddingHorizontal: 16, paddingVertical: 14,
+            fontSize: 15, color: c.ink1,
+            borderWidth: 1, borderColor: 'transparent',
+        },
+        moneyInput: {
+            flexDirection: 'row', alignItems: 'center',
+            backgroundColor: c.surfaceAlt, borderRadius: 12,
+            paddingHorizontal: 16, minHeight: 52,
+            borderWidth: 1, borderColor: 'transparent',
+        },
+        moneyInputAccent: { backgroundColor: c.accentSoft },
+        errorField: { borderColor: c.loss },
+        moneySymbol: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), marginRight: 4, includeFontPadding: false, },
+        moneyText: {
+            flex: 1, color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'),
+            letterSpacing: -0.4, fontVariant: ['tabular-nums'], padding: 0,
+        },
+        errorText: { color: c.loss, fontSize: 12, marginTop: 4 },
+        errorBanner: { marginTop: 6, backgroundColor: c.lossSoft, borderRadius: 10, padding: 10 },
+        errorBannerText: { color: c.loss, fontSize: 13 },
 
-const calendarStyles = StyleSheet.create({
-    dayPickerCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: colors.cardBackground,
-        borderRadius: 16,
-        padding: spacing.md,
-        borderWidth: 1.5,
-        borderColor: colors.primary + '25',
-        marginTop: spacing.sm,
-    },
-    dayPickerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-    },
-    dateCircle: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: colors.primary + '18',
-        borderWidth: 1.5,
-        borderColor: colors.primary + '50',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: spacing.md,
-    },
-    dateCircleText: {
-        color: colors.primary,
-        fontSize: 20,
-        fontWeight: typography.bold as any,
-        lineHeight: 24,
-    },
-    ordinalBadge: {
-        position: 'absolute',
-        top: -4,
-        right: -4,
-        backgroundColor: colors.primary,
-        borderRadius: 8,
-        paddingHorizontal: 4,
-        paddingVertical: 1,
-        minWidth: 18,
-        alignItems: 'center',
-    },
-    ordinalText: {
-        color: '#fff',
-        fontSize: 9,
-        fontWeight: typography.bold as any,
-    },
-    dayPickerTextContainer: {
-        flex: 1,
-    },
-    dayPickerValue: {
-        color: colors.textPrimary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium as any,
-    },
-    dayPickerHint: {
-        color: colors.textMuted,
-        fontSize: typography.caption - 1,
-        marginTop: 3,
-    },
-    changeText: {
-        color: colors.primary,
-        fontSize: 22,
-        fontWeight: typography.bold as any,
-        marginLeft: spacing.sm,
-    },
-    noteContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: spacing.sm + 2,
-        paddingHorizontal: spacing.xs,
-    },
-    noteIcon: {
-        fontSize: 13,
-        marginRight: spacing.xs,
-        color: colors.textMuted,
-    },
-    noteText: {
-        color: colors.textMuted,
-        fontSize: typography.caption - 1,
-        flex: 1,
-    },
-    noteHighlight: {
-        color: colors.primary,
-        fontWeight: typography.semibold as any,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-    },
-    modalContent: {
-        backgroundColor: '#1a1a2e',
-        borderRadius: 20,
-        padding: spacing.lg,
-        width: '100%',
-        borderWidth: 1,
-        borderColor: '#2a2a4a',
-    },
-    modalTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold as any,
-        textAlign: 'center',
-        marginBottom: spacing.xs,
-    },
-    modalSubtitle: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        textAlign: 'center',
-        marginBottom: spacing.lg,
-    },
-    monthNav: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: spacing.md,
-    },
-    navBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: colors.cardBackground,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    navBtnDisabled: {
-        opacity: 0.3,
-    },
-    navBtnText: {
-        color: colors.textPrimary,
-        fontSize: 24,
-        fontWeight: typography.bold as any,
-        lineHeight: 28,
-    },
-    navBtnTextDisabled: {
-        color: colors.textMuted,
-    },
-    monthLabel: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold as any,
-    },
-    weekRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: spacing.xs,
-    },
-    weekDayText: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        fontWeight: typography.semibold as any,
-        width: 40,
-        textAlign: 'center',
-    },
-    dayCell: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginVertical: 2,
-    },
-    dayCellSelected: {
-        backgroundColor: colors.primary + '30',
-        borderWidth: 1.5,
-        borderColor: colors.primary,
-    },
-    dayCellDisabled: {
-        opacity: 0.25,
-    },
-    calDayText: {
-        color: colors.textPrimary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium as any,
-    },
-    dayTextSelected: {
-        color: colors.primary,
-        fontWeight: typography.bold as any,
-    },
-    dayTextDisabled: {
-        color: colors.textMuted,
-    },
-    closeBtn: {
-        marginTop: spacing.lg,
-        paddingVertical: spacing.md,
-        borderRadius: 12,
-        backgroundColor: colors.cardBackground,
-        alignItems: 'center',
-    },
-    closeBtnText: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold as any,
-    },
-});
+        chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
+        chip: {
+            paddingVertical: 8, paddingHorizontal: 14,
+            backgroundColor: c.surfaceAlt, borderRadius: 999,
+        },
+        chipActive: { backgroundColor: c.accent },
+        chipText: { color: c.ink2, fontSize: 13, fontFamily: fontFor('medium') },
+        chipTextActive: { color: c.accentInk },
 
+        customInput: {
+            flexDirection: 'row', alignItems: 'center',
+            backgroundColor: c.surfaceAlt, borderRadius: 12, paddingHorizontal: 16,
+            minHeight: 48, marginTop: 8,
+        },
+        customField: { flex: 1, color: c.ink1, fontSize: 15, padding: 0, fontVariant: ['tabular-nums'], includeFontPadding: false, textAlignVertical: 'center', },
+        customLabel: { color: c.ink3, fontSize: 13 },
+
+        dayPicker: {
+            flexDirection: 'row', alignItems: 'center', gap: 14,
+            backgroundColor: c.surface, borderRadius: 16, borderWidth: 1, borderColor: c.border,
+            padding: 14,
+        },
+        dayCircle: {
+            width: 52, height: 52, borderRadius: 26,
+            backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center',
+            flexDirection: 'row',
+        },
+        dayCircleNum: { color: c.accent, fontSize: 22, fontFamily: fontFor('bold'), letterSpacing: -0.4, fontVariant: ['tabular-nums'] },
+        dayCircleOrd: { color: c.accent, fontSize: 10, fontFamily: fontFor('semibold'), marginTop: -8, marginLeft: 1 },
+        dayPickerVal: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
+        dayPickerHint: { color: c.ink3, fontSize: 12, marginTop: 2 },
+        chevron: { color: c.ink3, fontSize: 22 },
+
+        footer: { paddingHorizontal: 20, paddingBottom: 20, paddingTop: 8 },
+
+        modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
+        modalCard: { backgroundColor: c.surface, borderRadius: 20, padding: 20, width: '100%', borderWidth: 1, borderColor: c.border },
+        modalTitle: { color: c.ink1, fontSize: 18, fontFamily: fontFor('bold'), letterSpacing: -0.3 },
+        modalSub: { color: c.ink2, fontSize: 13, marginTop: 4, marginBottom: 16 },
+        calNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+        calNavBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+        calNavBtnOff: { opacity: 0.4 },
+        calNavArrow: { color: c.ink1, fontSize: 20, lineHeight: 20 },
+        calNavArrowOff: { color: c.ink3 },
+        calMonthLabel: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
+        calWeek: { flexDirection: 'row', marginBottom: 6 },
+        calWeekDay: { flex: 1, color: c.ink3, fontSize: 11, fontFamily: fontFor('semibold'), textAlign: 'center', letterSpacing: 0.4 },
+        calCell: { flex: 1, alignItems: 'center', paddingVertical: 4 },
+        calDay: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+        calDaySelected: { backgroundColor: c.accent },
+        calDayDisabled: { opacity: 0.3 },
+        calDayText: { color: c.ink1, fontSize: 14, fontVariant: ['tabular-nums'] },
+        calDayTextSelected: { color: c.accentInk, fontFamily: fontFor('semibold') },
+        calDayTextDisabled: { color: c.ink3 },
+        modalClose: { marginTop: 16, alignItems: 'center', paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong },
+        modalCloseText: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
+        modalButtons: { flexDirection: 'row', gap: 10, marginTop: 0 },
+        modalCancel: { flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong, alignItems: 'center' },
+        modalCancelText: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
+        modalConfirm: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: c.loss, alignItems: 'center' },
+        modalConfirmText: { color: '#FFFFFF', fontSize: 14, fontFamily: fontFor('semibold') },
+    });

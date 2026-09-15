@@ -20,11 +20,11 @@ export type OnboardingData = {
 
 export type OnboardingStackParamList = {
     MonthlyIncome: undefined;
-    MonthlyExpenses: { onboardingData: OnboardingData };
-    MonthlyEMI: { onboardingData: OnboardingData };
-    EMIOutstanding: { onboardingData: OnboardingData };
-    MonthlyInvestment: { onboardingData: OnboardingData };
-    GoalSelection: { onboardingData: OnboardingData };
+    MonthlyExpenses: undefined;
+    MonthlyEMI: undefined;
+    EMIOutstanding: undefined;
+    MonthlyInvestment: undefined;
+    GoalSelection: undefined;
     AddGoal: {
         suggestionName?: string;
         suggestionTarget?: number;

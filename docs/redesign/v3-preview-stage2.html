@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FinovaAI — v3 Stage 2</title>
+<style>
+  :root {
+    --canvas: #F7F5F0; --surface: #FFFFFF; --surface-alt: #F0EDE6;
+    --ink-1: #111418; --ink-2: #4B5058; --ink-3: #8A8F97;
+    --border: #E5E1D8; --border-strong: #D6D0C2;
+    --accent: #245C50; --accent-strong: #17453B; --accent-soft: #E1EDE9; --accent-ink: #FFFFFF;
+    --gain: #0E7C4A; --gain-soft: #E5F0E9;
+    --loss: #B94028; --loss-soft: #F5E4DF;
+    --warn: #A5711A; --warn-soft: #F1E9D6;
+    --shadow-sm: 0 1px 2px rgba(17,20,24,0.04);
+    --shadow: 0 1px 2px rgba(17,20,24,0.04), 0 8px 20px rgba(17,20,24,0.04);
+    --r: 16px; --r-lg: 20px; --r-pill: 999px;
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-num: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  [data-theme="dark"] {
+    --canvas: #0E1013; --surface: #171A1E; --surface-alt: #212429;
+    --ink-1: #F0EEE9; --ink-2: #B0B4B9; --ink-3: #7A7E84;
+    --border: #262A2F; --border-strong: #363B41;
+    --accent: #5CBFA6; --accent-strong: #7ED8BF; --accent-soft: #1B2E29; --accent-ink: #0E1013;
+    --gain: #5FCE8C; --gain-soft: #1D3626;
+    --loss: #E4826A; --loss-soft: #3A1F19;
+    --warn: #DDB35C; --warn-soft: #392E17;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.35);
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 20px rgba(0,0,0,0.35);
+  }
+  body { margin: 0; background: var(--canvas); color: var(--ink-1); font-family: var(--font); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: var(--canvas); border-bottom: 1px solid var(--border); backdrop-filter: saturate(140%) blur(8px); }
+  .topbar h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  .topbar h1 span { color: var(--ink-3); font-weight: 400; margin-left: 8px; }
+  .toggle { display: inline-flex; background: var(--surface-alt); border-radius: var(--r-pill); padding: 3px; border: 1px solid var(--border); }
+  .toggle button { all: unset; padding: 6px 14px; font-size: 12px; font-weight: 500; color: var(--ink-2); cursor: pointer; border-radius: var(--r-pill); }
+  .toggle button.active { background: var(--surface); color: var(--ink-1); box-shadow: var(--shadow-sm); }
+  [data-theme="dark"] .toggle button.active { background: var(--ink-1); color: var(--canvas); }
+  main { max-width: 1440px; margin: 0 auto; padding: 32px 24px 96px; }
+  section { margin: 56px 0; }
+  section > h2 { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 20px; }
+  section > .lede { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; margin: -12px 0 24px; color: var(--ink-1); }
+
+  .screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 32px 24px; }
+  .phone { width: 320px; margin: 0 auto; background: var(--canvas); border: 1px solid var(--border-strong); border-radius: 32px; overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; height: 660px; position: relative; }
+  .phone-name { text-align: center; font-size: 12px; color: var(--ink-3); margin-top: 12px; letter-spacing: 0.04em; font-weight: 500; }
+  .status { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px 4px; font-size: 11px; color: var(--ink-1); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .status .right { display: inline-flex; gap: 4px; align-items: center; }
+  .app-hdr { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 6px; }
+  .app-hdr .back { width: 34px; height: 34px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; color: var(--ink-1); }
+  .app-hdr .title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .app-hdr .action { color: var(--accent); font-weight: 500; font-size: 13px; }
+  .body { flex: 1; overflow: hidden; padding: 8px 20px 12px; display: flex; flex-direction: column; gap: 12px; }
+  .tabbar { display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 8px 14px; border-top: 1px solid var(--border); background: var(--surface); }
+  .tabbar .t { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--ink-3); font-size: 10px; font-weight: 500; }
+  .tabbar .t.active { color: var(--accent); }
+  .tabbar .t svg { width: 20px; height: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; }
+  .card-lg { padding: 20px; border-radius: var(--r-lg); }
+  .row { display: flex; align-items: center; justify-content: space-between; }
+  .col { display: flex; flex-direction: column; gap: 6px; }
+  .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; font-weight: 600; }
+  .num-hero { font-size: 32px; letter-spacing: -0.03em; }
+  .num-large { font-size: 22px; }
+  .caption { font-size: 12px; color: var(--ink-3); letter-spacing: 0.02em; }
+  .label { font-size: 13px; color: var(--ink-2); }
+  .h-screen { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .prog { height: 6px; background: var(--surface-alt); border-radius: 999px; overflow: hidden; }
+  .prog .fill { height: 100%; background: var(--accent); border-radius: 999px; }
+  .prog.gain .fill { background: var(--gain); }
+  .prog.loss .fill { background: var(--loss); }
+  .icon-wrap { width: 36px; height: 36px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent); }
+  .icon-wrap.gain { background: var(--gain-soft); color: var(--gain); }
+  .icon-wrap.warn { background: var(--warn-soft); color: var(--warn); }
+  .icon-wrap.loss { background: var(--loss-soft); color: var(--loss); }
+  .icon-wrap.neutral { background: var(--surface-alt); color: var(--ink-2); }
+  .list { display: flex; flex-direction: column; }
+  .list .item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .list .item:last-child { border-bottom: 0; }
+  .list .item .grow { flex: 1; min-width: 0; }
+  .list .item .grow .t { font-size: 14px; font-weight: 500; color: var(--ink-1); }
+  .list .item .grow .s { font-size: 12px; color: var(--ink-3); }
+  .step-bar { display: flex; gap: 4px; padding: 8px 20px 0; }
+  .step-bar span { flex: 1; height: 3px; border-radius: 2px; background: var(--surface-alt); }
+  .step-bar span.done { background: var(--accent); }
+  .seg { display: inline-flex; background: var(--surface-alt); border-radius: 12px; padding: 3px; }
+  .seg button { all: unset; padding: 8px 12px; font-size: 13px; font-weight: 500; color: var(--ink-2); border-radius: 10px; cursor: pointer; }
+  .seg button.active { background: var(--surface); color: var(--ink-1); box-shadow: var(--shadow-sm); }
+  [data-theme="dark"] .seg button.active { background: var(--surface-alt); color: var(--ink-1); border: 1px solid var(--border); }
+  .btn { padding: 12px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; border: 0; cursor: pointer; font-family: inherit; }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-secondary { background: var(--accent-soft); color: var(--accent); }
+  .btn-ghost { background: transparent; color: var(--ink-1); border: 1px solid var(--border-strong); }
+  .btn-danger { background: var(--loss); color: #fff; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: var(--r-pill); font-size: 12px; font-weight: 500; }
+  .badge-gain { background: var(--gain-soft); color: var(--gain); }
+  .badge-loss { background: var(--loss-soft); color: var(--loss); }
+  .badge-warn { background: var(--warn-soft); color: var(--warn); }
+  .badge-neutral { background: var(--surface-alt); color: var(--ink-2); }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .input { width: 100%; padding: 14px 16px; background: var(--surface-alt); border: 1px solid transparent; border-radius: 12px; font-family: inherit; font-size: 15px; color: var(--ink-1); box-sizing: border-box; }
+  .input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+  .input-label { font-size: 12px; font-weight: 500; color: var(--ink-2); margin-bottom: 6px; letter-spacing: 0.02em; }
+  .auth-wrap { flex: 1; padding: 24px 24px 20px; display: flex; flex-direction: column; }
+  .auth-mark { width: 44px; height: 44px; border-radius: 12px; background: var(--ink-1); color: var(--canvas); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-num); font-weight: 700; letter-spacing: -0.02em; }
+  .auth-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 24px 0 6px; }
+  .auth-sub { font-size: 14px; color: var(--ink-2); margin: 0 0 24px; }
+  .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: auto; padding: 4px 0 8px; }
+  .numpad button { all: unset; padding: 12px 0; text-align: center; font-size: 22px; font-weight: 500; color: var(--ink-1); border-radius: 12px; cursor: pointer; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+  .numpad button:hover { background: var(--surface-alt); }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { padding: 8px 12px; border-radius: 999px; background: var(--surface-alt); font-size: 12px; font-weight: 500; color: var(--ink-2); border: 1px solid transparent; }
+  .chip.active { background: var(--accent); color: var(--accent-ink); }
+  .chip.outline { background: transparent; border-color: var(--border-strong); color: var(--ink-1); }
+  .mt-a { margin-top: auto; } .gap-8 { gap: 8px; } .gap-4 { gap: 4px; }
+  .flex { display: flex; } .between { justify-content: space-between; } .items-center { align-items: center; }
+  .strong { color: var(--ink-1); font-weight: 600; } .muted { color: var(--ink-3); }
+  .small { font-size: 12px; } .center { text-align: center; }
+  .switch { width: 42px; height: 24px; border-radius: 999px; background: var(--surface-alt); position: relative; border: 1px solid var(--border); }
+  .switch.on { background: var(--accent); border-color: var(--accent); }
+  .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,0.15); transition: all 0.15s; }
+  .switch.on::after { left: 20px; background: #fff; }
+  .kv { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .kv:last-child { border-bottom: 0; }
+  .kv .k { color: var(--ink-2); font-size: 13px; }
+  .kv .v { color: var(--ink-1); font-weight: 500; font-size: 14px; }
+  /* Chat */
+  .bubble-me, .bubble-ai { padding: 10px 14px; border-radius: 16px; max-width: 78%; font-size: 13px; line-height: 1.4; }
+  .bubble-me { background: var(--accent); color: var(--accent-ink); align-self: flex-end; border-bottom-right-radius: 4px; }
+  .bubble-ai { background: var(--surface); color: var(--ink-1); align-self: flex-start; border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .chat-row { display: flex; }
+  .composer { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 6px 6px 6px 16px; }
+  .composer input { all: unset; flex: 1; font-family: inherit; font-size: 14px; color: var(--ink-1); }
+  .composer .send { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: inline-flex; align-items: center; justify-content: center; }
+  /* Ring visual for outstanding */
+  .ring { width: 108px; height: 108px; position: relative; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring .lbl { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>FinovaAI &mdash; <span>v3 preview &middot; stage 2 &middot; remaining 15 screens</span></h1>
+  <div class="toggle"><button class="active" data-mode="light">Light</button><button data-mode="dark">Dark</button></div>
+</div>
+
+<main>
+
+<section>
+  <h2>Auth &middot; 1 screen</h2>
+  <p class="lede">Same auth language as Stage 1 (mark + editorial headline + one accent CTA).</p>
+  <div class="screens">
+
+  <!-- 09 Signup -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="app-hdr"><div class="back">&larr;</div><div></div><div></div></div>
+    <div class="auth-wrap" style="padding-top:8px">
+      <div class="auth-mark">Fn</div>
+      <h1 class="auth-title" style="margin-top:20px">Let&rsquo;s set you up.</h1>
+      <p class="auth-sub">Two things and you&rsquo;re in.</p>
+      <div class="col gap-8">
+        <div><div class="input-label">YOUR NAME</div><input class="input" placeholder="Anaya Kulkarni" /></div>
+        <div><div class="input-label">EMAIL</div><input class="input" placeholder="you@work.com" /></div>
+      </div>
+      <div class="mt-a col gap-8">
+        <div class="caption" style="line-height:1.4">By continuing you agree to our <span style="color:var(--accent)">Terms</span> and <span style="color:var(--accent)">Privacy</span>.</div>
+        <button class="btn btn-primary">Create account</button>
+        <div class="center small muted">Already have one? <span style="color:var(--accent);font-weight:500">Log in</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-name">09 &middot; Signup</div>
+  </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>Onboarding &middot; 5 screens</h2>
+  <p class="lede">Same rhythm as Stage 1: top step bar, one question per screen, thumb-zone CTA.</p>
+  <div class="screens">
+
+  <!-- 10 Add Goal -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="step-bar"><span class="done"></span><span class="done"></span><span class="done"></span><span></span><span></span></div>
+    <div class="app-hdr" style="padding-top:16px"><div class="back">&larr;</div><div class="caption">STEP 3 OF 5</div><div class="action">Skip</div></div>
+    <div class="body">
+      <div class="h-screen">Name your goal.</div>
+      <p class="label" style="margin:-6px 0 4px">Something specific &mdash; &ldquo;New MacBook&rdquo; beats &ldquo;Tech stuff&rdquo;.</p>
+      <div class="col">
+        <div><div class="input-label">GOAL NAME</div><input class="input" value="Emergency fund" /></div>
+        <div><div class="input-label">TARGET AMOUNT</div><input class="input" value="&#8377;1,50,000" style="font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:18px;font-weight:600" /></div>
+        <div><div class="input-label">TARGET DATE</div>
+          <div class="input" style="display:flex;align-items:center;justify-content:space-between">
+            <span>Jan 2027</span>
+            <span class="muted">&rsaquo;</span>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="background:var(--accent-soft);border-color:transparent;padding:14px;margin-top:4px">
+        <div class="flex items-center" style="gap:10px">
+          <div class="icon-wrap" style="width:32px;height:32px;background:var(--surface);border:1px solid var(--border)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M12 4v16"/></svg></div>
+          <div class="grow" style="flex:1"><div class="strong small">&#8377;30,000 / month</div><div class="caption">To hit target on time</div></div>
+        </div>
+      </div>
+      <div class="mt-a"><button class="btn btn-primary" style="width:100%">Continue</button></div>
+    </div>
+  </div>
+  <div class="phone-name">10 &middot; Add goal</div>
+  </div>
+
+  <!-- 11 Monthly Expenses -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="step-bar"><span class="done"></span><span class="done"></span><span class="done"></span><span></span><span></span></div>
+    <div class="app-hdr" style="padding-top:16px"><div class="back">&larr;</div><div class="caption">STEP 3 OF 5</div><div class="action">Skip</div></div>
+    <div class="body">
+      <div class="h-screen">Monthly expenses.</div>
+      <p class="label" style="margin:-6px 0 4px">Rent, food, subscriptions &mdash; the essentials.</p>
+      <div class="card" style="padding:20px 16px;text-align:center">
+        <div class="caption">SPEND</div>
+        <div class="num num-hero" style="margin:6px 0 4px">&#8377;42,000</div>
+        <div class="caption">35% of your income</div>
+      </div>
+      <div class="chip-row">
+        <span class="chip">&#8377;20k</span><span class="chip">&#8377;30k</span><span class="chip active">&#8377;42k</span><span class="chip">&#8377;60k</span><span class="chip">&#8377;80k</span>
+      </div>
+      <div class="numpad">
+        <button>1</button><button>2</button><button>3</button>
+        <button>4</button><button>5</button><button>6</button>
+        <button>7</button><button>8</button><button>9</button>
+        <button>&middot;</button><button>0</button><button>&#9003;</button>
+      </div>
+      <button class="btn btn-primary">Continue</button>
+    </div>
+  </div>
+  <div class="phone-name">11 &middot; Monthly expenses</div>
+  </div>
+
+  <!-- 12 Monthly EMI -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="step-bar"><span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span><span></span></div>
+    <div class="app-hdr" style="padding-top:16px"><div class="back">&larr;</div><div class="caption">STEP 4 OF 5</div><div class="action">Skip</div></div>
+    <div class="body">
+      <div class="h-screen">Monthly EMIs.</div>
+      <p class="label" style="margin:-6px 0 4px">Loan, credit-card minimums, anything you must pay each month.</p>
+      <div class="card" style="padding:20px 16px;text-align:center">
+        <div class="caption">EMI PER MONTH</div>
+        <div class="num num-hero" style="margin:6px 0 4px">&#8377;18,500</div>
+        <div class="caption">15% of your income</div>
+      </div>
+      <div class="chip-row">
+        <span class="chip">None</span><span class="chip">&#8377;5k</span><span class="chip">&#8377;10k</span><span class="chip active">&#8377;18.5k</span><span class="chip">&#8377;25k</span>
+      </div>
+      <div class="numpad">
+        <button>1</button><button>2</button><button>3</button>
+        <button>4</button><button>5</button><button>6</button>
+        <button>7</button><button>8</button><button>9</button>
+        <button>&middot;</button><button>0</button><button>&#9003;</button>
+      </div>
+      <button class="btn btn-primary">Continue</button>
+    </div>
+  </div>
+  <div class="phone-name">12 &middot; Monthly EMI</div>
+  </div>
+
+  <!-- 13 EMI Outstanding -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="step-bar"><span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span><span></span></div>
+    <div class="app-hdr" style="padding-top:16px"><div class="back">&larr;</div><div class="caption">STEP 4 OF 5</div><div class="action">Skip</div></div>
+    <div class="body">
+      <div class="h-screen">Total EMI outstanding.</div>
+      <p class="label" style="margin:-6px 0 4px">Roughly, what&rsquo;s left across your loans.</p>
+      <div class="card" style="display:flex;justify-content:center;padding:20px 0">
+        <div class="ring">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--surface-alt)" stroke-width="9"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--loss)" stroke-width="9" stroke-linecap="round" stroke-dasharray="263.9" stroke-dashoffset="130"/>
+          </svg>
+          <div class="lbl"><div class="num num-large">&#8377;4.8L</div><div class="caption" style="margin-top:2px">OUTSTANDING</div></div>
+        </div>
+      </div>
+      <div class="chip-row">
+        <span class="chip">None</span><span class="chip">&#8377;1L</span><span class="chip">&#8377;3L</span><span class="chip active">&#8377;4.8L</span><span class="chip">&#8377;10L</span>
+      </div>
+      <div class="mt-a col gap-8">
+        <div class="caption center">We use this to protect your goals during high-EMI periods.</div>
+        <button class="btn btn-primary">Continue</button>
+      </div>
+    </div>
+  </div>
+  <div class="phone-name">13 &middot; EMI outstanding</div>
+  </div>
+
+  <!-- 14 Monthly Investment -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="step-bar"><span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span></div>
+    <div class="app-hdr" style="padding-top:16px"><div class="back">&larr;</div><div class="caption">STEP 5 OF 5</div><div class="action">Skip</div></div>
+    <div class="body">
+      <div class="h-screen">Already investing?</div>
+      <p class="label" style="margin:-6px 0 4px">SIPs, mutual funds, stocks, gold &mdash; monthly average.</p>
+      <div class="card" style="padding:20px 16px;text-align:center">
+        <div class="caption">MONTHLY INVEST</div>
+        <div class="num num-hero" style="margin:6px 0 4px">&#8377;15,000</div>
+        <div class="caption">Great start</div>
+      </div>
+      <div class="chip-row">
+        <span class="chip">None</span><span class="chip">&#8377;5k</span><span class="chip">&#8377;10k</span><span class="chip active">&#8377;15k</span><span class="chip">&#8377;25k</span>
+      </div>
+      <div class="numpad">
+        <button>1</button><button>2</button><button>3</button>
+        <button>4</button><button>5</button><button>6</button>
+        <button>7</button><button>8</button><button>9</button>
+        <button>&middot;</button><button>0</button><button>&#9003;</button>
+      </div>
+      <button class="btn btn-primary">Finish setup</button>
+    </div>
+  </div>
+  <div class="phone-name">14 &middot; Monthly investment</div>
+  </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>Main app &middot; 9 screens</h2>
+  <p class="lede">Detail, list, chat and settings patterns used across the app.</p>
+  <div class="screens">
+
+  <!-- 15 Invest Hub -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="app-hdr" style="padding-top:8px">
+      <div><div class="caption">INVEST</div><div style="font-size:20px;font-weight:700;letter-spacing:-0.02em">Grow your money.</div></div>
+      <div class="icon-wrap neutral" style="width:34px;height:34px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 2-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg></div>
+    </div>
+    <div class="body">
+      <div class="card" style="padding:16px">
+        <div class="caption">INVESTED SO FAR</div>
+        <div class="row" style="align-items:baseline;margin-top:2px">
+          <div class="num num-hero">&#8377;1,80,000</div>
+          <div class="badge badge-gain"><span class="dot"></span>+12.4%</div>
+        </div>
+        <svg viewBox="0 0 280 60" preserveAspectRatio="none" style="width:100%;height:52px;margin-top:8px">
+          <path d="M0 45 L30 40 L60 44 L90 30 L120 34 L150 22 L180 26 L210 18 L240 20 L280 8" fill="none" stroke="var(--gain)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M0 45 L30 40 L60 44 L90 30 L120 34 L150 22 L180 26 L210 18 L240 20 L280 8 L280 60 L0 60 Z" fill="var(--gain-soft)" opacity="0.7"/>
+        </svg>
+        <div class="flex between small muted"><span>Aug 2025</span><span>Sep 2026</span></div>
+      </div>
+
+      <div class="strong small" style="margin-top:2px">Suggested for you</div>
+
+      <div class="card" style="padding:14px">
+        <div class="flex items-center" style="gap:12px">
+          <div class="icon-wrap gain"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-8M22 20v-6"/></svg></div>
+          <div class="grow" style="flex:1"><div class="strong small">Nifty 50 index fund</div><div class="caption">Low risk &middot; 12-14% avg annual</div></div>
+          <div class="action">Explore</div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px">
+        <div class="flex items-center" style="gap:12px">
+          <div class="icon-wrap warn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M4.9 5.1l14.2 14.2M2 12h20M4.9 18.9l14.2-14.2"/></svg></div>
+          <div class="grow" style="flex:1"><div class="strong small">Digital gold</div><div class="caption">Hedge &middot; buy from &#8377;100</div></div>
+          <div class="action">Explore</div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px">
+        <div class="flex items-center" style="gap:12px">
+          <div class="icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg></div>
+          <div class="grow" style="flex:1"><div class="strong small">Fixed deposit</div><div class="caption">Secure &middot; 6.8-7.2% p.a.</div></div>
+          <div class="action">Explore</div>
+        </div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a2 2 0 01-2 2h-4v-6h-6v6H5a2 2 0 01-2-2z"/></svg><span>Home</span></div>
+      <div class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg><span>Goals</span></div>
+      <div class="t active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-8M22 20v-6"/></svg><span>Invest</span></div>
+      <div class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg><span>You</span></div>
+    </div>
+  </div>
+  <div class="phone-name">15 &middot; Invest Hub</div>
+  </div>
+
+  <!-- 16 Vault -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="app-hdr"><div class="back">&larr;</div><div class="title">Vault</div><div class="action">+ Add</div></div>
+    <div class="body">
+      <div class="card" style="background:var(--accent-soft);border-color:transparent;padding:14px">
+        <div class="flex items-center" style="gap:12px">
+          <div class="icon-wrap" style="background:var(--surface);border:1px solid var(--border)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
+          <div class="grow" style="flex:1"><div class="strong small">End-to-end encrypted</div><div class="caption">Only you can open these documents</div></div>
+        </div>
+      </div>
+
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">Identity</div>
+      <div class="card" style="padding:4px 16px">
+        <div class="list">
+          <div class="item"><div class="icon-wrap warn" style="width:32px;height:32px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg></div><div class="grow" style="flex:1"><div class="t">PAN card</div><div class="s">Uploaded Aug 12</div></div><div class="muted">&rsaquo;</div></div>
+          <div class="item"><div class="icon-wrap warn" style="width:32px;height:32px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M15 9h3M15 13h3M5 17h14"/></svg></div><div class="grow" style="flex:1"><div class="t">Aadhaar</div><div class="s">Uploaded Aug 12</div></div><div class="muted">&rsaquo;</div></div>
+        </div>
+      </div>
+
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">Insurance</div>
+      <div class="card" style="padding:4px 16px">
+        <div class="list">
+          <div class="item"><div class="icon-wrap gain" style="width:32px;height:32px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg></div><div class="grow" style="flex:1"><div class="t">Term life</div><div class="s">HDFC &middot; &#8377;1Cr cover</div></div><div class="muted">&rsaquo;</div></div>
+          <div class="item"><div class="icon-wrap" style="width:32px;height:32px;background:var(--surface-alt);color:var(--ink-3);border:1px dashed var(--border-strong)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></div><div class="grow" style="flex:1"><div class="t muted" style="color:var(--ink-2)">Add health cover</div><div class="s">We recommend one</div></div><div class="muted">&rsaquo;</div></div>
+        </div>
+      </div>
+
+      <div class="mt-a"></div>
+    </div>
+  </div>
+  <div class="phone-name">16 &middot; Vault</div>
+  </div>
+
+  <!-- 17 Goal Chat -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="app-hdr">
+      <div class="back">&larr;</div>
+      <div class="flex items-center" style="gap:8px">
+        <div style="width:24px;height:24px;border-radius:8px;background:var(--accent);color:var(--accent-ink);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-family:var(--font-num)">Fn</div>
+        <div class="strong small">Coach</div>
+      </div>
+      <div style="width:34px"></div>
+    </div>
+    <div class="body">
+      <div class="caption center" style="margin-bottom:2px">Sep 8 &middot; 9:41 AM</div>
+      <div class="chat-row"><div class="bubble-ai">Morning Anaya. Your <b>Emergency fund</b> is 20% funded &mdash; on pace to finish in Jan 2027.</div></div>
+      <div class="chat-row" style="justify-content:flex-end"><div class="bubble-me">Can I hit it 2 months early?</div></div>
+      <div class="chat-row"><div class="bubble-ai">Add &#8377;7,500/month on top of your current &#8377;30,000 and you&rsquo;ll finish in <b>Nov 2026</b>. Your budget still leaves &#8377;44k for the month.</div></div>
+      <div class="chat-row"><div class="bubble-ai" style="padding:6px 8px;background:transparent;border:0"><div class="chip-row"><span class="chip outline">Do it &mdash; &#8377;37,500/mo</span><span class="chip outline">Show tradeoff</span></div></div></div>
+      <div class="chat-row" style="justify-content:flex-end"><div class="bubble-me">Show tradeoff</div></div>
+      <div class="chat-row"><div class="bubble-ai">You&rsquo;d skip 3 restaurant visits or one weekend trip. Your investing stays untouched.</div></div>
+      <div class="mt-a">
+        <div class="composer">
+          <input placeholder="Ask about your goals" />
+          <div class="send"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l7-7 7 7M12 5v14"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-name">17 &middot; Goal Chat</div>
+  </div>
+
+  <!-- 18 Notifications -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="app-hdr"><div class="back">&larr;</div><div class="title">Notifications</div><div class="action">Read all</div></div>
+    <div class="body">
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">Today</div>
+      <div class="card" style="padding:14px;position:relative">
+        <div style="position:absolute;top:14px;right:14px;width:6px;height:6px;border-radius:50%;background:var(--accent)"></div>
+        <div class="flex items-center" style="gap:12px">
+          <div class="icon-wrap warn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l10 18H2z"/><path d="M12 9v5"/><circle cx="12" cy="17.5" r="1" fill="currentColor" stroke="none"/></svg></div>
+          <div class="grow" style="flex:1"><div class="strong small">Emergency fund payment due</div><div class="caption">&#8377;30,000 in 2 days &middot; 9:12 AM</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px">
+        <div class="flex items-center" style="gap:12px">
+          <div class="icon-wrap gain"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12l5 5L20 6"/></svg></div>
+          <div class="grow" style="flex:1"><div class="strong small">You saved &#8377;18k this month</div><div class="caption">+22% vs last month &middot; 8:00 AM</div></div>
+        </div>
+      </div>
+
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">This week</div>
+      <div class="card" style="padding:14px">
+        <div class="flex items-center" style="gap:12px">
+          <div class="icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 2-2.5 2-2.5 4"/></svg></div>
+          <div class="grow" style="flex:1"><div class="strong small">New tip: SIP step-up</div><div class="caption">Increase contribution 10% each year &middot; Sep 5</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px">
+        <div class="flex items-center" style="gap:12px">
+          <div class="icon-wrap gain"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6L3 9l6-1z"/></svg></div>
+          <div class="grow" style="flex:1"><div class="strong small">Milestone: 20% of Emergency fund</div><div class="caption">One-fifth done. Steady. &middot; Sep 3</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-name">18 &middot; Notifications</div>
+  </div>
+
+  <!-- 19 Notification Settings -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="app-hdr"><div class="back">&larr;</div><div class="title">Notifications</div><div style="width:34px"></div></div>
+    <div class="body">
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">Reminders</div>
+      <div class="card" style="padding:4px 16px">
+        <div class="kv"><div class="col"><div class="v">Payment due</div><div class="caption">3 days, 1 day, morning of</div></div><div class="switch on"></div></div>
+        <div class="kv"><div class="col"><div class="v">Missed payment</div><div class="caption">Same day + follow-up</div></div><div class="switch on"></div></div>
+        <div class="kv"><div class="col"><div class="v">Weekly check-in</div><div class="caption">Sunday mornings</div></div><div class="switch"></div></div>
+      </div>
+
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">Progress</div>
+      <div class="card" style="padding:4px 16px">
+        <div class="kv"><div class="col"><div class="v">Milestone hit</div><div class="caption">Every 10% of a goal</div></div><div class="switch on"></div></div>
+        <div class="kv"><div class="col"><div class="v">Monthly summary</div><div class="caption">1st of each month</div></div><div class="switch on"></div></div>
+      </div>
+
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">Nudges</div>
+      <div class="card" style="padding:4px 16px">
+        <div class="kv"><div class="col"><div class="v">Tips &amp; ideas</div><div class="caption">One or two per week, max</div></div><div class="switch"></div></div>
+        <div class="kv"><div class="col"><div class="v">Product updates</div><div class="caption">When we ship something worth it</div></div><div class="switch"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-name">19 &middot; Notification settings</div>
+  </div>
+
+  <!-- 20 Personal Info -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="app-hdr"><div class="back">&larr;</div><div class="title">Personal info</div><div class="action">Save</div></div>
+    <div class="body">
+      <div class="col gap-8">
+        <div><div class="input-label">FULL NAME</div><input class="input" value="Anaya Kulkarni" /></div>
+        <div><div class="input-label">EMAIL</div><input class="input" value="anaya@finova.app" disabled style="opacity:0.6" /></div>
+        <div><div class="input-label">PHONE</div><input class="input" value="+91 98xxxxxx21" /></div>
+        <div><div class="input-label">DATE OF BIRTH</div>
+          <div class="input" style="display:flex;align-items:center;justify-content:space-between"><span>14 Mar 1997</span><span class="muted">&rsaquo;</span></div>
+        </div>
+        <div><div class="input-label">CITY</div>
+          <div class="input" style="display:flex;align-items:center;justify-content:space-between"><span>Bengaluru</span><span class="muted">&rsaquo;</span></div>
+        </div>
+        <div><div class="input-label">OCCUPATION</div>
+          <div class="input" style="display:flex;align-items:center;justify-content:space-between"><span>Software engineer</span><span class="muted">&rsaquo;</span></div>
+        </div>
+      </div>
+
+      <div class="mt-a"><button class="btn btn-ghost" style="width:100%">Delete account</button></div>
+    </div>
+  </div>
+  <div class="phone-name">20 &middot; Personal info</div>
+  </div>
+
+  <!-- 21 Privacy & Security -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="app-hdr"><div class="back">&larr;</div><div class="title">Privacy &amp; security</div><div style="width:34px"></div></div>
+    <div class="body">
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">Sign-in</div>
+      <div class="card" style="padding:4px 16px">
+        <div class="kv"><div class="col"><div class="v">Face ID</div><div class="caption">Unlock the app</div></div><div class="switch on"></div></div>
+        <div class="kv"><div class="col"><div class="v">4-digit PIN</div><div class="caption">Backup for Face ID</div></div><div class="switch on"></div></div>
+        <div class="kv"><div class="col"><div class="v">Two-factor auth</div><div class="caption">Extra step for sign-in</div></div><div class="switch"></div></div>
+      </div>
+
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">Privacy</div>
+      <div class="card" style="padding:4px 16px">
+        <div class="kv"><div class="col"><div class="v">Hide balances</div><div class="caption">Blur amounts on the home screen</div></div><div class="switch"></div></div>
+        <div class="kv"><div class="col"><div class="v">Analytics</div><div class="caption">Anonymous product usage</div></div><div class="switch on"></div></div>
+      </div>
+
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">Data</div>
+      <div class="card" style="padding:4px 16px">
+        <div class="list">
+          <div class="item"><div class="icon-wrap neutral" style="width:32px;height:32px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v12M6 10l6 6 6-6"/><path d="M4 20h16"/></svg></div><div class="grow" style="flex:1"><div class="t">Export my data</div></div><div class="muted">&rsaquo;</div></div>
+          <div class="item"><div class="icon-wrap loss" style="width:32px;height:32px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4h8v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14"/></svg></div><div class="grow" style="flex:1"><div class="t" style="color:var(--loss)">Delete all data</div></div><div class="muted">&rsaquo;</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-name">21 &middot; Privacy &amp; security</div>
+  </div>
+
+  <!-- 22 Edit Financial Details -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="app-hdr"><div class="back">&larr;</div><div class="title">Financial details</div><div class="action">Save</div></div>
+    <div class="body">
+      <div class="card" style="padding:16px">
+        <div class="caption">MONTHLY OVERVIEW</div>
+        <div class="row" style="align-items:baseline;margin-top:2px">
+          <div class="num num-large">&#8377;44,500</div>
+          <div class="caption">free after commitments</div>
+        </div>
+        <div style="height:8px;display:flex;border-radius:999px;overflow:hidden;margin-top:12px;background:var(--surface-alt)">
+          <div style="width:35%;background:var(--loss)"></div>
+          <div style="width:15%;background:var(--warn)"></div>
+          <div style="width:12%;background:var(--accent)"></div>
+          <div style="width:38%;background:var(--gain)"></div>
+        </div>
+        <div class="flex between small" style="margin-top:8px;color:var(--ink-2)">
+          <span><span style="color:var(--loss)">&#9679;</span> Expenses 35%</span>
+          <span><span style="color:var(--gain)">&#9679;</span> Free 38%</span>
+        </div>
+      </div>
+
+      <div class="card" style="padding:4px 16px">
+        <div class="kv"><div class="k">Monthly income</div><div class="v num">&#8377;1,20,000</div></div>
+        <div class="kv"><div class="k">Monthly expenses</div><div class="v num">&#8377;42,000</div></div>
+        <div class="kv"><div class="k">Monthly EMI</div><div class="v num">&#8377;18,500</div></div>
+        <div class="kv"><div class="k">EMI outstanding</div><div class="v num">&#8377;4,80,000</div></div>
+        <div class="kv"><div class="k">Monthly investment</div><div class="v num">&#8377;15,000</div></div>
+      </div>
+
+      <div class="mt-a"><button class="btn btn-secondary" style="width:100%">Edit all</button></div>
+    </div>
+  </div>
+  <div class="phone-name">22 &middot; Financial details</div>
+  </div>
+
+  <!-- 23 Edit Goal -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="app-hdr"><div class="back">&larr;</div><div class="title">Edit goal</div><div class="action">Save</div></div>
+    <div class="body">
+      <div class="col gap-8">
+        <div><div class="input-label">GOAL NAME</div><input class="input" value="Emergency fund" /></div>
+        <div><div class="input-label">TARGET AMOUNT</div><input class="input" value="&#8377;1,50,000" style="font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:18px;font-weight:600" /></div>
+        <div><div class="input-label">TARGET DATE</div><div class="input" style="display:flex;align-items:center;justify-content:space-between"><span>Jan 2027</span><span class="muted">&rsaquo;</span></div></div>
+        <div><div class="input-label">MONTHLY CONTRIBUTION</div><input class="input" value="&#8377;30,000" style="font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:18px;font-weight:600" /></div>
+      </div>
+
+      <div class="card" style="background:var(--warn-soft);border-color:transparent;padding:14px">
+        <div class="flex items-center" style="gap:10px">
+          <div class="icon-wrap warn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l10 18H2z"/><path d="M12 9v5"/><circle cx="12" cy="17.5" r="1" fill="currentColor" stroke="none"/></svg></div>
+          <div class="grow" style="flex:1"><div class="strong small">You&rsquo;ll finish 1 month later.</div><div class="caption">Reducing monthly by &#8377;5,000 shifts target to Feb 2027.</div></div>
+        </div>
+      </div>
+
+      <div class="mt-a"><button class="btn btn-danger" style="width:100%">Delete goal</button></div>
+    </div>
+  </div>
+  <div class="phone-name">23 &middot; Edit goal</div>
+  </div>
+
+  <!-- 24 Help & Support -->
+  <div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="right"><svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4"/><rect x="4" y="4" width="2" height="6"/><rect x="8" y="2" width="2" height="8"/><rect x="12" y="0" width="2" height="10"/></svg></span></div>
+    <div class="app-hdr"><div class="back">&larr;</div><div class="title">Help</div><div style="width:34px"></div></div>
+    <div class="body">
+      <div class="card" style="background:var(--accent-soft);border-color:transparent;padding:16px">
+        <div class="strong">How can we help?</div>
+        <div class="input" style="margin-top:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;gap:8px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <span class="muted">Search topics</span>
+        </div>
+      </div>
+
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">Common questions</div>
+      <div class="card" style="padding:4px 16px">
+        <div class="list">
+          <div class="item"><div class="grow" style="flex:1"><div class="t">How is the pulse score calculated?</div></div><div class="muted">&rsaquo;</div></div>
+          <div class="item"><div class="grow" style="flex:1"><div class="t">What happens if I miss a contribution?</div></div><div class="muted">&rsaquo;</div></div>
+          <div class="item"><div class="grow" style="flex:1"><div class="t">Can I have more than one goal?</div></div><div class="muted">&rsaquo;</div></div>
+          <div class="item"><div class="grow" style="flex:1"><div class="t">Is my data safe?</div></div><div class="muted">&rsaquo;</div></div>
+        </div>
+      </div>
+
+      <div class="strong small muted" style="letter-spacing:0.08em;text-transform:uppercase">Reach us</div>
+      <div class="card" style="padding:4px 16px">
+        <div class="list">
+          <div class="item"><div class="icon-wrap neutral" style="width:32px;height:32px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div class="grow" style="flex:1"><div class="t">Chat with support</div><div class="s">Replies in ~4 hours</div></div><div class="muted">&rsaquo;</div></div>
+          <div class="item"><div class="icon-wrap neutral" style="width:32px;height:32px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 7l10 6 10-6"/></svg></div><div class="grow" style="flex:1"><div class="t">Email us</div><div class="s">help@finova.app</div></div><div class="muted">&rsaquo;</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-name">24 &middot; Help &amp; support</div>
+  </div>
+
+  </div>
+</section>
+
+<footer style="margin-top:48px;padding-top:24px;border-top:1px solid var(--border);color:var(--ink-3);font-size:12px;text-align:center">
+  Stage 2 &middot; 15 remaining screens &middot; Toggle Light/Dark at top-right. Together with Stage 1 the app is fully covered (24 screens).
+</footer>
+
+</main>
+
+<script>
+  const btns = document.querySelectorAll('.toggle button');
+  btns.forEach(b => b.addEventListener('click', () => {
+    btns.forEach(x => x.classList.toggle('active', x === b));
+    document.documentElement.setAttribute('data-theme', b.dataset.mode);
+  }));
+</script>
+
+</body>
+</html>

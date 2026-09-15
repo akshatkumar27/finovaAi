@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    StatusBar,
     ScrollView,
     TouchableOpacity,
     Modal,
@@ -12,366 +11,241 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { BackButton } from '../../components';
-import { colors, typography, spacing } from '../../constants';
 import { notificationService } from '../../services/NotificationService';
 import api from '../../services/api';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
-import { useAppDispatch } from '../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { clearFinancialData } from '../../store/slices/financialDataSlice';
+import { logout } from '../../store/slices/authSlice';
+import { useTheme, ThemeMode, fontFor } from '../../theme';
+import { Palette } from '../../theme/palette';
+import { Icon } from '../../components';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
+
+
 
 export const ProfileScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
     const dispatch = useAppDispatch();
+    const user = useAppSelector((state) => state.auth.user) || {};
+    const { colors, typography, mode, setMode } = useTheme();
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
-    const [userName, setUserName] = useState('');
-    const [userEmail, setUserEmail] = useState('');
+    
+    const userName = user.name || '';
+    const userEmail = user.email || '';
 
-    useEffect(() => {
-        loadUserData();
-    }, []);
-
-    const loadUserData = async () => {
-        try {
-            const userData = await AsyncStorage.getItem('user');
-            if (userData) {
-                const user = JSON.parse(userData);
-                setUserName(user.name || '');
-                setUserEmail(user.email || '');
-            }
-        } catch (error) {
-            console.error('Error loading user data:', error);
-        }
-    };
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
     const handleLogout = async () => {
         setLogoutModalVisible(false);
         try {
-            // Deregister FCM Token
             const fcmToken = await notificationService.getFCMToken();
             if (fcmToken) {
-                await api.delete('/api/notifications/unregister-token', {
-                    data: { fcm_token: fcmToken }
-                });
+                await api.delete('/api/notifications/unregister-token', { data: { fcm_token: fcmToken } });
             }
-
-            // Call logout API
             await api.post('/api/auth/logout');
         } catch (error) {
             console.error('Logout API error:', error);
         }
-        // Clear all local data from AsyncStorage
-        try {
-            await AsyncStorage.clear();
-        } catch (error) {
-            console.error('Error clearing local data:', error);
-        }
-
-        // Clear global state
+        try { await AsyncStorage.clear(); } catch (e) { console.error(e); }
         dispatch(clearFinancialData());
-
-        // Reset navigation to Auth screen
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'Auth' }],
-            })
-        );
+        dispatch(logout({ targetScreen: 'Login' }));
     };
 
-    // Get initials for avatar
-    const getInitials = () => {
-        if (!userName) return '👤';
+    const initials = (() => {
+        if (!userName) return 'U';
         const parts = userName.trim().split(' ');
-        if (parts.length >= 2) {
-            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-        }
+        if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
         return parts[0][0].toUpperCase();
-    };
+    })();
+
+    const themeOptions: { key: ThemeMode; label: string }[] = [
+        { key: 'light', label: 'Light' },
+        { key: 'dark', label: 'Dark' },
+        { key: 'system', label: 'System' },
+    ];
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-
-            {/* Logout Confirmation Modal */}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={logoutModalVisible}
-                onRequestClose={() => setLogoutModalVisible(false)}
-            >
+        <SafeAreaView style={styles.container} edges={['top']}>
+            {/* Logout modal */}
+            <Modal animationType="fade" transparent visible={logoutModalVisible} onRequestClose={() => setLogoutModalVisible(false)}>
                 <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <View style={styles.modalIconContainer}>
-                            <Text style={styles.modalIcon}>👋</Text>
-                        </View>
-                        <Text style={styles.modalTitle}>Log Out</Text>
-                        <Text style={styles.modalMessage}>
-                            Are you sure you want to log out of your account?
-                        </Text>
+                    <View style={styles.modalCard}>
+                        <Text style={styles.modalTitle}>Sign out</Text>
+                        <Text style={styles.modalMessage}>You'll need to sign in again to see your goals.</Text>
                         <View style={styles.modalButtons}>
-                            <TouchableOpacity
-                                style={styles.modalCancelButton}
-                                onPress={() => setLogoutModalVisible(false)}
-                            >
+                            <TouchableOpacity style={styles.modalCancel} onPress={() => setLogoutModalVisible(false)}>
                                 <Text style={styles.modalCancelText}>Cancel</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.modalLogoutButton}
-                                onPress={handleLogout}
-                            >
-                                <Text style={styles.modalLogoutText}>Log Out</Text>
+                            <TouchableOpacity style={styles.modalConfirm} onPress={handleLogout}>
+                                <Text style={styles.modalConfirmText}>Sign out</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Modal>
 
-            {/* Header */}
             <View style={styles.header}>
-                <BackButton onPress={() => navigation.goBack()} />
-                <Text style={styles.headerTitle}>Profile</Text>
-                <View style={styles.headerSpacer} />
+                <View style={{ width: 34 }} />
+                <Text style={styles.headerTitle}>You</Text>
+                <View style={{ width: 34 }} />
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {/* Profile Card */}
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+                {/* Profile card */}
                 <View style={styles.profileCard}>
-                    <View style={styles.avatarLarge}>
-                        <Text style={styles.avatarText}>{getInitials()}</Text>
-                    </View>
+                    <View style={styles.avatar}><Text style={styles.avatarText}>{initials}</Text></View>
                     <Text style={styles.userName}>{userName || 'User'}</Text>
-                    <Text style={styles.userEmail}>{userEmail || ''}</Text>
+                    <Text style={styles.userEmail}>{userEmail}</Text>
                 </View>
 
-                {/* Menu Items */}
-                <View style={styles.menuSection}>
-                    <TouchableOpacity
-                        style={styles.menuItem}
-                        onPress={() => navigation.navigate('PersonalInfo' as never)}
-                    >
-                        <Text style={styles.menuIcon}>👤</Text>
-                        <Text style={styles.menuText}>Personal Information</Text>
-                        <Text style={styles.menuArrow}>›</Text>
+                {/* Appearance */}
+                <Text style={styles.sectionHead}>APPEARANCE</Text>
+                <View style={styles.card}>
+                    <View style={styles.appearanceRow}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.rowTitle}>Theme</Text>
+                            <Text style={styles.rowSub}>Choose how Finova looks</Text>
+                        </View>
+                        <View style={styles.seg}>
+                            {themeOptions.map((opt) => {
+                                const active = mode === opt.key;
+                                return (
+                                    <TouchableOpacity
+                                        key={opt.key}
+                                        onPress={() => setMode(opt.key)}
+                                        style={[styles.segBtn, active && styles.segBtnActive]}
+                                        activeOpacity={0.85}
+                                    >
+                                        <Text style={[styles.segBtnText, active && styles.segBtnTextActive]}>{opt.label}</Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+                    </View>
+                </View>
+
+                {/* Account */}
+                <Text style={styles.sectionHead}>ACCOUNT</Text>
+                <View style={styles.card}>
+                    <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('PersonalInfo' as never)}>
+                        <View style={styles.rowIconWrap}><Icon name="user" color="ink2" size="sm" /></View>
+                        <View style={{ flex: 1 }}><Text style={styles.rowTitle}>Personal info</Text></View>
+                        <Icon name="chevron-right" color="ink3" size="md" />
                     </TouchableOpacity>
-
-                    {/* <TouchableOpacity style={styles.menuItem}>
-                        <Text style={styles.menuIcon}>🏦</Text>
-                        <Text style={styles.menuText}>Linked Accounts</Text>
-                        <Text style={styles.menuArrow}>›</Text>
-                    </TouchableOpacity> */}
-
-                    {/* <TouchableOpacity
-                        style={styles.menuItem}
-                        onPress={() => navigation.navigate('NotificationSettings' as never)}
-                    >
-                        <Text style={styles.menuIcon}>⚙️</Text>
-                        <Text style={styles.menuText}>Notification Settings</Text>
-                        <Text style={styles.menuArrow}>›</Text>
-                    </TouchableOpacity> */}
-
-                    <TouchableOpacity
-                        style={styles.menuItem}
-                        onPress={() => navigation.navigate('PrivacySecurity' as never)}
-                    >
-                        <Text style={styles.menuIcon}>🔒</Text>
-                        <Text style={styles.menuText}>Privacy & Security</Text>
-                        <Text style={styles.menuArrow}>›</Text>
+                    <View style={styles.divider} />
+                    <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('PrivacySecurity' as never)}>
+                        <View style={styles.rowIconWrap}><Icon name="lock" color="ink2" size="sm" /></View>
+                        <View style={{ flex: 1 }}><Text style={styles.rowTitle}>Privacy &amp; security</Text></View>
+                        <Icon name="chevron-right" color="ink3" size="md" />
                     </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.menuItem}
-                        onPress={() => navigation.navigate('HelpSupport' as never)}
-                    >
-                        <Text style={styles.menuIcon}>❓</Text>
-                        <Text style={styles.menuText}>Help & Support</Text>
-                        <Text style={styles.menuArrow}>›</Text>
+                    <View style={styles.divider} />
+                    <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('HelpSupport' as never)}>
+                        <View style={styles.rowIconWrap}><Icon name="help-circle" color="ink2" size="sm" /></View>
+                        <View style={{ flex: 1 }}><Text style={styles.rowTitle}>Help &amp; support</Text></View>
+                        <Icon name="chevron-right" color="ink3" size="md" />
                     </TouchableOpacity>
                 </View>
 
-                {/* Logout Button */}
-                <TouchableOpacity
-                    style={styles.logoutButton}
-                    onPress={() => setLogoutModalVisible(true)}
-                >
-                    <Text style={styles.logoutText}>Log Out</Text>
+                <TouchableOpacity style={styles.signOut} onPress={() => setLogoutModalVisible(true)} activeOpacity={0.85}>
+                    <Text style={styles.signOutText}>Sign out</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.version}>Finova AI v1.0</Text>
+                <Text style={styles.version}>Finova AI · v1.0</Text>
             </ScrollView>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-    },
-    headerTitle: {
-        flex: 1,
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        textAlign: 'center',
-    },
-    headerSpacer: {
-        width: 40,
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: spacing.lg,
-    },
-    profileCard: {
-        alignItems: 'center',
-        paddingVertical: spacing.xl,
-        marginBottom: spacing.lg,
-    },
-    avatarLarge: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-    },
-    avatarText: {
-        fontSize: 36,
-    },
-    userName: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.semibold,
-        marginBottom: spacing.xs,
-    },
-    userEmail: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-    },
-    menuSection: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 16,
-        marginBottom: spacing.lg,
-    },
-    menuItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.md,
-        borderBottomWidth: 0.3,
-        borderBottomColor: colors.border,
-    },
-    menuIcon: {
-        fontSize: 20,
-        marginRight: spacing.md,
-    },
-    menuText: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        flex: 1,
-    },
-    menuArrow: {
-        color: colors.textMuted,
-        fontSize: 20,
-    },
-    logoutButton: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 12,
-        paddingVertical: spacing.md,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#ef4444',
-        marginBottom: spacing.lg,
-        marginTop: spacing.xxl,
-    },
-    logoutText: {
-        color: '#ef4444',
-        fontSize: typography.body,
-        fontWeight: typography.medium,
-    },
-    version: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        textAlign: 'center',
-        marginBottom: spacing.xxl,
-    },
-    // Modal Styles
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-    },
-    modalContainer: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 20,
-        padding: spacing.xl,
-        width: '100%',
-        maxWidth: 320,
-        alignItems: 'center',
-    },
-    modalIconContainer: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: '#ef444420',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-    },
-    modalIcon: {
-        fontSize: 28,
-    },
-    modalTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        marginBottom: spacing.sm,
-    },
-    modalMessage: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        textAlign: 'center',
-        marginBottom: spacing.xl,
-        lineHeight: 22,
-    },
-    modalButtons: {
-        flexDirection: 'row',
-        width: '100%',
-        gap: spacing.sm,
-    },
-    modalCancelButton: {
-        flex: 1,
-        backgroundColor: colors.inputBackground,
-        borderRadius: 12,
-        paddingVertical: spacing.md,
-        alignItems: 'center',
-    },
-    modalCancelText: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.medium,
-    },
-    modalLogoutButton: {
-        flex: 1,
-        backgroundColor: '#ef4444',
-        borderRadius: 12,
-        paddingVertical: spacing.md,
-        alignItems: 'center',
-    },
-    modalLogoutText: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.medium,
-    },
-});
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flex: 1, backgroundColor: c.canvas },
+        header: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6,
+        },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold'), letterSpacing: -0.2 },
+        content: { paddingHorizontal: 20, paddingBottom: 40, gap: 12 },
+
+        profileCard: {
+            alignItems: 'center',
+            backgroundColor: c.surface,
+            borderRadius: 20,
+            borderWidth: 1, borderColor: c.border,
+            paddingVertical: 22, paddingHorizontal: 20,
+            marginTop: 8,
+        },
+        avatar: {
+            width: 64, height: 64, borderRadius: 32,
+            backgroundColor: c.accent,
+            alignItems: 'center', justifyContent: 'center',
+        },
+        avatarText: { color: c.accentInk, fontSize: 24, fontFamily: fontFor('bold'), letterSpacing: -0.4 },
+        userName: { color: c.ink1, fontSize: 16, fontFamily: fontFor('semibold'), marginTop: 10 },
+        userEmail: { color: c.ink3, fontSize: 12, marginTop: 2 },
+
+        sectionHead: {
+            color: c.ink3,
+            fontSize: 11, fontFamily: fontFor('semibold'), letterSpacing: 1.2,
+            marginTop: 12, marginBottom: -4, paddingHorizontal: 4,
+        },
+
+        card: {
+            backgroundColor: c.surface,
+            borderRadius: 16,
+            borderWidth: 1, borderColor: c.border,
+            paddingHorizontal: 16,
+        },
+        appearanceRow: {
+            flexDirection: 'row', alignItems: 'center',
+            paddingVertical: 14,
+        },
+        row: {
+            flexDirection: 'row', alignItems: 'center',
+            paddingVertical: 12,
+        },
+        rowTitle: { color: c.ink1, fontSize: 14, fontFamily: fontFor('medium') },
+        rowSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
+        rowIconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+        divider: { height: 1, backgroundColor: c.border },
+
+        seg: {
+            flexDirection: 'row',
+            backgroundColor: c.surfaceAlt,
+            borderRadius: 10, padding: 3,
+        },
+        segBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+        segBtnActive: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.border },
+        segBtnText: { color: c.ink2, fontSize: 12, fontFamily: fontFor('medium') },
+        segBtnTextActive: { color: c.ink1 },
+
+        signOut: {
+            marginTop: 12,
+            paddingVertical: 14,
+            borderRadius: 12,
+            borderWidth: 1, borderColor: c.borderStrong,
+            alignItems: 'center',
+        },
+        signOutText: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
+
+        version: { color: c.ink3, fontSize: 11, textAlign: 'center', marginTop: 24 },
+
+        modalOverlay: {
+            flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+            alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32,
+        },
+        modalCard: {
+            backgroundColor: c.surface, borderRadius: 20,
+            paddingVertical: 24, paddingHorizontal: 20,
+            width: '100%',
+            borderWidth: 1, borderColor: c.border,
+        },
+        modalTitle: { color: c.ink1, fontSize: 18, fontFamily: fontFor('bold'), marginBottom: 6 },
+        modalMessage: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 20 },
+        modalButtons: { flexDirection: 'row', gap: 10 },
+        modalCancel: { flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong, alignItems: 'center' },
+        modalCancelText: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
+        modalConfirm: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: c.loss, alignItems: 'center' },
+        modalConfirmText: { color: '#FFFFFF', fontSize: 14, fontFamily: fontFor('semibold') },
+    });

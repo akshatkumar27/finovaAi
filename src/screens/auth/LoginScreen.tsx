@@ -1,23 +1,20 @@
-import React, { useState } from 'react';
-import {
-    View,
+import React, { useMemo, useState } from 'react';
+import { View,
     Text,
     StyleSheet,
     SafeAreaView,
-    StatusBar,
     KeyboardAvoidingView,
     Platform,
-    ActivityIndicator,
     ScrollView,
-    TouchableOpacity,
-} from 'react-native';
-import Toast from 'react-native-toast-message';
+    TouchableOpacity, Image } from 'react-native';
+import { toast } from 'sonner-native';
 import axios from 'axios';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Logo, Input, Button, FooterLinks, AnimatedMascot } from '../../components';
-import { colors, typography, spacing, API_BASE_URL } from '../../constants';
+import { Input, Button } from '../../components';
+import { API_BASE_URL } from '../../constants';
+import { useTheme, fontFor } from '../../theme';
 
 type AuthStackParamList = {
     Login: undefined;
@@ -29,9 +26,12 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, '
 
 export const LoginScreen: React.FC = () => {
     const navigation = useNavigation<LoginScreenNavigationProp>();
+    const { colors, typography, isDark } = useTheme();
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
     const validateEmail = (emailValue: string): boolean => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -49,173 +49,88 @@ export const LoginScreen: React.FC = () => {
 
     const handleEmailChange = (value: string) => {
         setEmail(value);
-        if (emailError) {
-            validateEmail(value);
-        }
+        if (emailError) validateEmail(value);
     };
 
     const handleContinue = async () => {
         if (!validateEmail(email)) {
-            Toast.show({
-                type: 'error',
-                text1: 'Invalid Email',
-                text2: emailError || 'Please enter a valid email address.',
-            });
+            toast.error('Invalid Email', { description: emailError || 'Please enter a valid email address.' });
             return;
         }
         setLoading(true);
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/auth/send-otp`, {
-                email: email,
-            });
-            console.log('OTP sent successfully:', response.data);
-
-            // Save status for resume capability
-            // await AsyncStorage.setItem('onboardingStatus', 'OTP_VERIFICATION');
+            const response = await axios.post(`${API_BASE_URL}/api/auth/send-otp`, { email });
             await AsyncStorage.setItem('temp_auth_email', email);
-
             navigation.navigate('OTPVerification', { email, otpToken: response.data.otpToken });
         } catch (error) {
-            console.error('Error sending OTP:', error);
             if (axios.isAxiosError(error)) {
                 const errorMessage = error.response?.data?.message || 'Failed to send OTP. Please try again.';
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: errorMessage,
-                });
+                toast.error('Error', { description: errorMessage });
             } else {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: 'Something went wrong. Please try again.',
-                });
+                toast.error('Error', { description: 'Something went wrong. Please try again.' });
             }
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSignup = () => {
-        navigation.navigate('Signup');
-    };
-
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.keyboardView}
+                style={styles.flex}
             >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    <View style={styles.header}>
-                        <Logo size="large" />
+                <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+                    <View style={styles.mark}>
+                        <Image
+                            source={require('../../asset/logo-white-tight.png')}
+                            style={styles.markInner}
+                            resizeMode="contain"
+                        />
                     </View>
 
-                    <View style={styles.content}>
-                        <Text style={styles.title}>Welcome Back</Text>
-                        <Text style={styles.subtitle}>Log in to manage your wealth with AI.</Text>
+                    <Text style={styles.title}>Welcome to Finova.</Text>
+                    <Text style={styles.subtitle}>
+                        Enter the email you use for money things. We'll send a 6-digit code.
+                    </Text>
 
-                        <View style={styles.form}>
-                            <Input
-                                label="EMAIL ADDRESS"
-                                placeholder="name@domain.com"
-                                value={email}
-                                onChangeText={handleEmailChange}
-                                onBlur={() => validateEmail(email)}
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                autoComplete="email"
-                                icon={<Text style={styles.inputIcon}>@</Text>}
-                                error={emailError}
-                            />
-                        </View>
+                    <Input
+                        label="EMAIL"
+                        placeholder="you@work.com"
+                        value={email}
+                        onChangeText={handleEmailChange}
+                        onBlur={() => validateEmail(email)}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoComplete="email"
+                        error={emailError}
+                    />
 
-                        <Button
-                            title="Continue"
-                            onPress={handleContinue}
-                            loading={loading}
-                        />
-
-                        {/* Signup Link */}
-                        <TouchableOpacity style={styles.signupLink} onPress={handleSignup}>
+                    <View style={styles.footer}>
+                        <Button title="Send code" onPress={handleContinue} loading={loading} />
+                        <TouchableOpacity style={styles.signup} onPress={() => navigation.navigate('Signup')}>
                             <Text style={styles.signupText}>
-                                New user? <Text style={styles.signupHighlight}>Sign up with Fino 🐼</Text>
+                                New here? <Text style={styles.signupLink}>Create account</Text>
                             </Text>
                         </TouchableOpacity>
                     </View>
-
-                    {/* Mascot at the bottom */}
-                    <View style={styles.mascotContainer}>
-                        <AnimatedMascot />
-                    </View>
-
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    keyboardView: {
-        flex: 1,
-    },
-    scrollContent: {
-        flexGrow: 1,
-    },
-    header: {
-        paddingTop: spacing.xxl,
-        paddingHorizontal: spacing.lg,
-        alignItems: 'center',
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: spacing.lg,
-        paddingTop: spacing.xxl,
-    },
-    title: {
-        color: colors.textPrimary,
-        fontSize: typography.h1,
-        fontWeight: typography.bold,
-        marginBottom: spacing.sm,
-    },
-    subtitle: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        marginBottom: spacing.xl,
-    },
-    form: {
-        marginBottom: spacing.lg,
-    },
-    inputIcon: {
-        color: colors.textMuted,
-        fontSize: typography.body,
-    },
-    footer: {
-        paddingHorizontal: spacing.lg,
-    },
-    mascotContainer: {
-        paddingHorizontal: spacing.xs,
-        paddingBottom: spacing.lg,
-        marginTop: 'auto',
-    },
-    signupLink: {
-        alignItems: 'center',
-        marginTop: spacing.lg,
-    },
-    signupText: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-    },
-    signupHighlight: {
-        color: colors.primary,
-        fontWeight: typography.semibold as any,
-    },
-});
+const makeStyles = (c: ReturnType<typeof useTheme>['colors'], t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flex: 1, backgroundColor: c.canvas },
+        flex: { flex: 1 },
+        scroll: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 32, paddingBottom: 24 },
+        mark: { width: 36, height: 36, borderRadius: 10, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
+        markInner: { width: 20, height: 20 },
+        title: { color: c.ink1, fontSize: 26, fontFamily: fontFor('bold'), letterSpacing: -0.5, marginTop: 28, marginBottom: 6 },
+        subtitle: { color: c.ink2, fontSize: 14, lineHeight: 20, marginBottom: 24 },
+        footer: { marginTop: 'auto' },
+        signup: { alignItems: 'center', marginTop: 16 },
+        signupText: { color: c.ink3, fontSize: 13 },
+        signupLink: { color: c.accent, fontFamily: fontFor('medium') },
+    });

@@ -6,6 +6,16 @@ const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
  *
  * @type {import('metro-config').MetroConfig}
  */
-const config = {};
+const defaultConfig = getDefaultConfig(__dirname);
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+const config = {
+  resolver: {
+    sourceExts: [...defaultConfig.resolver.sourceExts, 'mjs', 'cjs'],
+    // Honor `exports` conditional-subpath fields in package.json.
+    // Required for lucide-react-native subpath imports (`lucide-react-native/icons/*`)
+    // and any other modern package that ships only the `exports` map.
+    unstable_enablePackageExports: true,
+  },
+};
+
+module.exports = mergeConfig(defaultConfig, config);

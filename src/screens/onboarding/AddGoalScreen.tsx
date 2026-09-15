@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    StatusBar,
     ScrollView,
     TextInput,
     Platform,
@@ -12,48 +11,54 @@ import {
     Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
+import { api } from '../../services';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { BackButton, Button, AnimatedMascot, Header } from '../../components';
+import { Button, BackButton, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
-import { colors, typography, spacing } from '../../constants';
-import { api } from '../../services';
 import { formatCompactCurrency } from '../../utils';
 import { formatNumberInput, formatCompactNumber } from '../../utils/formatNumber';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../store';
+import { updateUser } from '../../store/slices/authSlice';
+import { useTheme, fontFor } from '../../theme';
+import { Palette } from '../../theme/palette';
 
-// Time duration options in months
 const DURATION_OPTIONS = [
-    { label: '6 months', value: 6 },
-    { label: '1 year', value: 12 },
-    { label: '2 years', value: 24 },
-    { label: '3 years', value: 36 },
-    { label: '5 years', value: 60 },
+    { label: '6 mo', value: 6 },
+    { label: '1 yr', value: 12 },
+    { label: '2 yr', value: 24 },
+    { label: '3 yr', value: 36 },
+    { label: '5 yr', value: 60 },
 ];
 
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const ordinal = (d: number) => (d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th');
+
 export const AddGoalScreen: React.FC = () => {
+    const dispatch = useDispatch();
     const navigation = useNavigation();
     const route = useRoute<RouteProp<MainStackParamList, 'AddGoal'>>();
+    const currencySymbol = useSelector((state: RootState) => state.settings.appCurrency);
+    const user = useSelector((state: RootState) => state.auth.user);
+    const { colors, typography } = useTheme();
+
     const availableForNewGoals = route.params?.availableForNewGoals;
     const suggestionName = route.params?.suggestionName;
     const suggestionTarget = route.params?.suggestionTarget;
     const suggestionMonths = route.params?.suggestionMonths;
     const suggestionDescription = route.params?.suggestionDescription;
 
-    // Determine initial duration selection from suggestion
-    const isPreset = DURATION_OPTIONS.some(d => d.value === suggestionMonths);
-    const { currencySymbol } = useCurrency();
+    const isPreset = DURATION_OPTIONS.some((d) => d.value === suggestionMonths);
     const [name, setName] = useState(suggestionName || '');
     const [target, setTarget] = useState(suggestionTarget ? formatNumberInput(suggestionTarget.toString()) : '');
     const [selectedDuration, setSelectedDuration] = useState<number | 'custom'>(
-        suggestionMonths
-            ? (isPreset ? suggestionMonths : 'custom')
-            : 12
+        suggestionMonths ? (isPreset ? suggestionMonths : 'custom') : 12,
     );
-    const [customMonths, setCustomMonths] = useState(
-        suggestionMonths && !isPreset ? String(suggestionMonths) : ''
-    );
+    const [customMonths, setCustomMonths] = useState(suggestionMonths && !isPreset ? String(suggestionMonths) : '');
     const [monthlyContribution, setMonthlyContribution] = useState('');
     const [contributionDay, setContributionDay] = useState(new Date().getDate());
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -65,115 +70,75 @@ export const AddGoalScreen: React.FC = () => {
     const [isContributionManuallyEdited, setIsContributionManuallyEdited] = useState(false);
     const scrollViewRef = useRef<ScrollView>(null);
 
-    // useEffect(() => {
-    //     const saveStatus = async () => {
-    //         await AsyncStorage.setItem('onboardingStatus', 'AddGoal');
-    //     };
-    //     saveStatus();
-    // }, []);
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
-    // Get actual months value
-    const achieveInMonths = selectedDuration === 'custom'
-        ? (parseInt(customMonths) || 0)
-        : selectedDuration;
-
+    const achieveInMonths = selectedDuration === 'custom' ? (parseInt(customMonths) || 0) : selectedDuration;
     const targetAmount = parseInt(target.replace(/,/g, '')) || 0;
     const contributionAmount = parseInt(monthlyContribution.replace(/,/g, '')) || 0;
+    const exceedsBudget = availableForNewGoals !== undefined && contributionAmount > availableForNewGoals;
 
-    // Auto-calculate monthly contribution when target or duration changes
     useEffect(() => {
         if (!isContributionManuallyEdited && targetAmount > 0 && achieveInMonths > 0) {
-            const calculated = Math.ceil(targetAmount / achieveInMonths);
-            setMonthlyContribution(formatNumberInput(calculated.toString()));
+            const calc = Math.ceil(targetAmount / achieveInMonths);
+            setMonthlyContribution(formatNumberInput(calc.toString()));
         }
     }, [targetAmount, achieveInMonths, isContributionManuallyEdited]);
 
-    // When contribution is manually edited, recalculate months
     const handleContributionChange = (value: string) => {
-        const formattedValue = formatNumberInput(value);
-        let contribution = parseInt(formattedValue.replace(/,/g, '')) || 0;
-        let finalValue = formattedValue;
-
-        // Clamp contribution to target amount
+        const formatted = formatNumberInput(value);
+        let contribution = parseInt(formatted.replace(/,/g, '')) || 0;
+        let final = formatted;
         if (targetAmount > 0 && contribution > targetAmount) {
             contribution = targetAmount;
-            finalValue = formatNumberInput(targetAmount.toString());
-            // Optional: You could show a toast or small error text here
+            final = formatNumberInput(targetAmount.toString());
         }
-
-        setMonthlyContribution(finalValue);
+        setMonthlyContribution(final);
         setIsContributionManuallyEdited(true);
-
         if (contribution > 0 && targetAmount > 0) {
-            const calculatedMonths = Math.ceil(targetAmount / contribution);
-            if (calculatedMonths > 0 && calculatedMonths <= 600) { // Max 50 years
+            const months = Math.ceil(targetAmount / contribution);
+            if (months > 0 && months <= 600) {
                 setSelectedDuration('custom');
-                setCustomMonths(calculatedMonths.toString());
+                setCustomMonths(months.toString());
             }
         }
     };
 
-    // Reset manual edit flag when duration is selected from chips
     const handleDurationSelect = (value: number) => {
         setSelectedDuration(value);
         setCustomMonths('');
         setIsContributionManuallyEdited(false);
     };
-
     const handleCustomSelect = () => {
         setSelectedDuration('custom');
         setIsContributionManuallyEdited(false);
     };
 
-    const handleCustomMonthsChange = (value: string) => {
-        setCustomMonths(value);
-        setIsContributionManuallyEdited(false);
-    };
-
-    // Calendar helpers
+    // ── Calendar helpers ──────────────────────────────────────────────────
     const today = new Date();
     const todayDate = today.getDate();
     const todayMonth = today.getMonth();
     const todayYear = today.getFullYear();
-
     const maxMonth = todayMonth + 1 > 11 ? 0 : todayMonth + 1;
     const maxYear = todayMonth + 1 > 11 ? todayYear + 1 : todayYear;
-
     const canGoNext = !(calendarMonth === maxMonth && calendarYear === maxYear);
     const canGoPrev = !(calendarMonth === todayMonth && calendarYear === todayYear);
-
-    const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-    const getCalendarDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
-    const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
-
-    const isDateDisabled = (day: number, month: number, year: number): boolean => {
+    const getDaysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
+    const getFirstDayOfMonth = (y: number, m: number) => new Date(y, m, 1).getDay();
+    const isDateDisabled = (day: number, month: number, year: number) => {
         const d = new Date(year, month, day);
         const t = new Date(todayYear, todayMonth, todayDate);
         return d < t;
     };
-
     const handleCalendarPrev = () => {
         if (!canGoPrev) return;
-        if (calendarMonth === 0) {
-            setCalendarMonth(11);
-            setCalendarYear(calendarYear - 1);
-        } else {
-            setCalendarMonth(calendarMonth - 1);
-        }
+        if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(calendarYear - 1); }
+        else { setCalendarMonth(calendarMonth - 1); }
     };
-
     const handleCalendarNext = () => {
         if (!canGoNext) return;
-        if (calendarMonth === 11) {
-            setCalendarMonth(0);
-            setCalendarYear(calendarYear + 1);
-        } else {
-            setCalendarMonth(calendarMonth + 1);
-        }
+        if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(calendarYear + 1); }
+        else { setCalendarMonth(calendarMonth + 1); }
     };
-
     const handleDateSelect = (day: number) => {
         setContributionDay(day);
         setSelectedMonth(calendarMonth);
@@ -181,118 +146,23 @@ export const AddGoalScreen: React.FC = () => {
         setCalendarVisible(false);
     };
 
-    const renderCalendarGrid = () => {
-        const daysInMonth = getCalendarDaysInMonth(calendarYear, calendarMonth);
-        const firstDay = getFirstDayOfMonth(calendarYear, calendarMonth);
-        const rows: React.ReactNode[] = [];
-
-        // Weekday header
-        rows.push(
-            <View key="weekdays" style={calendarStyles.weekRow}>
-                {WEEKDAYS.map(d => (
-                    <Text key={d} style={calendarStyles.weekDayText}>{d}</Text>
-                ))}
-            </View>
-        );
-
-        let cells: React.ReactNode[] = [];
-        for (let i = 0; i < firstDay; i++) {
-            cells.push(<View key={`empty-${i}`} style={calendarStyles.dayCell} />);
-        }
-
-        for (let day = 1; day <= daysInMonth; day++) {
-            const disabled = isDateDisabled(day, calendarMonth, calendarYear);
-            const isSelected = day === contributionDay && calendarMonth === selectedMonth && calendarYear === selectedYear;
-
-            cells.push(
-                <TouchableOpacity
-                    key={day}
-                    style={[
-                        calendarStyles.dayCell,
-                        isSelected && calendarStyles.dayCellSelected,
-                        disabled && calendarStyles.dayCellDisabled,
-                    ]}
-                    onPress={() => !disabled && handleDateSelect(day)}
-                    disabled={disabled}
-                    activeOpacity={0.6}
-                >
-                    <Text
-                        style={[
-                            calendarStyles.dayText,
-                            isSelected && calendarStyles.dayTextSelected,
-                            disabled && calendarStyles.dayTextDisabled,
-                        ]}
-                    >
-                        {day}
-                    </Text>
-                </TouchableOpacity>
-            );
-
-            if ((firstDay + day) % 7 === 0 || day === daysInMonth) {
-                while (cells.length < 7) {
-                    cells.push(<View key={`pad-${cells.length}`} style={calendarStyles.dayCell} />);
-                }
-                rows.push(
-                    <View key={`row-${day}`} style={calendarStyles.weekRow}>
-                        {cells}
-                    </View>
-                );
-                cells = [];
-            }
-        }
-
-        return rows;
-    };
-
     const handleSaveGoal = async () => {
-        const contributionAmount = parseFloat(monthlyContribution.replace(/,/g, '')) || 0;
-
-        if (!name.trim()) {
-            Toast.show({
-                type: 'error',
-                text1: 'Missing Name',
-                text2: 'Please enter a name for your financial goal.',
-            });
-            return;
-        }
-
-        if (!target.trim() || targetAmount <= 0) {
-            Toast.show({
-                type: 'error',
-                text1: 'Missing Target',
-                text2: 'Please enter a valid target amount for your goal.',
-            });
-            return;
-        }
-        if (achieveInMonths <= 0) {
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: 'Please enter a valid duration',
-            });
-            return;
-        }
-
-        if (availableForNewGoals !== undefined && contributionAmount > availableForNewGoals) {
-            Toast.show({
-                type: 'error',
-                text1: 'Excessive Contribution',
-                text2: `Your contribution cannot exceed your available monthly savings (${formatCompactCurrency(availableForNewGoals, currencySymbol)}).`,
-            });
+        if (!name.trim()) { toast.error('Missing name', { description: 'Give this goal a name.' }); return; }
+        if (!target.trim() || targetAmount <= 0) { toast.error('Missing target', { description: 'Enter a target amount.' }); return; }
+        if (achieveInMonths <= 0) { toast.error('Invalid duration', { description: 'Enter how long you\'ll save for.' }); return; }
+        if (exceedsBudget) {
+            toast.error('Too high', { description: `Can't exceed ${formatCompactCurrency(availableForNewGoals ?? 0, currencySymbol)}/mo available.` });
             return;
         }
 
         setIsLoading(true);
         try {
-            // Build contribution start date from selected calendar day
             const startDate = new Date(selectedYear, selectedMonth, contributionDay);
             const yyyy = startDate.getFullYear();
             const mm = String(startDate.getMonth() + 1).padStart(2, '0');
             const dd = String(startDate.getDate()).padStart(2, '0');
             const contributionStartDate = `${yyyy}-${mm}-${dd}`;
-
             const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
             const payload = {
                 name: name.trim(),
                 target_amount: targetAmount,
@@ -301,715 +171,349 @@ export const AddGoalScreen: React.FC = () => {
                 contribution_start_date: contributionStartDate,
                 timezone,
             };
-
-            console.log('Creating goal:', payload);
-            const response = await api.post('/api/goals', payload);
-            console.log('Goal created:', response.data);
-
-            // Update local user data if this was part of onboarding
+            await api.post('/api/goals', payload);
             try {
-                const userStr = await AsyncStorage.getItem('user');
-                console.log('Current user in storage (AddGoal):', userStr);
-                if (userStr) {
-                    const user = JSON.parse(userStr);
-                    // Update checking: if new user, mark as not new
-                    if (user.isNewUser) {
-                        user.isNewUser = false;
-                        await AsyncStorage.setItem('user', JSON.stringify(user));
-                        // await AsyncStorage.setItem('onboardingStatus', 'COMPLETED');
-                        await AsyncStorage.removeItem('onboarding_progress_data');
-                        console.log('Updated user in storage (AddGoal):', JSON.stringify(user));
-                    }
+                if (user?.isNewUser) {
+                    dispatch(updateUser({ isNewUser: false }));
+                    await AsyncStorage.removeItem('onboarding_progress_data');
                 }
-            } catch (err) {
-                console.error('Error updating user onboarding status:', err);
-            }
-
-            // Navigate to main app after saving
-            navigation.reset({
-                index: 0,
-                routes: [{ name: 'Main' as never }],
-            });
+            } catch (e) { console.error('user update failed', e); }
+            navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
         } catch (error) {
             console.error('Save goal error:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: 'Failed to save your goal. Please try again.',
-            });
-        } finally {
-            setIsLoading(false);
+            toast.error('Error', { description: 'Failed to save your goal.' });
+        } finally { setIsLoading(false); }
+    };
+
+    // ── Calendar grid renderer ────────────────────────────────────────────
+    const renderCalendarGrid = () => {
+        const daysInMonth = getDaysInMonth(calendarYear, calendarMonth);
+        const firstDay = getFirstDayOfMonth(calendarYear, calendarMonth);
+        const rows: React.ReactNode[] = [];
+        rows.push(
+            <View key="weekdays" style={styles.calWeek}>
+                {WEEKDAYS.map((d) => (
+                    <Text key={d} style={styles.calWeekDay}>{d}</Text>
+                ))}
+            </View>,
+        );
+        let cells: React.ReactNode[] = [];
+        for (let i = 0; i < firstDay; i++) cells.push(<View key={`e-${i}`} style={styles.calCell} />);
+        for (let day = 1; day <= daysInMonth; day++) {
+            const disabled = isDateDisabled(day, calendarMonth, calendarYear);
+            const selected = day === contributionDay && calendarMonth === selectedMonth && calendarYear === selectedYear;
+            cells.push(
+                <TouchableOpacity
+                    key={day}
+                    style={styles.calCell}
+                    onPress={() => !disabled && handleDateSelect(day)}
+                    disabled={disabled}
+                    activeOpacity={0.6}
+                >
+                    <View style={[
+                        styles.calDay,
+                        selected && styles.calDaySelected,
+                        disabled && styles.calDayDisabled,
+                    ]}>
+                        <Text style={[
+                            styles.calDayText,
+                            selected && styles.calDayTextSelected,
+                            disabled && styles.calDayTextDisabled,
+                        ]}>{day}</Text>
+                    </View>
+                </TouchableOpacity>,
+            );
+            if ((firstDay + day) % 7 === 0 || day === daysInMonth) {
+                while (cells.length < 7) cells.push(<View key={`p-${cells.length}`} style={styles.calCell} />);
+                rows.push(<View key={`row-${day}`} style={styles.calWeek}>{cells}</View>);
+                cells = [];
+            }
         }
+        return rows;
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <View style={styles.header}>
+                <BackButton onPress={() => navigation.goBack()} />
+                <Text style={styles.headerTitle}>New goal</Text>
+                <View style={{ width: 34 }} />
+            </View>
 
-            <Header title="Add Your Goal" />
-
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-            >
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
                 <ScrollView
                     ref={scrollViewRef}
-                    style={styles.content}
+                    contentContainerStyle={styles.scroll}
                     showsVerticalScrollIndicator={false}
-                    onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-                    contentContainerStyle={styles.contentContainer}
+                    keyboardShouldPersistTaps="handled"
                 >
-                    {/* Mascot with AI suggestion description — inside scroll so it scrolls with the form */}
-                    {suggestionDescription ? (
-                        <AnimatedMascot
-                            text={suggestionDescription}
-                            mascotImage={require('../../asset/happymascot.png')}
-                            mascotWidth={80}
-                            mascotHeight={110}
-                            arrowTopRatio={0.38}
-                        />
-                    ) : null}
-
-                    {/* Available Budget Card */}
-                    {availableForNewGoals !== undefined && availableForNewGoals > 0 && (
-                        <View style={styles.budgetCard}>
-                            <View style={styles.budgetIconContainer}>
-                                <Text style={styles.budgetIcon}>✨</Text>
-                            </View>
-                            <View style={styles.budgetTextContainer}>
-                                <Text style={styles.budgetLabel}>Monthly Savings Available</Text>
-                                <Text style={styles.budgetAmount}>
-                                    {currencySymbol}{formatCompactNumber(availableForNewGoals)}
-                                </Text>
-                            </View>
+                    {!!suggestionDescription && (
+                        <View style={styles.tipCard}>
+                            <Text style={styles.tipText}>{suggestionDescription}</Text>
                         </View>
                     )}
 
-                    {/* Name Input */}
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Name</Text>
+                    {availableForNewGoals !== undefined && availableForNewGoals > 0 && (
+                        <View style={styles.budgetCard}>
+                            <View>
+                                <Text style={styles.budgetLabel}>MONTHLY AVAILABLE</Text>
+                                <Text style={styles.budgetAmount}>{currencySymbol}{formatCompactNumber(availableForNewGoals)}</Text>
+                            </View>
+                            <Text style={styles.budgetSub}>after your other goals</Text>
+                        </View>
+                    )}
+
+                    <Text style={styles.inputLabel}>GOAL NAME</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={name}
+                        onChangeText={setName}
+                        placeholder="e.g. Emergency fund"
+                        placeholderTextColor={colors.ink3}
+                    />
+
+                    <Text style={styles.inputLabel}>TARGET AMOUNT</Text>
+                    <View style={styles.moneyInput}>
+                        <Text style={styles.moneySymbol}>{currencySymbol}</Text>
                         <TextInput
-                            style={styles.textInput}
-                            value={name}
-                            onChangeText={setName}
-                            placeholder="e.g., Emergency Fund"
-                            placeholderTextColor={colors.textMuted}
+                            style={styles.moneyText}
+                            value={target}
+                            onChangeText={(text) => setTarget(formatNumberInput(text))}
+                            keyboardType="number-pad"
+                            placeholder="0"
+                            placeholderTextColor={colors.ink3}
                         />
                     </View>
 
-                    {/* Target Row */}
-                    <View style={styles.inputRow}>
-                        <Text style={styles.rowLabel}>Target</Text>
-                        <View style={styles.compactInput}>
-                            <Text style={styles.currencyPrefix}>{currencySymbol}</Text>
-                            <TextInput
-                                style={styles.compactInputText2}
-                                value={target}
-                                onChangeText={(text) => setTarget(formatNumberInput(text))}
-                                keyboardType="number-pad"
-                                placeholder="50000"
-                                placeholderTextColor={colors.textMuted}
-                            />
-                        </View>
-                    </View>
-
-                    {/* Achieve In - Duration Options */}
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Achieve in</Text>
-                        <View style={styles.durationContainer}>
-                            {DURATION_OPTIONS.map((option) => (
+                    <Text style={styles.inputLabel}>ACHIEVE IN</Text>
+                    <View style={styles.chipRow}>
+                        {DURATION_OPTIONS.map((option) => {
+                            const active = selectedDuration === option.value;
+                            return (
                                 <TouchableOpacity
                                     key={option.value}
-                                    style={[
-                                        styles.durationOption,
-                                        selectedDuration === option.value && styles.durationOptionSelected,
-                                    ]}
+                                    style={[styles.chip, active && styles.chipActive]}
                                     onPress={() => handleDurationSelect(option.value)}
+                                    activeOpacity={0.85}
                                 >
-                                    <Text
-                                        style={[
-                                            styles.durationText,
-                                            selectedDuration === option.value && styles.durationTextSelected,
-                                        ]}
-                                    >
-                                        {option.label}
-                                    </Text>
+                                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{option.label}</Text>
                                 </TouchableOpacity>
-                            ))}
-                            {/* Custom Option */}
-                            <TouchableOpacity
-                                style={[
-                                    styles.durationOption,
-                                    selectedDuration === 'custom' && styles.durationOptionSelected,
-                                ]}
-                                onPress={handleCustomSelect}
-                            >
-                                <Text
-                                    style={[
-                                        styles.durationText,
-                                        selectedDuration === 'custom' && styles.durationTextSelected,
-                                    ]}
-                                >
-                                    Custom
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Custom months input */}
-                        {selectedDuration === 'custom' && (
-                            <View style={styles.customInputContainer}>
-                                <TextInput
-                                    style={styles.customMonthsInput}
-                                    value={customMonths}
-                                    onChangeText={handleCustomMonthsChange}
-                                    keyboardType="number-pad"
-                                    placeholder="Enter months"
-                                    placeholderTextColor={colors.textMuted}
-                                    autoFocus={!customMonths}
-                                />
-                                <Text style={styles.customMonthsLabel}>{customMonths === '1' ? 'month' : 'months'}</Text>
-                            </View>
-                        )}
-                    </View>
-
-                    {/* Monthly Contribution Row */}
-                    <View style={styles.inputRow}>
-                        <Text style={styles.rowLabel}>Monthly contribution</Text>
-                        <View style={[styles.compactInput, styles.highlightedInput]}>
-                            <Text style={[styles.currencyPrefix, styles.highlightedText]}>{currencySymbol}</Text>
-                            <TextInput
-                                style={[styles.compactInputText, styles.highlightedText]}
-                                value={monthlyContribution}
-                                onChangeText={handleContributionChange}
-                                keyboardType="number-pad"
-                                placeholder="0"
-                                placeholderTextColor={colors.primary + '80'}
-                            />
-                        </View>
-                    </View>
-
-                    {/* Contribution Day Picker */}
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Contribution day of month</Text>
+                            );
+                        })}
                         <TouchableOpacity
-                            style={calendarStyles.dayPickerCard}
-                            onPress={() => {
-                                setCalendarMonth(todayMonth);
-                                setCalendarYear(todayYear);
-                                setCalendarVisible(true);
-                            }}
-                            activeOpacity={0.7}
+                            style={[styles.chip, selectedDuration === 'custom' && styles.chipActive]}
+                            onPress={handleCustomSelect}
+                            activeOpacity={0.85}
                         >
-                            <View style={calendarStyles.dayPickerLeft}>
-                                <View style={calendarStyles.dateCircle}>
-                                    <Text style={calendarStyles.dateCircleText}>{contributionDay}</Text>
-                                    <View style={calendarStyles.ordinalBadge}>
-                                        <Text style={calendarStyles.ordinalText}>
-                                            {contributionDay === 1 ? 'st' : contributionDay === 2 ? 'nd' : contributionDay === 3 ? 'rd' : 'th'}
-                                        </Text>
-                                    </View>
-                                </View>
-                                <View style={calendarStyles.dayPickerTextContainer}>
-                                    <Text style={calendarStyles.dayPickerValue}>Of every month</Text>
-                                    <Text style={calendarStyles.dayPickerHint}>Tap to change</Text>
-                                </View>
-                            </View>
-                            <Text style={calendarStyles.changeText}>›</Text>
+                            <Text style={[styles.chipText, selectedDuration === 'custom' && styles.chipTextActive]}>Custom</Text>
                         </TouchableOpacity>
-                        <View style={calendarStyles.noteContainer}>
-                            <Text style={calendarStyles.noteIcon}>Note: </Text>
-                            <Text style={calendarStyles.noteText}>
-                                Your first contribution starts on{' '}
-                                <Text style={calendarStyles.noteHighlight}>
-                                    {contributionDay} {MONTH_NAMES[selectedMonth]} {selectedYear}
-                                </Text>
+                    </View>
+                    {selectedDuration === 'custom' && (
+                        <View style={styles.customInput}>
+                            <TextInput
+                                style={styles.customField}
+                                value={customMonths}
+                                onChangeText={(v) => { setCustomMonths(v); setIsContributionManuallyEdited(false); }}
+                                keyboardType="number-pad"
+                                placeholder="12"
+                                placeholderTextColor={colors.ink3}
+                                autoFocus={!customMonths}
+                            />
+                            <Text style={styles.customLabel}>{customMonths === '1' ? 'month' : 'months'}</Text>
+                        </View>
+                    )}
+
+                    <Text style={styles.inputLabel}>MONTHLY CONTRIBUTION</Text>
+                    <View style={[styles.moneyInput, styles.moneyInputAccent]}>
+                        <Text style={[styles.moneySymbol, { color: colors.accent }]}>{currencySymbol}</Text>
+                        <TextInput
+                            style={[styles.moneyText, { color: colors.accent }]}
+                            value={monthlyContribution}
+                            onChangeText={handleContributionChange}
+                            keyboardType="number-pad"
+                            placeholder="0"
+                            placeholderTextColor={colors.accent}
+                        />
+                    </View>
+                    {exceedsBudget && (
+                        <View style={styles.errorBanner}>
+                            <Text style={styles.errorText}>
+                                Exceeds your {formatCompactCurrency(availableForNewGoals ?? 0, currencySymbol)}/mo budget for new goals.
                             </Text>
                         </View>
-                    </View>
+                    )}
 
-                    {/* Calendar Modal */}
-                    <Modal
-                        visible={calendarVisible}
-                        transparent
-                        animationType="fade"
-                        onRequestClose={() => setCalendarVisible(false)}
+                    <Text style={styles.inputLabel}>CONTRIBUTION DAY</Text>
+                    <TouchableOpacity
+                        style={styles.dayPicker}
+                        onPress={() => {
+                            setCalendarMonth(todayMonth);
+                            setCalendarYear(todayYear);
+                            setCalendarVisible(true);
+                        }}
+                        activeOpacity={0.7}
                     >
-                        <View style={calendarStyles.modalOverlay}>
-                            <View style={calendarStyles.modalContent}>
-                                <Text style={calendarStyles.modalTitle}>Select Contribution Day</Text>
-                                <Text style={calendarStyles.modalSubtitle}>Pick a future date for your monthly contribution</Text>
+                        <View style={styles.dayCircle}>
+                            <Text style={styles.dayCircleNum}>{contributionDay}</Text>
+                            <Text style={styles.dayCircleOrd}>{ordinal(contributionDay)}</Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.dayPickerVal}>Every month</Text>
+                            <Text style={styles.dayPickerHint}>Starting {MONTH_NAMES[selectedMonth]} {selectedYear}</Text>
+                        </View>
+                        <Icon name="chevron-right" color="ink3" size="lg" />
+                    </TouchableOpacity>
 
-                                {/* Month navigation */}
-                                <View style={calendarStyles.monthNav}>
-                                    <TouchableOpacity
-                                        onPress={handleCalendarPrev}
-                                        style={[calendarStyles.navBtn, !canGoPrev && calendarStyles.navBtnDisabled]}
-                                        disabled={!canGoPrev}
-                                    >
-                                        <Text style={[calendarStyles.navBtnText, !canGoPrev && calendarStyles.navBtnTextDisabled]}>‹</Text>
+                    <Modal visible={calendarVisible} transparent animationType="fade" onRequestClose={() => setCalendarVisible(false)}>
+                        <View style={styles.modalOverlay}>
+                            <View style={styles.modalCard}>
+                                <Text style={styles.modalTitle}>Start date</Text>
+                                <Text style={styles.modalSub}>Pick a day for your monthly contribution.</Text>
+
+                                <View style={styles.calNav}>
+                                    <TouchableOpacity onPress={handleCalendarPrev} style={[styles.calNavBtn, !canGoPrev && styles.calNavBtnOff]} disabled={!canGoPrev}>
+                                        <Icon name="chevron-left" color={canGoPrev ? "ink1" : "ink3"} size="lg" />
                                     </TouchableOpacity>
-                                    <Text style={calendarStyles.monthLabel}>
-                                        {MONTH_NAMES[calendarMonth]} {calendarYear}
-                                    </Text>
-                                    <TouchableOpacity
-                                        onPress={handleCalendarNext}
-                                        style={[calendarStyles.navBtn, !canGoNext && calendarStyles.navBtnDisabled]}
-                                        disabled={!canGoNext}
-                                    >
-                                        <Text style={[calendarStyles.navBtnText, !canGoNext && calendarStyles.navBtnTextDisabled]}>›</Text>
+                                    <Text style={styles.calMonthLabel}>{MONTH_NAMES[calendarMonth]} {calendarYear}</Text>
+                                    <TouchableOpacity onPress={handleCalendarNext} style={[styles.calNavBtn, !canGoNext && styles.calNavBtnOff]} disabled={!canGoNext}>
+                                        <Icon name="chevron-right" color={canGoNext ? "ink1" : "ink3"} size="lg" />
                                     </TouchableOpacity>
                                 </View>
 
-                                {/* Calendar grid */}
                                 {renderCalendarGrid()}
 
-                                {/* Close button */}
-                                <TouchableOpacity
-                                    style={calendarStyles.closeBtn}
-                                    onPress={() => setCalendarVisible(false)}
-                                >
-                                    <Text style={calendarStyles.closeBtnText}>Cancel</Text>
+                                <TouchableOpacity style={styles.modalClose} onPress={() => setCalendarVisible(false)}>
+                                    <Text style={styles.modalCloseText}>Cancel</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
                     </Modal>
                 </ScrollView>
 
-                {/* Budget warning mascot — only shown when suggestion mascot is not visible */}
-                {!suggestionDescription && availableForNewGoals !== undefined && contributionAmount > availableForNewGoals && (
-                    <View style={styles.mascotContainer}>
-                        <AnimatedMascot
-                            text={`You only have ${formatCompactCurrency(availableForNewGoals ?? 0, currencySymbol)} available for new goals!`}
-                        />
-                    </View>
-                )}
-
                 <View style={styles.footer}>
-                    <Button
-                        title="Create Goal"
-                        onPress={handleSaveGoal}
-                        loading={isLoading}
-                        disabled={isLoading}
-                    />
+                    <Button title="Create goal" onPress={handleSaveGoal} loading={isLoading} disabled={isLoading} />
                 </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-    },
-    headerTitle: {
-        flex: 1,
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.semibold as any,
-        textAlign: 'center',
-    },
-    headerRight: {
-        width: 40,
-    },
-    keyboardView: {
-        flex: 1,
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: spacing.lg,
-    },
-    contentContainer: {
-        paddingTop: spacing.xl,
-        paddingBottom: spacing.xl,
-    },
-    inputGroup: {
-        marginBottom: spacing.xl,
-    },
-    label: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.medium as any,
-        marginBottom: spacing.sm,
-    },
-    textInput: {
-        backgroundColor: colors.cardBackground,
-        borderWidth: 1.5,
-        borderColor: colors.border,
-        borderRadius: 12,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.md,
-        color: colors.textPrimary,
-        fontSize: typography.body,
-    },
-    inputRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: spacing.lg,
-        paddingVertical: spacing.sm,
-    },
-    rowLabel: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.medium as any,
-        flex: 1,
-    },
-    compactInput: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.cardBackground,
-        borderWidth: 1.5,
-        borderColor: colors.border,
-        borderRadius: 10,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm + 2,
-        minWidth: 120,
-    },
-    compactInputText2: {
-        paddingHorizontal: spacing.md,
-        paddingVertical: 2,
-        minWidth: 90,
-        maxWidth: 180,
-    },
-    currencyPrefix: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        marginRight: spacing.xs,
-    },
-    highlightedInput: {
-        backgroundColor: colors.primary + '10',
-        borderColor: colors.primary + '40',
-    },
-    compactInputText: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        textAlign: 'right',
-        minWidth: 60,
-        paddingVertical: 0,
-        flex: 1,
-    },
-    highlightedText: {
-        color: colors.primary,
-    },
-    durationContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: spacing.sm,
-    },
-    durationOption: {
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        borderRadius: 20,
-        backgroundColor: colors.cardBackground,
-        borderWidth: 1.5,
-        borderColor: colors.border,
-    },
-    durationOptionSelected: {
-        backgroundColor: colors.primary + '20',
-        borderColor: colors.primary,
-    },
-    durationText: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium as any,
-    },
-    durationTextSelected: {
-        color: colors.primary,
-    },
-    customInputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: spacing.md,
-    },
-    customMonthsInput: {
-        backgroundColor: colors.cardBackground,
-        borderWidth: 1.5,
-        borderColor: colors.primary,
-        borderRadius: 10,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        width: 180,
-        textAlign: 'center',
-    },
-    customMonthsLabel: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        marginLeft: spacing.sm,
-    },
-    suggestionText: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        textAlign: 'center',
-        marginTop: -spacing.sm,
-        marginBottom: spacing.lg,
-    },
-    footer: {
-        paddingHorizontal: spacing.lg,
-        paddingBottom: spacing.lg,
-        paddingTop: spacing.md,
-    },
-    mascotContainer: {
-        paddingHorizontal: spacing.xs,
-        paddingBottom: spacing.sm,
-    },
-    mascotTopContainer: {
-        paddingHorizontal: spacing.lg,
-        paddingBottom: spacing.sm,
-        marginTop: -spacing.sm,
-    },
-    budgetCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.cardBackground,
-        borderRadius: 16,
-        padding: spacing.md,
-        marginBottom: spacing.lg,
-        borderWidth: 1,
-        borderColor: 'rgba(34,197,94,0.3)',
-        marginHorizontal: spacing.lg, // Make it align with standard paddings
-    },
-    budgetIconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(34,197,94,0.15)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: spacing.md,
-    },
-    budgetIcon: {
-        fontSize: 20,
-    },
-    budgetTextContainer: {
-        flex: 1,
-    },
-    budgetLabel: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        marginBottom: 2,
-    },
-    budgetAmount: {
-        color: '#22c55e',
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-    },
-    dayPickerScroll: {
-        marginTop: spacing.sm,
-    },
-});
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flex: 1, backgroundColor: c.canvas },
+        header: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6,
+        },
+        back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
+        backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
 
-const calendarStyles = StyleSheet.create({
-    dayPickerCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: colors.cardBackground,
-        borderRadius: 16,
-        padding: spacing.md,
-        borderWidth: 1.5,
-        borderColor: colors.primary + '25',
-        marginTop: spacing.sm,
-    },
-    dayPickerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-    },
-    dateCircle: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: colors.primary + '18',
-        borderWidth: 1.5,
-        borderColor: colors.primary + '50',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: spacing.md,
-    },
-    dateCircleText: {
-        color: colors.primary,
-        fontSize: 20,
-        fontWeight: typography.bold as any,
-        lineHeight: 24,
-    },
-    ordinalBadge: {
-        position: 'absolute',
-        top: -4,
-        right: -4,
-        backgroundColor: colors.primary,
-        borderRadius: 8,
-        paddingHorizontal: 4,
-        paddingVertical: 1,
-        minWidth: 18,
-        alignItems: 'center',
-    },
-    ordinalText: {
-        color: '#fff',
-        fontSize: 9,
-        fontWeight: typography.bold as any,
-    },
-    dayPickerTextContainer: {
-        flex: 1,
-    },
-    dayPickerLabel: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        marginBottom: 2,
-    },
-    dayPickerValue: {
-        color: colors.textPrimary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium as any,
-    },
-    dayPickerHint: {
-        color: colors.textMuted,
-        fontSize: typography.caption - 1,
-        marginTop: 3,
-    },
-    changeText: {
-        color: colors.primary,
-        fontSize: 22,
-        fontWeight: typography.bold as any,
-        marginLeft: spacing.sm,
-    },
-    noteContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: spacing.sm + 2,
-        paddingHorizontal: spacing.xs,
-    },
-    noteIcon: {
-        fontSize: 13,
-        marginRight: spacing.xs,
-    },
-    noteText: {
-        color: colors.textMuted,
-        fontSize: typography.caption - 1,
-        flex: 1,
-    },
-    noteHighlight: {
-        color: colors.primary,
-        fontWeight: typography.semibold as any,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-    },
-    modalContent: {
-        backgroundColor: '#1a1a2e',
-        borderRadius: 20,
-        padding: spacing.lg,
-        width: '100%',
-        borderWidth: 1,
-        borderColor: '#2a2a4a',
-    },
-    modalTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold as any,
-        textAlign: 'center',
-        marginBottom: spacing.xs,
-    },
-    modalSubtitle: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        textAlign: 'center',
-        marginBottom: spacing.lg,
-    },
-    monthNav: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: spacing.md,
-    },
-    navBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: colors.cardBackground,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    navBtnDisabled: {
-        opacity: 0.3,
-    },
-    navBtnText: {
-        color: colors.textPrimary,
-        fontSize: 24,
-        fontWeight: typography.bold as any,
-        lineHeight: 28,
-    },
-    navBtnTextDisabled: {
-        color: colors.textMuted,
-    },
-    monthLabel: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold as any,
-    },
-    weekRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: spacing.xs,
-    },
-    weekDayText: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        fontWeight: typography.semibold as any,
-        width: 40,
-        textAlign: 'center',
-    },
-    dayCell: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginVertical: 2,
-    },
-    dayCellSelected: {
-        backgroundColor: colors.primary + '30',
-        borderWidth: 1.5,
-        borderColor: colors.primary,
-    },
-    dayCellDisabled: {
-        opacity: 0.25,
-    },
-    dayText: {
-        color: colors.textPrimary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium as any,
-    },
-    dayTextSelected: {
-        color: colors.primary,
-        fontWeight: typography.bold as any,
-    },
-    dayTextDisabled: {
-        color: colors.textMuted,
-    },
-    closeBtn: {
-        marginTop: spacing.lg,
-        paddingVertical: spacing.md,
-        borderRadius: 12,
-        backgroundColor: colors.cardBackground,
-        alignItems: 'center',
-    },
-    closeBtnText: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold as any,
-    },
-});
+        scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24, gap: 4 },
+
+        tipCard: {
+            backgroundColor: c.accentSoft, borderRadius: 12,
+            padding: 12, marginBottom: 8,
+        },
+        tipText: { color: c.accent, fontSize: 13, lineHeight: 18 },
+
+        budgetCard: {
+            backgroundColor: c.surface, borderRadius: 16,
+            borderWidth: 1, borderColor: c.border,
+            padding: 14, marginBottom: 8,
+            flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
+        },
+        budgetLabel: { color: c.ink3, fontSize: 11, letterSpacing: 1.2, fontFamily: fontFor('semibold') },
+        budgetAmount: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), letterSpacing: -0.4, marginTop: 2, fontVariant: ['tabular-nums'] },
+        budgetSub: { color: c.ink3, fontSize: 11 },
+
+        inputLabel: { color: c.ink2, fontSize: 12, fontFamily: fontFor('medium'), letterSpacing: 0.4, marginTop: 12, marginBottom: 6 },
+        input: {
+            backgroundColor: c.surfaceAlt,
+            borderRadius: 12,
+            paddingHorizontal: 16, paddingVertical: 14,
+            fontSize: 15, color: c.ink1, borderWidth: 1, borderColor: 'transparent',
+        },
+        moneyInput: {
+            flexDirection: 'row', alignItems: 'center',
+            backgroundColor: c.surfaceAlt,
+            borderRadius: 12, paddingHorizontal: 16, minHeight: 52,
+            borderWidth: 1, borderColor: 'transparent',
+        },
+        moneyInputAccent: { backgroundColor: c.accentSoft },
+        moneySymbol: { color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'), marginRight: 4, includeFontPadding: false, },
+        moneyText: {
+            flex: 1, color: c.ink1, fontSize: 20, fontFamily: fontFor('bold'),
+            letterSpacing: -0.4, fontVariant: ['tabular-nums'], padding: 0,
+        },
+
+        chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
+        chip: {
+            paddingVertical: 8, paddingHorizontal: 14,
+            backgroundColor: c.surfaceAlt, borderRadius: 999,
+        },
+        chipActive: { backgroundColor: c.accent },
+        chipText: { color: c.ink2, fontSize: 13, fontFamily: fontFor('medium') },
+        chipTextActive: { color: c.accentInk },
+
+        customInput: {
+            flexDirection: 'row', alignItems: 'center',
+            backgroundColor: c.surfaceAlt, borderRadius: 12, paddingHorizontal: 16,
+            minHeight: 48, marginTop: 8,
+        },
+        customField: { flex: 1, color: c.ink1, fontSize: 15, padding: 0, fontVariant: ['tabular-nums'], includeFontPadding: false, textAlignVertical: 'center', },
+        customLabel: { color: c.ink3, fontSize: 13 },
+
+        errorBanner: { marginTop: 8, backgroundColor: c.lossSoft, borderRadius: 10, padding: 10 },
+        errorText: { color: c.loss, fontSize: 13 },
+
+        dayPicker: {
+            flexDirection: 'row', alignItems: 'center', gap: 14,
+            backgroundColor: c.surface, borderRadius: 16, borderWidth: 1, borderColor: c.border,
+            padding: 14,
+        },
+        dayCircle: {
+            width: 52, height: 52, borderRadius: 26,
+            backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center',
+            flexDirection: 'row',
+        },
+        dayCircleNum: { color: c.accent, fontSize: 22, fontFamily: fontFor('bold'), letterSpacing: -0.4, fontVariant: ['tabular-nums'] },
+        dayCircleOrd: { color: c.accent, fontSize: 10, fontFamily: fontFor('semibold'), marginTop: -8, marginLeft: 1 },
+        dayPickerVal: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
+        dayPickerHint: { color: c.ink3, fontSize: 12, marginTop: 2 },
+        chevron: { color: c.ink3, fontSize: 22 },
+
+        footer: { paddingHorizontal: 20, paddingBottom: 20, paddingTop: 8 },
+
+        // Calendar modal
+        modalOverlay: {
+            flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+            alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24,
+        },
+        modalCard: {
+            backgroundColor: c.surface, borderRadius: 20, padding: 20, width: '100%',
+            borderWidth: 1, borderColor: c.border,
+        },
+        modalTitle: { color: c.ink1, fontSize: 18, fontFamily: fontFor('bold'), letterSpacing: -0.3 },
+        modalSub: { color: c.ink2, fontSize: 13, marginTop: 4, marginBottom: 16 },
+        calNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+        calNavBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+        calNavBtnOff: { opacity: 0.4 },
+        calNavArrow: { color: c.ink1, fontSize: 20, lineHeight: 20 },
+        calNavArrowOff: { color: c.ink3 },
+        calMonthLabel: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
+        calWeek: { flexDirection: 'row', marginBottom: 6 },
+        calWeekDay: { flex: 1, color: c.ink3, fontSize: 11, fontFamily: fontFor('semibold'), textAlign: 'center', letterSpacing: 0.4 },
+        calCell: { flex: 1, alignItems: 'center', paddingVertical: 4 },
+        calDay: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+        calDaySelected: { backgroundColor: c.accent },
+        calDayDisabled: { opacity: 0.3 },
+        calDayText: { color: c.ink1, fontSize: 14, fontVariant: ['tabular-nums'] },
+        calDayTextSelected: { color: c.accentInk, fontFamily: fontFor('semibold') },
+        calDayTextDisabled: { color: c.ink3 },
+        modalClose: {
+            marginTop: 16, alignItems: 'center', paddingVertical: 12,
+            borderRadius: 12, borderWidth: 1, borderColor: c.borderStrong,
+        },
+        modalCloseText: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
+    });

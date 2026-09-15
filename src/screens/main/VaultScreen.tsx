@@ -1,406 +1,214 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     SafeAreaView,
-    StatusBar,
     ScrollView,
     TouchableOpacity,
 } from 'react-native';
-import {
-    Card,
-    StatCard,
-    AccountRow,
-    AIInsightCard,
-} from '../../components';
-import { colors, typography, spacing } from '../../constants';
-import { useCurrency } from '../../context/CurrencyContext';
+
+import { useAppSelector } from '../../store/hooks';
+import { useTheme, fontFor } from '../../theme';
+import { Palette } from '../../theme/palette';
+import { Icon, IconName } from '../../components';
+
+
 
 export const VaultScreen: React.FC = () => {
-    const [viewMode, setViewMode] = useState<'consolidated' | 'manual'>('consolidated');
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
+    const { colors, typography } = useTheme();
+    const [mode, setMode] = useState<'linked' | 'manual'>('linked');
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
+
+    const total = mode === 'linked' ? 1245600 : 1245600;
+    const monthlyYield = 8420;
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-
-            {/* Header */}
             <View style={styles.header}>
-                <View style={styles.headerLeft}>
-                    <View style={styles.logoIcon}>
-                        <Text style={styles.logoText}>◀▶</Text>
-                    </View>
-                    <View>
-                        <Text style={styles.headerTitle}>Vault</Text>
-                        <Text style={styles.headerSubtitle}>
-                            {viewMode === 'consolidated' ? 'CONSOLIDATED VIEW' : 'MANUAL TRACKING HUB'}
-                        </Text>
-                    </View>
+                <View>
+                    <Text style={styles.dateCap}>YOUR WEALTH</Text>
+                    <Text style={styles.greeting}>Vault.</Text>
                 </View>
-                <View style={styles.headerRight}>
+                <View style={styles.seg}>
                     <TouchableOpacity
-                        style={styles.toggleButton}
-                        onPress={() => setViewMode(viewMode === 'consolidated' ? 'manual' : 'consolidated')}
+                        style={[styles.segBtn, mode === 'linked' && styles.segBtnActive]}
+                        onPress={() => setMode('linked')}
+                        activeOpacity={0.85}
                     >
-                        <Text style={styles.toggleIcon}>⟳</Text>
+                        <Text style={[styles.segText, mode === 'linked' && styles.segTextActive]}>Linked</Text>
                     </TouchableOpacity>
-                    {viewMode === 'manual' && (
-                        <TouchableOpacity style={styles.iconButton}>
-                            <Text style={styles.iconText}>+</Text>
-                        </TouchableOpacity>
-                    )}
-                    <View style={styles.avatarContainer}>
-                        <Text style={styles.avatarText}>👤</Text>
-                    </View>
+                    <TouchableOpacity
+                        style={[styles.segBtn, mode === 'manual' && styles.segBtnActive]}
+                        onPress={() => setMode('manual')}
+                        activeOpacity={0.85}
+                    >
+                        <Text style={[styles.segText, mode === 'manual' && styles.segTextActive]}>Manual</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {/* Total Balance */}
-                <View style={styles.balanceSection}>
-                    <Text style={styles.balanceLabel}>TOTAL LIQUID BALANCE</Text>
-                    <View style={styles.balanceRow}>
-                        <Text style={styles.rupeeSymbol}>{currencySymbol}</Text>
-                        <Text style={styles.balanceValue}>12,45,600</Text>
-                        <Text style={styles.balanceDecimal}>.{viewMode === 'consolidated' ? '42' : '00'}</Text>
+            <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+                {/* Balance hero */}
+                <View style={styles.hero}>
+                    <Text style={styles.heroCap}>TOTAL LIQUID BALANCE</Text>
+                    <View style={styles.amountRow}>
+                        <Text style={styles.heroSymbol}>{currencySymbol}</Text>
+                        <Text style={styles.heroValue}>{total.toLocaleString('en-IN')}</Text>
                     </View>
-                </View>
-
-                {/* Stats Row */}
-                <View style={styles.statsRow}>
-                    {viewMode === 'consolidated' ? (
-                        <>
-                            <StatCard label="AVAILABLE TO INVEST" value={`${currencySymbol}4.2L`} />
-                            <View style={styles.statGap} />
-                            <StatCard label="MONTHLY YIELD" value={`${currencySymbol}8,420`} valueColor="#f59e0b" />
-                        </>
-                    ) : (
-                        <>
-                            <StatCard label="MANUAL INPUT BASE" value={`${currencySymbol}12.4L`} />
-                            <View style={styles.statGap} />
-                            <View style={styles.lastUpdateBadge}>
-                                <Text style={styles.lastUpdateLabel}>LAST UPDATE</Text>
-                                <Text style={styles.lastUpdateValue}>Today</Text>
-                            </View>
-                        </>
-                    )}
-                </View>
-
-                {/* Accounts Section */}
-                <View style={styles.accountsSection}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>
-                            {viewMode === 'consolidated' ? 'Connected Accounts' : 'Manual Accounts'}
-                        </Text>
-                        <Text style={styles.accountCount}>
-                            {viewMode === 'consolidated' ? '4 Active' : '3 Accounts'}
-                        </Text>
-                    </View>
-
-                    <Card>
-                        <AccountRow
-                            icon="🏦"
-                            name={viewMode === 'consolidated' ? 'HDFC Bank' : 'Savings Account'}
-                            subtitle={viewMode === 'consolidated' ? '•••• 5829' : 'UPDATED 2 DAYS AGO'}
-                            amount={`${currencySymbol}8,24,500`}
-                            badge={viewMode === 'consolidated' ? 'GPAY LINKED' : 'UPDATE'}
-                            badgeColor={viewMode === 'consolidated' ? '#22c55e' : '#f59e0b'}
-                        />
-
-                        <AccountRow
-                            icon="💰"
-                            name={viewMode === 'consolidated' ? 'ICICI Savings' : 'Cash in Hand'}
-                            subtitle={viewMode === 'consolidated' ? '•••• 0042' : 'UPDATED 12 DAYS AGO'}
-                            amount={viewMode === 'consolidated' ? `${currencySymbol}3,12,000` : `${currencySymbol}12,000`}
-                            badge={viewMode === 'consolidated' ? 'LOW INTEREST' : 'UPDATE'}
-                            badgeColor={viewMode === 'consolidated' ? '#ef4444' : '#f59e0b'}
-                        />
-
-                        <AccountRow
-                            icon="📱"
-                            name={viewMode === 'consolidated' ? 'Paytm Wallet' : 'Digital Wallet'}
-                            subtitle={viewMode === 'consolidated' ? 'Mobile Wallet' : 'UPDATED TODAY'}
-                            amount={`${currencySymbol}9,100`}
-                            badge={viewMode === 'consolidated' ? 'GPAY LINKED' : 'UPDATE'}
-                            badgeColor={viewMode === 'consolidated' ? '#22c55e' : '#f59e0b'}
-                        />
-                    </Card>
-                </View>
-
-                {/* Monthly Spends */}
-                <View style={styles.spendsSection}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Monthly Spends</Text>
-                        <Text style={styles.spendsAmount}>{currencySymbol}42,800</Text>
-                    </View>
-                    <Text style={styles.spendsSubtitle}>
-                        {viewMode === 'consolidated' ? 'Smart Categorization' : 'Based on manual entries'}
-                    </Text>
-
-                    <Card style={styles.spendsCard}>
-                        <View style={styles.chartRow}>
-                            <View style={styles.chartPlaceholder}>
-                                <View style={styles.chartCircle}>
-                                    <Text style={styles.chartIcon}>📊</Text>
-                                </View>
-                            </View>
-                            <View style={styles.chartLegend}>
-                                <View style={styles.legendItem}>
-                                    <View style={[styles.legendDot, { backgroundColor: '#22c55e' }]} />
-                                    <Text style={styles.legendLabel}>Shopping</Text>
-                                    <Text style={styles.legendValue}>35%</Text>
-                                </View>
-                                <View style={styles.legendItem}>
-                                    <View style={[styles.legendDot, { backgroundColor: '#3b82f6' }]} />
-                                    <Text style={styles.legendLabel}>Bills</Text>
-                                    <Text style={styles.legendValue}>30%</Text>
-                                </View>
-                                <View style={styles.legendItem}>
-                                    <View style={[styles.legendDot, { backgroundColor: '#f59e0b' }]} />
-                                    <Text style={styles.legendLabel}>Food</Text>
-                                    <Text style={styles.legendValue}>35%</Text>
-                                </View>
-                            </View>
+                    <View style={styles.heroFooter}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.footerCap}>MONTHLY YIELD</Text>
+                            <Text style={styles.footerVal}>+{currencySymbol}{monthlyYield.toLocaleString()}</Text>
                         </View>
-                    </Card>
+                        <View style={styles.heroDivider} />
+                        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                            <Text style={styles.footerCap}>UPDATED</Text>
+                            <Text style={styles.footerVal}>{mode === 'linked' ? 'Live' : 'Today'}</Text>
+                        </View>
+                    </View>
                 </View>
 
-                {/* AI Insight */}
-                <AIInsightCard
-                    type="insight"
-                    title="AI PROACTIVE INSIGHT"
-                    description={
-                        viewMode === 'consolidated'
-                            ? "Your 'Shopping' is 15% higher than usual. Switch to UPI at select stores for 5% cashback."
-                            : "Your 'Cash in Hand' hasn't been updated for a while. Consider updating for accurate tracking."
-                    }
-                />
+                {/* Accounts */}
+                <View style={styles.sectionHeadRow}>
+                    <Text style={styles.sectionHead}>{mode === 'linked' ? 'CONNECTED ACCOUNTS' : 'MANUAL ACCOUNTS'}</Text>
+                    <Text style={styles.pill}>{mode === 'linked' ? '4 active' : '3 accounts'}</Text>
+                </View>
 
-                <View style={{ height: spacing.xxl }} />
+                <View style={styles.card}>
+                    {[
+                        { name: mode === 'linked' ? 'HDFC Bank' : 'Savings account', sub: mode === 'linked' ? '•••• 5829' : 'Updated 2 days ago', amount: 824500, Icon: 'landmark' as IconName, tint: colors.accent, tintBg: colors.accentSoft },
+                        { name: mode === 'linked' ? 'ICICI Savings' : 'Cash in hand', sub: mode === 'linked' ? '•••• 0042' : 'Updated 12 days ago', amount: mode === 'linked' ? 312000 : 12000, Icon: 'wallet' as IconName, tint: colors.warn, tintBg: colors.warnSoft },
+                        { name: mode === 'linked' ? 'Paytm Wallet' : 'Digital wallet', sub: mode === 'linked' ? 'Mobile wallet' : 'Updated today', amount: 9100, Icon: 'wallet' as IconName, tint: colors.gain, tintBg: colors.gainSoft },
+                    ].map((a, i) => (
+                        <View key={i}>
+                            <View style={styles.acctRow}>
+                                <View style={[styles.acctIcon, { backgroundColor: a.tintBg }]}>
+                                    <Icon name={a.Icon} color={a.tint} />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.acctName}>{a.name}</Text>
+                                    <Text style={styles.acctSub}>{a.sub}</Text>
+                                </View>
+                                <Text style={styles.acctAmt}>{currencySymbol}{a.amount.toLocaleString('en-IN')}</Text>
+                            </View>
+                            {i < 2 && <View style={styles.divider} />}
+                        </View>
+                    ))}
+                </View>
+
+                {/* Monthly spend */}
+                <View style={styles.sectionHeadRow}>
+                    <Text style={styles.sectionHead}>MONTHLY SPEND</Text>
+                    <Text style={styles.spendTotal}>{currencySymbol}42,800</Text>
+                </View>
+                <View style={styles.card}>
+                    <View style={styles.spendBar}>
+                        <View style={[styles.spendSegment, { flex: 35, backgroundColor: colors.loss }]} />
+                        <View style={[styles.spendSegment, { flex: 25, backgroundColor: colors.warn }]} />
+                        <View style={[styles.spendSegment, { flex: 22, backgroundColor: colors.accent }]} />
+                        <View style={[styles.spendSegment, { flex: 18, backgroundColor: colors.gain }]} />
+                    </View>
+                    <View style={styles.legendGrid}>
+                        <View style={styles.legendRow}>
+                            <View style={[styles.legendDot, { backgroundColor: colors.loss }]} />
+                            <Text style={styles.legendLabel}>Shopping</Text>
+                            <Text style={styles.legendVal}>35%</Text>
+                        </View>
+                        <View style={styles.legendRow}>
+                            <View style={[styles.legendDot, { backgroundColor: colors.warn }]} />
+                            <Text style={styles.legendLabel}>Bills</Text>
+                            <Text style={styles.legendVal}>25%</Text>
+                        </View>
+                        <View style={styles.legendRow}>
+                            <View style={[styles.legendDot, { backgroundColor: colors.accent }]} />
+                            <Text style={styles.legendLabel}>Food</Text>
+                            <Text style={styles.legendVal}>22%</Text>
+                        </View>
+                        <View style={styles.legendRow}>
+                            <View style={[styles.legendDot, { backgroundColor: colors.gain }]} />
+                            <Text style={styles.legendLabel}>Other</Text>
+                            <Text style={styles.legendVal}>18%</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {mode === 'manual' && (
+                    <TouchableOpacity style={styles.addBtn} activeOpacity={0.85}>
+                        <Text style={styles.addBtnText}>+  Add account</Text>
+                    </TouchableOpacity>
+                )}
             </ScrollView>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-    },
-    headerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    logoIcon: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
-    logoText: {
-        color: colors.textPrimary,
-        fontSize: 12,
-        fontWeight: typography.bold,
-    },
-    headerTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    headerSubtitle: {
-        color: colors.textMuted,
-        fontSize: 10,
-        letterSpacing: 1,
-    },
-    headerRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    toggleButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: colors.cardBackground,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
-    toggleIcon: {
-        color: colors.textPrimary,
-        fontSize: 16,
-    },
-    iconButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: colors.cardBackground,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
-    iconText: {
-        color: colors.textPrimary,
-        fontSize: 20,
-    },
-    avatarContainer: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    avatarText: {
-        fontSize: 16,
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: spacing.lg,
-    },
-    balanceSection: {
-        marginBottom: spacing.lg,
-    },
-    balanceLabel: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        letterSpacing: 1,
-        marginBottom: spacing.xs,
-    },
-    balanceRow: {
-        flexDirection: 'row',
-        alignItems: 'baseline',
-    },
-    rupeeSymbol: {
-        color: colors.textPrimary,
-        fontSize: typography.h1,
-        fontWeight: typography.bold,
-        marginRight: 4,
-    },
-    balanceValue: {
-        color: colors.textPrimary,
-        fontSize: 36,
-        fontWeight: typography.bold,
-    },
-    balanceDecimal: {
-        color: colors.textMuted,
-        fontSize: typography.h3,
-        fontWeight: typography.medium,
-    },
-    statsRow: {
-        flexDirection: 'row',
-        marginBottom: spacing.lg,
-    },
-    statGap: {
-        width: spacing.sm,
-    },
-    lastUpdateBadge: {
-        flex: 1,
-        backgroundColor: '#22c55e',
-        borderRadius: 8,
-        padding: spacing.sm,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    lastUpdateLabel: {
-        color: colors.textPrimary,
-        fontSize: 10,
-        opacity: 0.8,
-    },
-    lastUpdateValue: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    accountsSection: {
-        marginBottom: spacing.lg,
-    },
-    sectionHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: spacing.sm,
-    },
-    sectionTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    accountCount: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-    },
-    spendsSection: {
-        marginBottom: spacing.lg,
-    },
-    spendsAmount: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    spendsSubtitle: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        marginBottom: spacing.sm,
-    },
-    spendsCard: {
-        padding: spacing.md,
-    },
-    chartRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    chartPlaceholder: {
-        width: 100,
-        height: 100,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    chartCircle: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        borderWidth: 12,
-        borderColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    chartIcon: {
-        fontSize: 24,
-    },
-    chartLegend: {
-        flex: 1,
-        marginLeft: spacing.lg,
-    },
-    legendItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: spacing.xs,
-    },
-    legendDot: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        marginRight: spacing.sm,
-    },
-    legendLabel: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        flex: 1,
-    },
-    legendValue: {
-        color: colors.textPrimary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium,
-    },
-});
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flex: 1, backgroundColor: c.canvas },
+        header: {
+            flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
+            paddingHorizontal: 20, paddingTop: 8, paddingBottom: 6,
+        },
+        dateCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
+        greeting: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), letterSpacing: -0.4, marginTop: 2 },
+        seg: { flexDirection: 'row', backgroundColor: c.surfaceAlt, borderRadius: 10, padding: 3 },
+        segBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+        segBtnActive: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.border },
+        segText: { color: c.ink2, fontSize: 12, fontFamily: fontFor('medium') },
+        segTextActive: { color: c.ink1 },
+
+        scroll: { paddingHorizontal: 20, paddingBottom: 40, gap: 14 },
+
+        hero: {
+            marginTop: 12,
+            backgroundColor: c.surface, borderRadius: 20,
+            borderWidth: 1, borderColor: c.border, padding: 18,
+        },
+        heroCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
+        amountRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 6 },
+        heroSymbol: { color: c.ink1, fontSize: 24, fontFamily: fontFor('bold'), marginRight: 4 },
+        heroValue: { color: c.ink1, fontSize: 32, fontFamily: fontFor('bold'), letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
+        heroFooter: {
+            flexDirection: 'row', alignItems: 'center',
+            marginTop: 16, paddingTop: 14,
+            borderTopWidth: 1, borderTopColor: c.border,
+        },
+        footerCap: { color: c.ink3, fontSize: 10, letterSpacing: 1.2, fontFamily: fontFor('semibold') },
+        footerVal: { color: c.ink1, fontSize: 16, fontFamily: fontFor('semibold'), marginTop: 2, fontVariant: ['tabular-nums'] },
+        heroDivider: { width: 1, height: 30, backgroundColor: c.border, marginHorizontal: 16 },
+
+        sectionHeadRow: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            marginTop: 8, marginBottom: 8, paddingHorizontal: 2,
+        },
+        sectionHead: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
+        pill: {
+            color: c.ink2, backgroundColor: c.surfaceAlt,
+            fontSize: 11, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, overflow: 'hidden',
+        },
+        spendTotal: { color: c.ink1, fontSize: 14, fontFamily: fontFor('bold'), fontVariant: ['tabular-nums'] },
+
+        card: { backgroundColor: c.surface, borderRadius: 16, borderWidth: 1, borderColor: c.border, paddingHorizontal: 14, paddingVertical: 6 },
+        acctRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
+        acctIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+        acctName: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold') },
+        acctSub: { color: c.ink3, fontSize: 12, marginTop: 2 },
+        acctAmt: { color: c.ink1, fontSize: 14, fontFamily: fontFor('semibold'), fontVariant: ['tabular-nums'] },
+        divider: { height: 1, backgroundColor: c.border },
+
+        spendBar: { height: 8, borderRadius: 999, overflow: 'hidden', flexDirection: 'row', marginTop: 8, marginBottom: 12 },
+        spendSegment: { height: '100%' },
+        legendGrid: { gap: 8, marginBottom: 8 },
+        legendRow: { flexDirection: 'row', alignItems: 'center' },
+        legendDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
+        legendLabel: { color: c.ink2, fontSize: 13, flex: 1 },
+        legendVal: { color: c.ink1, fontSize: 13, fontFamily: fontFor('semibold'), fontVariant: ['tabular-nums'] },
+
+        addBtn: {
+            marginTop: 4, backgroundColor: c.accentSoft,
+            paddingVertical: 14, borderRadius: 12, alignItems: 'center',
+        },
+        addBtnText: { color: c.accent, fontSize: 14, fontFamily: fontFor('semibold') },
+    });

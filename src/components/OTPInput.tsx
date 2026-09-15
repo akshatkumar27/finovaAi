@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
-import { colors, typography } from '../constants';
+import { useTheme, fontFor } from '../theme';
+import { Palette } from '../theme/palette';
 
 interface OTPInputProps {
     value: string;
@@ -8,26 +9,19 @@ interface OTPInputProps {
     length?: number;
 }
 
-export const OTPInput: React.FC<OTPInputProps> = ({
-    value,
-    onChangeText,
-    length = 6,
-}) => {
+export const OTPInput: React.FC<OTPInputProps> = ({ value, onChangeText, length = 6 }) => {
     const inputRef = useRef<TextInput>(null);
     const digits = value.split('');
-
-    const handlePress = () => {
-        inputRef.current?.focus();
-    };
+    const { colors, typography } = useTheme();
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
     const handleChange = (text: string) => {
-        // Only allow numbers and limit to length
         const cleaned = text.replace(/[^0-9]/g, '').slice(0, length);
         onChangeText(cleaned);
     };
 
     return (
-        <Pressable onPress={handlePress}>
+        <Pressable onPress={() => inputRef.current?.focus()}>
             <View style={styles.container}>
                 {Array.from({ length }).map((_, index) => (
                     <View
@@ -44,7 +38,7 @@ export const OTPInput: React.FC<OTPInputProps> = ({
             </View>
             <TextInput
                 ref={inputRef}
-                style={styles.hiddenInput}
+                style={styles.hidden}
                 value={value}
                 onChangeText={handleChange}
                 keyboardType="number-pad"
@@ -55,38 +49,27 @@ export const OTPInput: React.FC<OTPInputProps> = ({
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 8,
-    },
-    box: {
-        width: 48,
-        height: 56,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.inputBackground,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    boxActive: {
-        borderColor: colors.primary,
-        borderWidth: 2,
-    },
-    boxFilled: {
-        borderColor: colors.border,
-    },
-    digit: {
-        color: colors.textPrimary,
-        fontSize: typography.h2,
-        fontWeight: typography.semibold,
-    },
-    hiddenInput: {
-        position: 'absolute',
-        opacity: 0,
-        height: 0,
-        width: 0,
-    },
-});
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
+        box: {
+            flex: 1,
+            aspectRatio: 0.75,
+            maxWidth: 48,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: 'transparent',
+            backgroundColor: c.surfaceAlt,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        boxActive: { borderColor: c.accent, backgroundColor: c.surface },
+        boxFilled: { borderColor: c.border, backgroundColor: c.surface },
+        digit: {
+            color: c.ink1,
+            fontSize: 22,
+            fontFamily: fontFor('bold'),
+            letterSpacing: -0.5,
+        },
+        hidden: { position: 'absolute', opacity: 0, height: 0, width: 0 },
+    });

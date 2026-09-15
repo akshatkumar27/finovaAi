@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
 import { colors, typography, spacing } from '../constants';
-import { useCurrency } from '../context/CurrencyContext';
+import { useAppSelector } from '../store/hooks';
 
 interface CardProps {
     children: React.ReactNode;
@@ -167,7 +167,7 @@ export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
     onAskAiPress,
     onCardPress,
 }) => {
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
     const formatCurrency = (amount: number) => {
         if (amount >= 1000000000) {
             return currencySymbol + (amount / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
@@ -180,6 +180,13 @@ export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
         }
         return currencySymbol + amount.toString();
     };
+
+    // Progress color: teal when crushing it, brand blue on track, amber if just starting
+    const progressFillColor = progress >= 75
+        ? colors.gainText
+        : progress >= 40
+            ? colors.primary
+            : colors.warningText;
 
     return (
         <TouchableOpacity
@@ -202,7 +209,10 @@ export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
             <View style={{ marginBottom: spacing.sm }}>
                 {targetAmount !== undefined && (
                     <Text style={styles.goalAmountText}>
-                        {savedAmount !== undefined ? `${formatCurrency(savedAmount)} / ` : ''}
+                        {savedAmount !== undefined
+                            ? <Text style={styles.goalAmountSaved}>{formatCurrency(savedAmount)} </Text>
+                            : null}
+                        {savedAmount !== undefined ? '/ ' : ''}
                         {formatCurrency(targetAmount)}
                     </Text>
                 )}
@@ -215,10 +225,10 @@ export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
             <View style={styles.progressRow}>
                 <View style={styles.progressBarContainer}>
                     <View style={[styles.goalProgressBar, { flex: 1 }]}>
-                        <View style={[styles.goalProgressFill, { width: `${progress}%`, backgroundColor: color }]} />
+                        <View style={[styles.goalProgressFill, { width: `${progress}%`, backgroundColor: progressFillColor }]} />
                     </View>
                 </View>
-                <Text style={styles.goalProgressPercentNew}>{progress}%</Text>
+                <Text style={[styles.goalProgressPercentNew, { color: progressFillColor }]}>{progress}%</Text>
             </View>
 
             {/* AI Suggestion Section */}
@@ -500,9 +510,11 @@ const styles = StyleSheet.create({
     // Combined card styles
     combinedCard: {
         backgroundColor: colors.cardBackground,
-        borderRadius: 16,
-        padding: spacing.md,
+        borderRadius: 20,
+        padding: spacing.lg,
         marginBottom: spacing.md,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
     goalSection: {
         flexDirection: 'row',
@@ -524,8 +536,10 @@ const styles = StyleSheet.create({
     },
     goalTitleLarge: {
         color: colors.textPrimary,
-        fontSize: typography.body,
+        fontSize: 17,
         fontWeight: typography.semibold,
+        flex: 1,
+        marginRight: spacing.sm,
     },
     goalProgressPercent: {
         color: '#22c55e',
@@ -533,15 +547,14 @@ const styles = StyleSheet.create({
         fontWeight: typography.bold,
     },
     goalProgressBar: {
-        height: 6,
+        height: 8,
         backgroundColor: colors.border,
-        borderRadius: 3,
+        borderRadius: 99,
         overflow: 'hidden',
     },
     goalProgressFill: {
         height: '100%',
-        borderRadius: 3,
-        backgroundColor: '#22c55e',
+        borderRadius: 99,
     },
     suggestionSection: {
         flexDirection: 'row',
@@ -628,18 +641,20 @@ const styles = StyleSheet.create({
         marginBottom: spacing.xs,
     },
     editButton: {
-        backgroundColor: colors.inputBackground,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.xs,
-        borderRadius: 8,
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderColor: colors.border,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 10,
     },
     editButtonText: {
-        color: colors.textPrimary,
+        color: colors.textSecondary,
         fontSize: typography.caption,
         fontWeight: typography.medium,
     },
     achieveInText: {
-        color: colors.textSecondary,
+        color: colors.textTertiary,
         fontSize: typography.caption,
         marginBottom: 2,
     },
@@ -648,6 +663,11 @@ const styles = StyleSheet.create({
         fontSize: typography.body,
         fontWeight: typography.bold,
         marginBottom: 2,
+        fontVariant: ['tabular-nums'],
+    },
+    goalAmountSaved: {
+        color: colors.textSecondary,
+        fontWeight: typography.medium,
     },
     progressRow: {
         flexDirection: 'row',
@@ -659,11 +679,12 @@ const styles = StyleSheet.create({
         marginRight: spacing.sm,
     },
     goalProgressPercentNew: {
-        color: colors.textPrimary,
+        // color set dynamically in component based on progress
         fontSize: typography.bodySmall,
         fontWeight: typography.semibold,
         minWidth: 40,
         textAlign: 'right',
+        fontVariant: ['tabular-nums'],
     },
     aiSuggestionSection: {
         marginBottom: spacing.md,
@@ -680,17 +701,17 @@ const styles = StyleSheet.create({
         lineHeight: 18,
     },
     askAiButton: {
-        backgroundColor: 'transparent',
+        backgroundColor: colors.primaryDim,
         borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 8,
+        borderColor: 'rgba(61,142,248,0.25)',
+        borderRadius: 12,
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.md,
         alignItems: 'center',
     },
     askAiButtonText: {
-        color: colors.textPrimary,
+        color: colors.primary,
         fontSize: typography.bodySmall,
-        fontWeight: typography.medium,
+        fontWeight: typography.semibold,
     },
 });

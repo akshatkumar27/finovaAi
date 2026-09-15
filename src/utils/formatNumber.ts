@@ -131,8 +131,9 @@ export const formatCompactCurrency = (num: number, currency: string = '₹'): st
  * @returns Formatted string with commas
  */
 export const formatNumberInput = (value: string): string => {
-    // Remove all non-numeric characters
-    const cleanValue = value.replace(/[^0-9]/g, '');
+    // Drop the fractional part BEFORE stripping non-digits, so DECIMAL strings
+    // from the backend like "200000.00" don't become "20000000" (×100 bug).
+    const cleanValue = value.split('.')[0].replace(/[^0-9]/g, '');
     if (!cleanValue) return '';
 
     // Format with commas according to Indian locale

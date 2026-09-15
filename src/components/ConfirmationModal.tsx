@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     View,
     Text,
@@ -6,11 +6,11 @@ import {
     Modal,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    Dimensions,
+    ActivityIndicator,
 } from 'react-native';
-import { colors, typography, spacing } from '../constants';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { Icon, IconName } from './Icon';
+import { useTheme, fontFor } from '../theme';
+import { Palette } from '../theme/palette';
 
 interface ConfirmationModalProps {
     visible: boolean;
@@ -22,6 +22,7 @@ interface ConfirmationModalProps {
     onCancel: () => void;
     type?: 'success' | 'error' | 'warning' | 'info';
     showCancelButton?: boolean;
+    loading?: boolean;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -34,79 +35,59 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     onCancel,
     type = 'info',
     showCancelButton = true,
+    loading = false,
 }) => {
-    const getTypeStyles = () => {
-        switch (type) {
-            case 'success':
-                return {
-                    icon: '✅',
-                    iconBg: 'rgba(34, 197, 94, 0.15)',
-                    confirmBg: '#22c55e',
-                };
-            case 'error':
-                return {
-                    icon: '❌',
-                    iconBg: 'rgba(239, 68, 68, 0.15)',
-                    confirmBg: '#ef4444',
-                };
-            case 'warning':
-                return {
-                    icon: '⚠️',
-                    iconBg: 'rgba(245, 158, 11, 0.15)',
-                    confirmBg: '#f59e0b',
-                };
-            default:
-                return {
-                    icon: '💡',
-                    iconBg: 'rgba(59, 130, 246, 0.15)',
-                    confirmBg: '#3b82f6',
-                };
-        }
-    };
+    const { colors, typography } = useTheme();
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
 
-    const typeStyles = getTypeStyles();
+    const iconMap: Record<string, { icon: IconName; tint: string; tintBg: string; confirmBg: string }> = {
+        success: { icon: 'check', tint: colors.gain, tintBg: colors.gainSoft, confirmBg: colors.accent },
+        error:   { icon: 'x-circle', tint: colors.loss, tintBg: colors.lossSoft, confirmBg: colors.loss },
+        warning: { icon: 'alert-triangle', tint: colors.warn, tintBg: colors.warnSoft, confirmBg: colors.accent },
+        info:    { icon: 'info', tint: colors.accent, tintBg: colors.accentSoft, confirmBg: colors.accent },
+    };
+    const { icon, tint, tintBg, confirmBg } = iconMap[type];
 
     return (
-        <Modal
-            visible={visible}
-            transparent
-            animationType="fade"
-            onRequestClose={onCancel}
-        >
+        <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
             <TouchableWithoutFeedback onPress={onCancel}>
                 <View style={styles.overlay}>
                     <TouchableWithoutFeedback>
-                        <View style={styles.modalContainer}>
-                            {/* Icon */}
-                            <View style={[styles.iconContainer, { backgroundColor: typeStyles.iconBg }]}>
-                                <Text style={styles.icon}>{typeStyles.icon}</Text>
+                        <View style={styles.card}>
+                            <View style={[styles.iconWrap, { backgroundColor: tintBg }]}>
+                                <Icon name={icon} size="lg" color={tint} />
                             </View>
 
-                            {/* Title */}
                             <Text style={styles.title}>{title}</Text>
-
-                            {/* Message */}
                             <Text style={styles.message}>{message}</Text>
 
-                            {/* Buttons */}
-                            <View style={styles.buttonContainer}>
+                            <View style={styles.buttons}>
                                 {showCancelButton && (
                                     <TouchableOpacity
-                                        style={styles.cancelButton}
+                                        style={styles.cancelBtn}
                                         onPress={onCancel}
+                                        disabled={loading}
+                                        activeOpacity={0.7}
                                     >
-                                        <Text style={styles.cancelButtonText}>{cancelText}</Text>
+                                        <Text style={styles.cancelText}>{cancelText}</Text>
                                     </TouchableOpacity>
                                 )}
                                 <TouchableOpacity
-                                    style={[
-                                        styles.confirmButton,
-                                        { backgroundColor: typeStyles.confirmBg },
-                                        !showCancelButton && styles.fullWidthButton,
-                                    ]}
+                                    style={[styles.confirmBtn, { backgroundColor: confirmBg }]}
                                     onPress={onConfirm}
+                                    disabled={loading}
+                                    activeOpacity={0.85}
                                 >
-                                    <Text style={styles.confirmButtonText}>{confirmText}</Text>
+                                    {loading ? (
+                                        <ActivityIndicator color={type === 'error' ? '#FFFFFF' : colors.accentInk} />
+                                    ) : (
+                                        <Text style={[
+                                            styles.confirmText,
+                                            { color: type === 'error' ? '#FFFFFF' : colors.accentInk },
+                                        ]}>
+                                            {confirmText}
+                                        </Text>
+                                    )}
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -117,77 +98,71 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     );
 };
 
-const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-    },
-    modalContainer: {
-        width: SCREEN_WIDTH - spacing.xl * 2,
-        backgroundColor: colors.cardBackground,
-        borderRadius: 20,
-        padding: spacing.xl,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    iconContainer: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-    },
-    icon: {
-        fontSize: 32,
-    },
-    title: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        textAlign: 'center',
-        marginBottom: spacing.sm,
-    },
-    message: {
-        color: colors.textSecondary,
-        fontSize: typography.body,
-        textAlign: 'center',
-        lineHeight: 24,
-        marginBottom: spacing.xl,
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        width: '100%',
-        gap: spacing.sm,
-    },
-    cancelButton: {
-        flex: 1,
-        backgroundColor: colors.inputBackground,
-        paddingVertical: spacing.md,
-        borderRadius: 12,
-        alignItems: 'center',
-    },
-    cancelButtonText: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    confirmButton: {
-        flex: 1,
-        paddingVertical: spacing.md,
-        borderRadius: 12,
-        alignItems: 'center',
-    },
-    fullWidthButton: {
-        flex: 1,
-    },
-    confirmButtonText: {
-        color: colors.background,
-        fontSize: typography.body,
-        fontWeight: typography.bold,
-    },
-});
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        overlay: {
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: 24,
+        },
+        card: {
+            width: '100%',
+            backgroundColor: c.surface,
+            borderRadius: 20,
+            paddingVertical: 24,
+            paddingHorizontal: 20,
+            borderWidth: 1,
+            borderColor: c.border,
+        },
+        iconWrap: {
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 12,
+        },
+        title: {
+            color: c.ink1,
+            fontSize: 18,
+            fontFamily: fontFor('bold'),
+            letterSpacing: -0.3,
+            marginBottom: 6,
+        },
+        message: {
+            color: c.ink2,
+            fontSize: 14,
+            lineHeight: 20,
+            marginBottom: 20,
+        },
+        buttons: { flexDirection: 'row', gap: 10 },
+        cancelBtn: {
+            flex: 1,
+            paddingVertical: 12,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: c.borderStrong,
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 48,
+        },
+        cancelText: {
+            color: c.ink1,
+            fontSize: 14,
+            fontFamily: fontFor('semibold'),
+        },
+        confirmBtn: {
+            flex: 1,
+            paddingVertical: 12,
+            borderRadius: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 48,
+        },
+        confirmText: {
+            fontSize: 14,
+            fontFamily: fontFor('semibold'),
+        },
+    });

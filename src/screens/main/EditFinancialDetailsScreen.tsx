@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    StatusBar,
     ScrollView,
     TextInput,
     TouchableOpacity,
@@ -14,24 +13,28 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import Toast from 'react-native-toast-message';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BackButton, AnimatedMascot, Header } from '../../components';
-import { colors, typography, spacing } from '../../constants';
+import { toast } from 'sonner-native';
 import { api } from '../../services/api';
 import { formatNumberInput } from '../../utils/formatNumber';
-import { useCurrency } from '../../context/CurrencyContext';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { shallowEqual } from 'react-redux';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
+import { useTheme, fontFor } from '../../theme';
+import { Palette } from '../../theme/palette';
+import { BackButton } from '../../components';
+
+type FieldKey = 'monthly_income' | 'monthly_expenses' | 'monthly_emi' | 'emi_outstanding' | 'monthly_investment';
 
 export const EditFinancialDetailsScreen: React.FC = () => {
     const navigation = useNavigation<any>();
-    const { currencySymbol } = useCurrency();
+    const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
+    const { colors, typography } = useTheme();
     const dispatch = useAppDispatch();
-    const financialData = useAppSelector(state => state.financialData);
+    const financialData = useAppSelector((state) => state.financialData, shallowEqual);
 
-    // Initial data from Redux
-    const initialData = {
+    const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
+
+    const initial = {
         monthly_income: financialData.monthlyIncome,
         monthly_expenses: financialData.monthlyExpenses,
         monthly_emi: financialData.monthlyEmi,
@@ -40,361 +43,224 @@ export const EditFinancialDetailsScreen: React.FC = () => {
     };
 
     const [form, setForm] = useState({
-        monthly_income: formatNumberInput(initialData.monthly_income?.toString() || ''),
-        monthly_expenses: formatNumberInput(initialData.monthly_expenses?.toString() || ''),
-        monthly_emi: formatNumberInput(initialData.monthly_emi?.toString() || ''),
-        emi_outstanding: formatNumberInput(initialData.emi_outstanding?.toString() || ''),
-        monthly_investment: formatNumberInput(initialData.monthly_investment?.toString() || ''),
+        monthly_income: formatNumberInput(initial.monthly_income?.toString() || ''),
+        monthly_expenses: formatNumberInput(initial.monthly_expenses?.toString() || ''),
+        monthly_emi: formatNumberInput(initial.monthly_emi?.toString() || ''),
+        emi_outstanding: formatNumberInput(initial.emi_outstanding?.toString() || ''),
+        monthly_investment: formatNumberInput(initial.monthly_investment?.toString() || ''),
     });
 
-    const [errors, setErrors] = useState({
-        monthly_income: '',
-        monthly_expenses: '',
-        monthly_emi: '',
-        monthly_investment: '',
-    });
-
+    const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
     const [isSaving, setIsSaving] = useState(false);
     const [isValid, setIsValid] = useState(true);
 
-    // Real-time validation
+    const asNum = (v: string) => parseInt(v.replace(/[^0-9]/g, ''), 10) || 0;
+
     useEffect(() => {
-        const income = parseInt(form.monthly_income.replace(/[^0-9]/g, ''), 10) || 0;
-        const expenses = parseInt(form.monthly_expenses.replace(/[^0-9]/g, ''), 10) || 0;
-        const emi = parseInt(form.monthly_emi.replace(/[^0-9]/g, ''), 10) || 0;
-        const investment = parseInt(form.monthly_investment.replace(/[^0-9]/g, ''), 10) || 0;
-
-        const newErrors = {
-            monthly_income: '',
-            monthly_expenses: '',
-            monthly_emi: '',
-            monthly_investment: '',
-        };
+        const income = asNum(form.monthly_income);
+        const expenses = asNum(form.monthly_expenses);
+        const emi = asNum(form.monthly_emi);
+        const investment = asNum(form.monthly_investment);
+        const next: Partial<Record<FieldKey, string>> = {};
         let valid = true;
-
-        if (income <= 0 && form.monthly_income !== '') {
-            newErrors.monthly_income = 'Income must be greater than 0';
-            valid = false;
-        }
-
-        if (expenses > income) {
-            newErrors.monthly_expenses = `Exceeds income`;
-            valid = false;
-        }
-
-        if (expenses + emi > income) {
-            newErrors.monthly_emi = `Total expenses + EMI exceed income`;
-            valid = false;
-        }
-
-        const totalOutgoing = expenses + emi + investment;
-        if (totalOutgoing > income) {
-            newErrors.monthly_investment = `Total allocation exceeds income`;
-            valid = false;
-        }
-
-        setErrors(newErrors);
+        if (income <= 0 && form.monthly_income !== '') { next.monthly_income = 'Income must be greater than 0'; valid = false; }
+        if (expenses > income) { next.monthly_expenses = 'Exceeds income'; valid = false; }
+        if (expenses + emi > income) { next.monthly_emi = 'Expenses + EMI exceed income'; valid = false; }
+        if (expenses + emi + investment > income) { next.monthly_investment = 'Total allocation exceeds income'; valid = false; }
+        setErrors(next);
         setIsValid(valid && income > 0);
     }, [form]);
 
-    const hasErrors = !isValid || Object.values(errors).some(e => e !== '');
-
-    // Detect if form has changed from initial prefilled values
     const hasChanges =
-        (parseInt(form.monthly_income.replace(/[^0-9]/g, ''), 10) || 0) !== (initialData.monthly_income || 0) ||
-        (parseInt(form.monthly_expenses.replace(/[^0-9]/g, ''), 10) || 0) !== (initialData.monthly_expenses || 0) ||
-        (parseInt(form.monthly_emi.replace(/[^0-9]/g, ''), 10) || 0) !== (initialData.monthly_emi || 0) ||
-        (parseInt(form.emi_outstanding.replace(/[^0-9]/g, ''), 10) || 0) !== (initialData.emi_outstanding || 0) ||
-        (parseInt(form.monthly_investment.replace(/[^0-9]/g, ''), 10) || 0) !== (initialData.monthly_investment || 0);
+        asNum(form.monthly_income) !== (initial.monthly_income || 0) ||
+        asNum(form.monthly_expenses) !== (initial.monthly_expenses || 0) ||
+        asNum(form.monthly_emi) !== (initial.monthly_emi || 0) ||
+        asNum(form.emi_outstanding) !== (initial.emi_outstanding || 0) ||
+        asNum(form.monthly_investment) !== (initial.monthly_investment || 0);
 
-    const handleChange = (field: keyof typeof form, value: string) => {
-        setForm(prev => ({ ...prev, [field]: formatNumberInput(value) }));
+    const handleChange = (field: FieldKey, value: string) => {
+        setForm((prev) => ({ ...prev, [field]: formatNumberInput(value) }));
     };
 
     const handleSave = async () => {
-        if (!hasChanges) {
-            Toast.show({
-                type: 'info',
-                text1: 'No Changes',
-                text2: 'You have not made any changes to your financial details.',
-            });
-            return;
-        }
-
-        if (!isValid) {
-            Toast.show({
-                type: 'error',
-                text1: 'Invalid Inputs',
-                text2: 'Please check the form for errors before saving.',
-            });
-            return;
-        }
+        if (!hasChanges) { toast('No changes', { description: 'Nothing to save yet.' }); return; }
+        if (!isValid) { toast.error('Fix errors', { description: 'Some fields need attention.' }); return; }
 
         setIsSaving(true);
         try {
-            const income = parseInt(form.monthly_income.replace(/[^0-9]/g, ''), 10) || 0;
-            const expenses = parseInt(form.monthly_expenses.replace(/[^0-9]/g, ''), 10) || 0;
-            const emi = parseInt(form.monthly_emi.replace(/[^0-9]/g, ''), 10) || 0;
-            const outstanding = parseInt(form.emi_outstanding.replace(/[^0-9]/g, ''), 10) || 0;
-            const investment = parseInt(form.monthly_investment.replace(/[^0-9]/g, ''), 10) || 0;
-
-            const updatedOnboarding = {
-                monthly_income: income,
-                monthly_expenses: expenses,
-                monthly_emi: emi,
-                emi_outstanding: outstanding,
-                monthly_investment: investment,
-            };
-
-            // Update AsyncStorage
-            // First get existing to preserve other fields if any (though currently we have full object)
-            // But let's overwrite for safety if format matches
-            await AsyncStorage.setItem('onboardingData', JSON.stringify(updatedOnboarding));
-
-            // Call API
-            const payload = {
-                monthly_income: income,
-                monthly_expenses: expenses,
-                monthly_emi: emi,
-                emi_outstanding: outstanding,
-                monthly_savings: investment,
-            };
-
-            await api.put('/api/user/financial-profile', payload);
-
-            dispatch(setFinancialData({
-                monthlyIncome: income,
-                monthlyExpenses: expenses,
-                monthlyEmi: emi,
-                emiOutstanding: outstanding,
-                monthlyInvestment: investment,
-            }));
-
-            Toast.show({
-                type: 'success',
-                text1: 'Profile Updated',
-                text2: 'Your financial details have been saved.',
+            const income = asNum(form.monthly_income);
+            const expenses = asNum(form.monthly_expenses);
+            const emi = asNum(form.monthly_emi);
+            const outstanding = asNum(form.emi_outstanding);
+            const investment = asNum(form.monthly_investment);
+            const updated = { monthly_income: income, monthly_expenses: expenses, monthly_emi: emi, emi_outstanding: outstanding, monthly_investment: investment };
+            
+            await api.put('/api/user/financial-profile', {
+                monthly_income: income, monthly_expenses: expenses, monthly_emi: emi, emi_outstanding: outstanding, monthly_savings: investment,
             });
-
+            dispatch(setFinancialData({
+                monthlyIncome: income, monthlyExpenses: expenses, monthlyEmi: emi, emiOutstanding: outstanding, monthlyInvestment: investment,
+            }));
+            toast.success('Saved', { description: 'Your financial details are updated.' });
             navigation.goBack();
         } catch (error) {
             console.error('Error updating financials:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Update Failed',
-                text2: 'Could not sync with server, but local data is updated.',
-            });
+            toast.error('Sync failed', { description: 'Local saved; server sync will retry.' });
             navigation.goBack();
         } finally {
             setIsSaving(false);
             DeviceEventEmitter.emit('refreshGoals');
-
         }
     };
 
+    const income = asNum(form.monthly_income);
+    const expenses = asNum(form.monthly_expenses);
+    const emi = asNum(form.monthly_emi);
+    const investment = asNum(form.monthly_investment);
+    const available = Math.max(0, income - expenses - emi);
+    const unassigned = Math.max(0, available - investment);
+
+    const fields: { key: FieldKey; label: string }[] = [
+        { key: 'monthly_income', label: 'MONTHLY INCOME' },
+        { key: 'monthly_expenses', label: 'MONTHLY EXPENSES' },
+        { key: 'monthly_emi', label: 'MONTHLY EMI' },
+        { key: 'emi_outstanding', label: 'EMI OUTSTANDING' },
+        { key: 'monthly_investment', label: 'MONTHLY INVESTMENT' },
+    ];
+
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-
-            <Header title="Edit Financials" />
-
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
-            >
-                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Monthly Income</Text>
-                        <View style={[styles.inputContainer, !!errors.monthly_income && styles.inputError]}>
-                            <Text style={styles.currencyPrefix}>{currencySymbol}</Text>
-                            <TextInput
-                                style={styles.inputField}
-                                value={form.monthly_income}
-                                onChangeText={(text) => handleChange('monthly_income', text)}
-                                keyboardType="number-pad"
-                                placeholder="0"
-                                placeholderTextColor={colors.textMuted}
-                            />
-                        </View>
-                        {!!errors.monthly_income && <Text style={styles.errorText}>{errors.monthly_income}</Text>}
-                    </View>
-
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Monthly Expenses</Text>
-                        <View style={[styles.inputContainer, !!errors.monthly_expenses && styles.inputError]}>
-                            <Text style={styles.currencyPrefix}>{currencySymbol}</Text>
-                            <TextInput
-                                style={styles.inputField}
-                                value={form.monthly_expenses}
-                                onChangeText={(text) => handleChange('monthly_expenses', text)}
-                                keyboardType="number-pad"
-                                placeholder="0"
-                                placeholderTextColor={colors.textMuted}
-                            />
-                        </View>
-                        {!!errors.monthly_expenses && <Text style={styles.errorText}>{errors.monthly_expenses}</Text>}
-                    </View>
-
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Monthly EMI</Text>
-                        <View style={[styles.inputContainer, !!errors.monthly_emi && styles.inputError]}>
-                            <Text style={styles.currencyPrefix}>{currencySymbol}</Text>
-                            <TextInput
-                                style={styles.inputField}
-                                value={form.monthly_emi}
-                                onChangeText={(text) => handleChange('monthly_emi', text)}
-                                keyboardType="number-pad"
-                                placeholder="0"
-                                placeholderTextColor={colors.textMuted}
-                            />
-                        </View>
-                        {!!errors.monthly_emi && <Text style={styles.errorText}>{errors.monthly_emi}</Text>}
-                    </View>
-
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>EMI Outstanding</Text>
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.currencyPrefix}>{currencySymbol}</Text>
-                            <TextInput
-                                style={styles.inputField}
-                                value={form.emi_outstanding}
-                                onChangeText={(text) => handleChange('emi_outstanding', text)}
-                                keyboardType="number-pad"
-                                placeholder="0"
-                                placeholderTextColor={colors.textMuted}
-                            />
-                        </View>
-                    </View>
-
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Monthly Investment</Text>
-                        <View style={[styles.inputContainer, !!errors.monthly_investment && styles.inputError]}>
-                            <Text style={styles.currencyPrefix}>{currencySymbol}</Text>
-                            <TextInput
-                                style={styles.inputField}
-                                value={form.monthly_investment}
-                                onChangeText={(text) => handleChange('monthly_investment', text)}
-                                keyboardType="number-pad"
-                                placeholder="0"
-                                placeholderTextColor={colors.textMuted}
-                            />
-                        </View>
-                        {!!errors.monthly_investment && <Text style={styles.errorText}>{errors.monthly_investment}</Text>}
-                    </View>
-
-                    <View style={{ height: 100 }} />
-                </ScrollView>
-            </KeyboardAvoidingView>
-
-            <View style={styles.footer}>
-                { (
-                    <AnimatedMascot
-                        text="Updating your financials may affect your existing goals. Please revisit them after saving to keep things on track."
-                        mascotWidth={50}
-                        mascotHeight={100}
-                        arrowTopRatio={0.35}
-                    />
-                )}
-                <TouchableOpacity
-                    style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
-                    onPress={handleSave}
-                    disabled={isSaving}
-                >
-                    {isSaving ? (
-                        <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                        <Text style={styles.saveButtonText}>Save Changes</Text>
-                    )}
-                </TouchableOpacity>
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <View style={styles.header}>
+                <BackButton onPress={() => navigation.goBack()} />
+                <Text style={styles.headerTitle}>Financial details</Text>
+                <View style={{ width: 34 }} />
             </View>
+
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+                <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                    {income > 0 && (
+                        <View style={styles.summary}>
+                            <Text style={styles.summaryCap}>AVAILABLE TO ALLOCATE</Text>
+                            <View style={styles.summaryRow}>
+                                <Text style={styles.summarySymbol}>{currencySymbol}</Text>
+                                <Text style={styles.summaryValue}>{available.toLocaleString('en-IN')}</Text>
+                                <Text style={styles.summarySub}>/month</Text>
+                            </View>
+                            <View style={styles.summaryBar}>
+                                {expenses > 0 && <View style={[styles.barSeg, { flex: expenses, backgroundColor: colors.loss }]} />}
+                                {emi > 0 && <View style={[styles.barSeg, { flex: emi, backgroundColor: colors.warn }]} />}
+                                {available > 0 && <View style={[styles.barSeg, { flex: available, backgroundColor: colors.gain }]} />}
+                            </View>
+                            <View style={styles.legendRow}>
+                                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.loss }]} /><Text style={styles.legendText}>Expenses</Text></View>
+                                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.warn }]} /><Text style={styles.legendText}>EMI</Text></View>
+                                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.gain }]} /><Text style={styles.legendText}>Available</Text></View>
+                            </View>
+                            {available > 0 && (investment > 0 || unassigned > 0) && (
+                                <Text style={styles.summarySplit}>
+                                    {investment > 0 ? `${currencySymbol}${investment.toLocaleString('en-IN')} to investment · ` : ''}
+                                    {`${currencySymbol}${unassigned.toLocaleString('en-IN')} unassigned`}
+                                </Text>
+                            )}
+                        </View>
+                    )}
+
+                    {fields.map((f) => (
+                        <View key={f.key} style={styles.field}>
+                            <Text style={styles.label}>{f.label}</Text>
+                            <View style={[styles.input, !!errors[f.key] && styles.inputError]}>
+                                <Text style={styles.currency}>{currencySymbol}</Text>
+                                <TextInput
+                                    style={styles.inputText}
+                                    value={form[f.key]}
+                                    onChangeText={(text) => handleChange(f.key, text)}
+                                    keyboardType="number-pad"
+                                    placeholder="0"
+                                    placeholderTextColor={colors.ink3}
+                                />
+                            </View>
+                            {!!errors[f.key] && <Text style={styles.errorText}>{errors[f.key]}</Text>}
+                        </View>
+                    ))}
+
+                    <View style={styles.noteCard}>
+                        <Text style={styles.noteText}>Changes to your financials may shift your goal timelines. Revisit them after saving.</Text>
+                    </View>
+                </ScrollView>
+
+                <View style={styles.footer}>
+                    <TouchableOpacity
+                        style={[styles.saveBtn, (isSaving || !hasChanges) && styles.saveBtnDisabled]}
+                        onPress={handleSave}
+                        disabled={isSaving}
+                        activeOpacity={0.85}
+                    >
+                        {isSaving ? <ActivityIndicator color={colors.accentInk} /> : <Text style={styles.saveBtnText}>Save changes</Text>}
+                    </TouchableOpacity>
+                </View>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-    },
-    headerTitle: {
-        flex: 1,
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        textAlign: 'center',
-    },
-    headerSpacer: {
-        width: 40,
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: spacing.lg,
-    },
-    formGroup: {
-        marginBottom: spacing.lg,
-    },
-    label: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        marginBottom: spacing.xs,
-        fontWeight: '500',
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.inputBackground,
-        borderRadius: 12,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    inputError: {
-        borderColor: '#ef4444',
-    },
-    errorText: {
-        color: '#ef4444',
-        fontSize: typography.caption,
-        marginTop: 4,
-    },
-    currencyPrefix: {
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        marginRight: spacing.sm,
-    },
-    inputField: {
-        flex: 1,
-        color: colors.textPrimary,
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-        padding: 0,
-    },
-    footer: {
-        padding: spacing.lg,
-        // borderTopWidth: 1,
-        borderTopColor: colors.border,
-        backgroundColor: colors.background,
-    },
-    saveButton: {
-        backgroundColor: colors.primary,
-        borderRadius: 12,
-        paddingVertical: spacing.md,
-        alignItems: 'center',
-    },
-    saveButtonDisabled: {
-        opacity: 0.5,
-    },
-    saveButtonText: {
-        color: '#ffffff',
-        fontSize: typography.body,
-        fontWeight: 'bold',
-    },
-});
+const makeStyles = (c: Palette, t: ReturnType<typeof useTheme>['typography']) =>
+    StyleSheet.create({
+        container: { flex: 1, backgroundColor: c.canvas },
+        header: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6,
+        },
+        back: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
+        backArrow: { color: c.ink1, fontSize: 18, marginTop: -2 },
+        headerTitle: { color: c.ink1, fontSize: 15, fontFamily: fontFor('semibold') },
+
+        scroll: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
+
+        summary: {
+            backgroundColor: c.surface, borderRadius: 20,
+            borderWidth: 1, borderColor: c.border,
+            padding: 18, marginBottom: 20,
+        },
+        summaryCap: { color: c.ink3, fontSize: 11, letterSpacing: 1.4, fontFamily: fontFor('semibold') },
+        summaryRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 6 },
+        summarySymbol: { color: c.ink1, fontSize: 22, fontFamily: fontFor('bold'), marginRight: 4, includeFontPadding: false, },
+        summaryValue: { color: c.ink1, fontSize: 30, fontFamily: fontFor('bold'), letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
+        summarySub: { color: c.ink3, fontSize: 12, marginLeft: 6 },
+        summarySplit: { color: c.ink3, fontSize: 12, marginTop: 10, letterSpacing: 0.1 },
+        summaryBar: { height: 8, borderRadius: 999, overflow: 'hidden', flexDirection: 'row', marginTop: 14 },
+        barSeg: { height: '100%' },
+        legendRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 12 },
+        legendItem: { flexDirection: 'row', alignItems: 'center' },
+        legendDot: { width: 8, height: 8, borderRadius: 4, marginRight: 6 },
+        legendText: { color: c.ink2, fontSize: 12 },
+
+        field: { marginBottom: 14 },
+        label: { color: c.ink2, fontSize: 12, fontFamily: fontFor('medium'), letterSpacing: 0.4, marginBottom: 6 },
+        input: {
+            flexDirection: 'row', alignItems: 'center',
+            backgroundColor: c.surfaceAlt, borderRadius: 12,
+            paddingHorizontal: 16, minHeight: 52,
+            borderWidth: 1, borderColor: 'transparent',
+        },
+        inputError: { borderColor: c.loss, backgroundColor: c.lossSoft },
+        currency: { color: c.ink1, fontSize: 18, fontFamily: fontFor('semibold'), marginRight: 4, includeFontPadding: false, },
+        inputText: {
+            flex: 1, color: c.ink1, fontSize: 18, fontFamily: fontFor('semibold'),
+            fontVariant: ['tabular-nums'], padding: 0,
+        },
+        errorText: { color: c.loss, fontSize: 12, marginTop: 4 },
+
+        noteCard: {
+            backgroundColor: c.warnSoft, borderRadius: 12,
+            padding: 12, marginTop: 12,
+        },
+        noteText: { color: c.warn, fontSize: 12, lineHeight: 18 },
+
+        footer: { paddingHorizontal: 20, paddingBottom: 20, paddingTop: 8, backgroundColor: c.canvas },
+        saveBtn: {
+            backgroundColor: c.accent, paddingVertical: 14, borderRadius: 12,
+            alignItems: 'center', justifyContent: 'center', minHeight: 52,
+        },
+        saveBtnDisabled: { opacity: 0.5 },
+        saveBtnText: { color: c.accentInk, fontSize: 14, fontFamily: fontFor('semibold') },
+    });
