@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
+import { toastError } from '../../utils/toastError';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { formatCurrency } from '../../utils';
@@ -54,7 +55,7 @@ export const PersonalInfoScreen: React.FC = () => {
             console.error('Error deleting account:', error);
             setIsDeleting(false);
             setDeleteModalVisible(false);
-            toast.error('Error', { description: 'Failed to delete. Please try again.' });
+            toastError(error, { context: 'Delete failed' });
         }
     };
 

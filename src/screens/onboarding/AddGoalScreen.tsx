@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
+import { toastError } from '../../utils/toastError';
 import { api } from '../../services';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -151,7 +152,7 @@ export const AddGoalScreen: React.FC = () => {
         if (!target.trim() || targetAmount <= 0) { toast.error('Missing target', { description: 'Enter a target amount.' }); return; }
         if (achieveInMonths <= 0) { toast.error('Invalid duration', { description: 'Enter how long you\'ll save for.' }); return; }
         if (exceedsBudget) {
-            toast.error('Too high', { description: `Can't exceed ${formatCompactCurrency(availableForNewGoals ?? 0, currencySymbol)}/mo available.` });
+            toast.error('Too high', { description: `Can't exceed ${formatCompactCurrency(availableForNewGoals ?? 0, currencySymbol)}/month available.` });
             return;
         }
 
@@ -181,7 +182,7 @@ export const AddGoalScreen: React.FC = () => {
             navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
         } catch (error) {
             console.error('Save goal error:', error);
-            toast.error('Error', { description: 'Failed to save your goal.' });
+            toastError(error, { context: 'Save failed' });
         } finally { setIsLoading(false); }
     };
 
@@ -272,7 +273,7 @@ export const AddGoalScreen: React.FC = () => {
                         placeholderTextColor={colors.ink3}
                     />
 
-                    <Text style={styles.inputLabel}>TARGET AMOUNT</Text>
+                    <Text style={styles.inputLabel}>GOAL AMOUNT</Text>
                     <View style={styles.moneyInput}>
                         <Text style={styles.moneySymbol}>{currencySymbol}</Text>
                         <TextInput
@@ -338,7 +339,7 @@ export const AddGoalScreen: React.FC = () => {
                     {exceedsBudget && (
                         <View style={styles.errorBanner}>
                             <Text style={styles.errorText}>
-                                Exceeds your {formatCompactCurrency(availableForNewGoals ?? 0, currencySymbol)}/mo budget for new goals.
+                                Exceeds your {formatCompactCurrency(availableForNewGoals ?? 0, currencySymbol)}/month budget for new goals.
                             </Text>
                         </View>
                     )}

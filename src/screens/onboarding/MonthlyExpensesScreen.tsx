@@ -39,7 +39,7 @@ export const MonthlyExpensesScreen: React.FC = () => {
         <OnboardingAmountScreen
             step={2}
             title="Monthly expenses."
-            helper="Rent, food, subscriptions — the essentials."
+            helper="Rent, food, subscriptions, and other regular bills."
             amount={amount}
             onAmountChange={(v) => setAmount(formatNumberInput(v))}
             chipPresets={PRESETS}

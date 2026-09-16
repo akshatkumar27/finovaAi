@@ -21,7 +21,7 @@ export const EMIOutstandingScreen: React.FC = () => {
 
     const handleContinue = () => {
         if (amount.trim() === '') {
-            toast.error('Fill this in', { description: 'Enter your outstanding EMI (0 is fine).' });
+            toast.error('Enter an amount', { description: 'Enter your outstanding EMI (0 is fine).' });
             return;
         }
         dispatch(setFinancialData({ emiOutstanding: value }));
@@ -32,7 +32,7 @@ export const EMIOutstandingScreen: React.FC = () => {
         <OnboardingAmountScreen
             step={4}
             title="Total EMI outstanding."
-            helper="Roughly, what's left across your loans. We use this to protect your goals during high-EMI periods."
+            helper="Roughly, what's left across your loans. We use this to slow down goal savings when a big EMI payment is due."
             amount={amount}
             onAmountChange={(v) => setAmount(formatNumberInput(v))}
             chipPresets={PRESETS}

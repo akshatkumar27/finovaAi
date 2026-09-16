@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner-native';
+import { toastError } from '../../utils/toastError';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
@@ -28,7 +29,7 @@ export const MonthlyInvestmentScreen: React.FC = () => {
 
     const handleComplete = async () => {
         if (amount.trim() === '') {
-            toast.error('Fill this in', { description: 'Enter a monthly amount (0 is fine).' });
+            toast.error('Enter an amount', { description: 'Enter a monthly amount (0 is fine).' });
             return;
         }
         if (exceeds) {
@@ -54,15 +55,15 @@ export const MonthlyInvestmentScreen: React.FC = () => {
             navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
         } catch (error) {
             console.error('Onboarding submit error:', error);
-            toast.error('Error', { description: 'Something went wrong. Please try again.' });
+            toastError(error, { context: 'Setup failed' });
         } finally { setSaving(false); }
     };
 
     return (
         <OnboardingAmountScreen
             step={5}
-            title="Already investing?"
-            helper="SIPs, mutual funds, stocks, gold — monthly average."
+            title="Monthly investment."
+            helper="SIPs, mutual funds, stocks, gold. What you invest in a typical month."
             amount={amount}
             onAmountChange={(v) => setAmount(formatNumberInput(v))}
             chipPresets={PRESETS}

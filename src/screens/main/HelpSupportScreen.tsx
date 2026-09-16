@@ -22,7 +22,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 const FAQS = [
     { id: '1', q: 'How is the pulse score calculated?', a: 'It averages the progress across all your active goals, weighted by how close you are to target. Above 75 means you\'re ahead of pace.' },
-    { id: '2', q: 'What happens if I miss a contribution?', a: 'Nothing breaks — the goal just extends. We\'ll show a small nudge next time you open the app.' },
+    { id: '2', q: 'What happens if I miss a contribution?', a: 'Nothing breaks, the goal just extends. We\'ll show a small nudge next time you open the app.' },
     { id: '3', q: 'Can I have more than one goal?', a: 'Yes, as many as your budget supports. Add another from the + button on the Pulse screen.' },
     { id: '4', q: 'Is my data safe?', a: 'Yes — bank-grade AES-256 encryption in transit and at rest. We never share your financial info with third parties without your explicit consent.' },
     { id: '5', q: 'How do I delete my account?', a: 'From Personal Info, tap Delete account at the bottom. This is permanent.' },

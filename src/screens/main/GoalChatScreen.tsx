@@ -39,7 +39,7 @@ export const GoalChatScreen: React.FC = () => {
             const response = await api.post('/api/waitlist/join', { feature: 'ai_goals' });
             if (response.data.success) {
                 setJoined(true);
-                toast.success('You\'re on the list', { description: 'We\'ll ping you when AI Coach opens.' });
+                toast.success('You\'re on the list', { description: 'We\'ll ping you when AI coach opens.' });
             } else {
                 toast.error('Try again', { description: response.data.message || 'Something went wrong.' });
             }
@@ -65,7 +65,7 @@ export const GoalChatScreen: React.FC = () => {
                 <View style={styles.iconWrap}>
                     <Icon name="message-square" color="accent" size="xl" />
                 </View>
-                <Text style={styles.title}>AI coach — coming soon.</Text>
+                <Text style={styles.title}>AI coach. Coming soon.</Text>
                 <Text style={styles.subtitle}>
                     An always-on financial coach that knows your goals, your budget, and how to help you finish faster.
                 </Text>
@@ -74,7 +74,7 @@ export const GoalChatScreen: React.FC = () => {
                     {[
                         'Personalized advice on your goals',
                         'Tradeoff analysis before you commit',
-                        'Weekly nudges — never noise',
+                        'Weekly nudges. Never noise.',
                     ].map((f, i) => (
                         <View key={i} style={styles.featureRow}>
                             <View style={styles.featureDot} />
@@ -86,7 +86,7 @@ export const GoalChatScreen: React.FC = () => {
                 {joined ? (
                     <View style={styles.joinedCard}>
                         <Text style={styles.joinedText}>You're on the list.</Text>
-                        <Text style={styles.joinedSub}>We'll notify you when AI Coach opens up.</Text>
+                        <Text style={styles.joinedSub}>We'll notify you when AI coach opens up.</Text>
                     </View>
                 ) : (
                     <TouchableOpacity

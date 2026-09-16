@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import { toast } from 'sonner-native';
+import { toastError } from '../../utils/toastError';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, BackButton, Icon, Loader } from '../../components';
@@ -88,7 +89,7 @@ export const GoalSelectionScreen: React.FC = () => {
             navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
         } catch (error) {
             console.error('Save goal error:', error);
-            toast.error('Error', { description: 'Failed to save your goal.' });
+            toastError(error, { context: 'Save failed' });
             setIsSaving(false);
         }
     };
@@ -103,7 +104,7 @@ export const GoalSelectionScreen: React.FC = () => {
 
             <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
                 <Text style={styles.title}>Suggestions for you.</Text>
-                <Text style={styles.helper}>Personalized from your financial profile. Pick one to start.</Text>
+                <Text style={styles.helper}>Personalized from your financial details. Pick one to start.</Text>
 
                 {isLoading ? (
                     <View style={styles.loadingWrap}>
@@ -127,7 +128,7 @@ export const GoalSelectionScreen: React.FC = () => {
                                         <View style={styles.iconWrap}><Icon name="target" color="accent" size="md" /></View>
                                         <View style={{ flex: 1 }}>
                                             <Text style={styles.cardTitle}>{text}</Text>
-                                            <Text style={styles.cardSub}>{insight.target_months} {insight.target_months === 1 ? 'month' : 'months'} · {currencySymbol}{monthly.toLocaleString()}/mo</Text>
+                                            <Text style={styles.cardSub}>{insight.target_months} {insight.target_months === 1 ? 'month' : 'months'} · {currencySymbol}{monthly.toLocaleString()}/month</Text>
                                         </View>
                                         <View style={[styles.check, selected && styles.checkOn]}>
                                             {selected && <Text style={styles.checkTick}>✓</Text>}

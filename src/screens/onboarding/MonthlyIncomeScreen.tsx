@@ -31,7 +31,7 @@ export const MonthlyIncomeScreen: React.FC = () => {
         <OnboardingAmountScreen
             step={1}
             title="Monthly income, roughly."
-            helper="After tax. We use this to size your plan, nothing else."
+            helper="After tax. We use this to calculate how much you can save."
             amount={amount}
             onAmountChange={(v) => setAmount(formatNumberInput(v))}
             chipPresets={PRESETS}

@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { toast } from 'sonner-native';
+import { toastError } from '../../utils/toastError';
 import { Button, BackButton, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
@@ -271,12 +272,10 @@ export const EditGoalScreen: React.FC = () => {
                 DeviceEventEmitter.emit('refreshGoals');
                 toast.success('Saved', { description: 'Goal updated.' });
                 navigation.goBack();
-            } else {
-                toast.error('Update failed', { description: 'Try again.' });
             }
         } catch (error) {
             console.error('Error updating goal:', error);
-            toast.error('Error', { description: 'Something went wrong.' });
+            toastError(error, { context: 'Update failed' });
         } finally { setIsLoading(false); }
     };
 
@@ -290,12 +289,10 @@ export const EditGoalScreen: React.FC = () => {
                 setShowDeleteModal(false);
                 toast.success('Deleted', { description: 'Goal removed.' });
                 navigation.goBack();
-            } else {
-                toast.error('Delete failed', { description: 'Try again.' });
             }
         } catch (error) {
             console.error('Error deleting goal:', error);
-            toast.error('Error', { description: 'Something went wrong.' });
+            toastError(error, { context: 'Delete failed' });
         } finally { setIsDeleting(false); }
     };
 
@@ -320,7 +317,7 @@ export const EditGoalScreen: React.FC = () => {
                         placeholderTextColor={colors.ink3}
                     />
 
-                    <Text style={styles.label}>TARGET AMOUNT</Text>
+                    <Text style={styles.label}>GOAL AMOUNT</Text>
                     <View style={[styles.moneyInput, !!targetError && styles.errorField]}>
                         <Text style={styles.moneySymbol}>{currencySymbol}</Text>
                         <TextInput

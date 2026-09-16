@@ -9,6 +9,7 @@ import { View,
     TouchableOpacity, Image } from 'react-native';
 import { toast } from 'sonner-native';
 import axios from 'axios';
+import { toastError } from '../../utils/toastError';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -40,7 +41,7 @@ export const LoginScreen: React.FC = () => {
             return false;
         }
         if (!emailRegex.test(emailValue)) {
-            setEmailError('Please enter a valid email address');
+            setEmailError('Enter a valid email.');
             return false;
         }
         setEmailError('');
@@ -54,7 +55,7 @@ export const LoginScreen: React.FC = () => {
 
     const handleContinue = async () => {
         if (!validateEmail(email)) {
-            toast.error('Invalid Email', { description: emailError || 'Please enter a valid email address.' });
+            toast.error('Invalid email', { description: emailError || 'Enter a valid email.' });
             return;
         }
         setLoading(true);
@@ -63,12 +64,7 @@ export const LoginScreen: React.FC = () => {
             await AsyncStorage.setItem('temp_auth_email', email);
             navigation.navigate('OTPVerification', { email, otpToken: response.data.otpToken });
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                const errorMessage = error.response?.data?.message || 'Failed to send OTP. Please try again.';
-                toast.error('Error', { description: errorMessage });
-            } else {
-                toast.error('Error', { description: 'Something went wrong. Please try again.' });
-            }
+            toastError(error, { context: 'Login failed' });
         } finally {
             setLoading(false);
         }

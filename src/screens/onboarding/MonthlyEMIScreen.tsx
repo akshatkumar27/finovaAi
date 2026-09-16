@@ -25,7 +25,7 @@ export const MonthlyEMIScreen: React.FC = () => {
 
     const handleContinue = () => {
         if (amount.trim() === '') {
-            toast.error('Fill this in', { description: 'Enter your EMI (0 is fine).' });
+            toast.error('Enter an amount', { description: 'Enter your EMI (0 is fine).' });
             return;
         }
         if (exceeds) {
@@ -39,7 +39,7 @@ export const MonthlyEMIScreen: React.FC = () => {
     return (
         <OnboardingAmountScreen
             step={3}
-            title="Monthly EMIs."
+            title="Monthly EMI."
             helper="Loan, credit-card minimums, anything you must pay each month."
             amount={amount}
             onAmountChange={(v) => setAmount(formatNumberInput(v))}

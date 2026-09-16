@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { toast } from 'sonner-native';
 import axios from 'axios';
+import { toastError } from '../../utils/toastError';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { OTPInput, Button, BackButton } from '../../components';
@@ -92,11 +93,7 @@ export const OTPVerificationScreen: React.FC = () => {
             }
         } catch (error) {
             setOtp('');
-            if (axios.isAxiosError(error)) {
-                toast.error('Invalid code', { description: error.response?.data?.message || 'Try again.' });
-            } else {
-                toast.error('Error', { description: 'Something went wrong.' });
-            }
+            toastError(error, { context: 'Verification failed' });
         } finally { setLoading(false); }
     };
 
@@ -109,11 +106,7 @@ export const OTPVerificationScreen: React.FC = () => {
             setTimer(54);
             toast.success('Sent', { description: 'A new code is on the way.' });
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                toast.error('Error', { description: error.response?.data?.message || 'Failed to resend.' });
-            } else {
-                toast.error('Error', { description: 'Something went wrong.' });
-            }
+            toastError(error, { context: 'Resend failed' });
         } finally { setResending(false); }
     };
 

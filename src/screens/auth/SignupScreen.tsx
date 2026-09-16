@@ -9,6 +9,7 @@ import { View,
     TouchableOpacity, Image } from 'react-native';
 import { toast } from 'sonner-native';
 import axios from 'axios';
+import { toastError } from '../../utils/toastError';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { Input, Button, BackButton } from '../../components';
@@ -74,11 +75,7 @@ export const SignupScreen: React.FC = () => {
                 signupData: { name: fullName, age },
             });
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                toast.error('Error', { description: error.response?.data?.message || 'Failed to send code.' });
-            } else {
-                toast.error('Error', { description: 'Something went wrong.' });
-            }
+            toastError(error, { context: 'Signup failed' });
         } finally { setLoading(false); }
     };
 
@@ -134,7 +131,7 @@ export const SignupScreen: React.FC = () => {
                         </Text>
                         <Button title="Create account" onPress={handleContinue} loading={loading} />
                         <TouchableOpacity style={styles.altLink} onPress={() => navigation.navigate('Login')}>
-                            <Text style={styles.altText}>Already have an account? <Text style={styles.altAccent}>Log in</Text></Text>
+                            <Text style={styles.altText}>Already have an account? <Text style={styles.altAccent}>Sign in</Text></Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
