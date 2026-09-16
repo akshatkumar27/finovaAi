@@ -22,6 +22,7 @@ import { Button, BackButton, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
 import { formatNumberInput } from '../../utils/formatNumber';
+import { parseISODate } from '../../utils/parseISODate';
 import { useAppSelector } from '../../store/hooks';
 import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
@@ -74,21 +75,18 @@ export const EditGoalScreen: React.FC = () => {
 
     const [contributionDay, setContributionDay] = useState(() => {
         const s = route.params?.contributionDay;
-        if (!s) return new Date().getDate();
-        const d = new Date(s).getDate();
-        return isNaN(d) ? new Date().getDate() : d;
+        const parsed = s ? parseISODate(s) : null;
+        return parsed ? parsed.getDate() : new Date().getDate();
     });
     const [selectedMonth, setSelectedMonth] = useState(() => {
         const s = route.params?.contributionDay;
-        if (!s) return new Date().getMonth();
-        const m = new Date(s).getMonth();
-        return isNaN(m) ? new Date().getMonth() : m;
+        const parsed = s ? parseISODate(s) : null;
+        return parsed ? parsed.getMonth() : new Date().getMonth();
     });
     const [selectedYear, setSelectedYear] = useState(() => {
         const s = route.params?.contributionDay;
-        if (!s) return new Date().getFullYear();
-        const y = new Date(s).getFullYear();
-        return isNaN(y) ? new Date().getFullYear() : y;
+        const parsed = s ? parseISODate(s) : null;
+        return parsed ? parsed.getFullYear() : new Date().getFullYear();
     });
     const [calendarVisible, setCalendarVisible] = useState(false);
     const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
@@ -100,9 +98,8 @@ export const EditGoalScreen: React.FC = () => {
     const initialAchieveIn = useRef(parseInt(route.params?.achieveIn?.toString() || '0'));
     const initialContributionDay = useRef((() => {
         const s = route.params?.contributionDay;
-        if (!s) return 1;
-        const d = new Date(s).getDate();
-        return isNaN(d) ? 1 : d;
+        const parsed = s ? parseISODate(s) : null;
+        return parsed ? parsed.getDate() : 1;
     })());
 
     const achieveInMonths = selectedDuration === 'custom' ? (parseInt(customMonths) || 0) : selectedDuration;

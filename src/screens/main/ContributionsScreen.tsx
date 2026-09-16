@@ -21,6 +21,7 @@ import { formatCompactCurrency } from '../../utils';
 import { useAppSelector } from '../../store/hooks';
 import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { parseISODate } from '../../utils/parseISODate';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 type ContributionsRouteProp = RouteProp<MainStackParamList, 'Contributions'>;
@@ -61,9 +62,7 @@ export const ContributionsScreen: React.FC = () => {
     const goalCreatedAt = route.params?.goalCreatedAt || '';
     const contributionStartDate = (() => {
         const s = route.params?.contributionDay;
-        if (!s) return null;
-        const d = new Date(s);
-        return isNaN(d.getTime()) ? null : d;
+        return s ? parseISODate(s) : null;
     })();
     const contributionDay = contributionStartDate ? contributionStartDate.getDate() : 1;
 
