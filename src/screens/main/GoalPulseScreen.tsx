@@ -23,6 +23,8 @@ import { shallowEqual } from 'react-redux';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
 import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { formatDate } from '../../utils/formatDate';
+import { pluralize } from '../../utils/pluralize';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
@@ -217,7 +219,7 @@ export const GoalPulseScreen: React.FC = () => {
             : colors.warn;
 
     const today = new Date();
-    const dayLabel = today.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase();
+    const dayLabel = formatDate(today, 'caption');
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -266,7 +268,7 @@ export const GoalPulseScreen: React.FC = () => {
                                             averageAchievement >= 50 ? 'On track' :
                                                 averageAchievement >= 25 ? 'Getting started' : 'Fresh start'}
                                     </Text>
-                                    <Text style={styles.heroSub}>Across {goals.length} {goals.length === 1 ? 'goal' : 'goals'}</Text>
+                                    <Text style={styles.heroSub}>Across {pluralize(goals.length, 'goal')}</Text>
                                 </View>
                             </View>
 
@@ -311,7 +313,7 @@ export const GoalPulseScreen: React.FC = () => {
                                                 <View style={styles.suggestIconWrap}><Icon name="target" color="accent" size="md" /></View>
                                                 <Text style={styles.suggestName} numberOfLines={2}>{text}</Text>
                                                 <Text style={styles.suggestAmount}>{formatMoney(insight.amount)}</Text>
-                                                <Text style={styles.suggestMonths}>{insight.target_months} {insight.target_months === 1 ? 'month' : 'months'}</Text>
+                                                <Text style={styles.suggestMonths}>{pluralize(insight.target_months, 'month')}</Text>
                                                 <Text style={styles.suggestDesc} numberOfLines={2}>{insight.description}</Text>
                                                 <TouchableOpacity
                                                     style={styles.suggestBtn}

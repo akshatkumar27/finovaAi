@@ -21,6 +21,7 @@ import { RootState } from '../../store';
 import { updateUser } from '../../store/slices/authSlice';
 import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { pluralize } from '../../utils/pluralize';
 
 interface Insight {
     title: string;
@@ -129,7 +130,7 @@ export const GoalSelectionScreen: React.FC = () => {
                                         <View style={styles.iconWrap}><Icon name="target" color="accent" size="md" /></View>
                                         <View style={{ flex: 1 }}>
                                             <Text style={styles.cardTitle}>{text}</Text>
-                                            <Text style={styles.cardSub}>{insight.target_months} {insight.target_months === 1 ? 'month' : 'months'} · {formatMoney(monthly)}/month</Text>
+                                            <Text style={styles.cardSub}>{pluralize(insight.target_months, 'month')} · {formatMoney(monthly)}/month</Text>
                                         </View>
                                         <View style={[styles.check, selected && styles.checkOn]}>
                                             {selected && <Text style={styles.checkTick}>✓</Text>}

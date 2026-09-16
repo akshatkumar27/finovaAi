@@ -25,6 +25,7 @@ import { RootState } from '../../store';
 import { updateUser } from '../../store/slices/authSlice';
 import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
+import { formatDate } from '../../utils/formatDate';
 
 const DURATION_OPTIONS = [
     { label: '6 mo', value: 6 },
@@ -34,7 +35,6 @@ const DURATION_OPTIONS = [
     { label: '5 yr', value: 60 },
 ];
 
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const ordinal = (d: number) => (d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th');
@@ -360,7 +360,7 @@ export const AddGoalScreen: React.FC = () => {
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={styles.dayPickerVal}>Every month</Text>
-                            <Text style={styles.dayPickerHint}>Starting {MONTH_NAMES[selectedMonth]} {selectedYear}</Text>
+                            <Text style={styles.dayPickerHint}>Starting {formatDate(new Date(selectedYear, selectedMonth, 1), 'calendarHeader')}</Text>
                         </View>
                         <Icon name="chevron-right" color="ink3" size="lg" />
                     </TouchableOpacity>
@@ -375,7 +375,7 @@ export const AddGoalScreen: React.FC = () => {
                                     <TouchableOpacity onPress={handleCalendarPrev} style={[styles.calNavBtn, !canGoPrev && styles.calNavBtnOff]} disabled={!canGoPrev}>
                                         <Icon name="chevron-left" color={canGoPrev ? "ink1" : "ink3"} size="lg" />
                                     </TouchableOpacity>
-                                    <Text style={styles.calMonthLabel}>{MONTH_NAMES[calendarMonth]} {calendarYear}</Text>
+                                    <Text style={styles.calMonthLabel}>{formatDate(new Date(calendarYear, calendarMonth, 1), 'calendarHeader')}</Text>
                                     <TouchableOpacity onPress={handleCalendarNext} style={[styles.calNavBtn, !canGoNext && styles.calNavBtnOff]} disabled={!canGoNext}>
                                         <Icon name="chevron-right" color={canGoNext ? "ink1" : "ink3"} size="lg" />
                                     </TouchableOpacity>

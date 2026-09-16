@@ -22,6 +22,8 @@ import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { parseISODate } from '../../utils/parseISODate';
 import { formatMoney } from '../../utils/formatMoney';
+import { formatDate } from '../../utils/formatDate';
+import { pluralize } from '../../utils/pluralize';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 type ContributionsRouteProp = RouteProp<MainStackParamList, 'Contributions'>;
@@ -88,7 +90,7 @@ export const ContributionsScreen: React.FC = () => {
         const monthsLeft = editedContribution > 0 ? Math.ceil(remaining / editedContribution) : effectiveMonths;
         const base = new Date();
         base.setMonth(base.getMonth() + monthsLeft);
-        return base.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        return formatDate(base, 'monthYear');
     })();
 
     const handleContributionInputChange = (text: string) => {
@@ -120,8 +122,8 @@ export const ContributionsScreen: React.FC = () => {
                     amount,
                     totalValue: runningTotal,
                     status: 'paid' as const,
-                    date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                    monthKey: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+                    date: formatDate(date, 'body'),
+                    monthKey: formatDate(date, 'monthYear'),
                     rawDate: item.contributed_at || '',
                 };
             });
@@ -141,8 +143,8 @@ export const ContributionsScreen: React.FC = () => {
                     amount: editedContribution,
                     totalValue: apiTotal + editedContribution * (index + 1),
                     status: index === 0 ? 'pending' as const : 'upcoming' as const,
-                    date: upcomingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                    monthKey: upcomingDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+                    date: formatDate(upcomingDate, 'body'),
+                    monthKey: formatDate(upcomingDate, 'monthYear'),
                 };
             });
 
@@ -207,7 +209,7 @@ export const ContributionsScreen: React.FC = () => {
     const upcomingPayment = contributions.find(c => c.status === 'pending') || contributions.find(c => c.status === 'upcoming');
     const daysUntilPayment = calculateDaysUntilPayment();
     const { enabled: paymentEnabled, hasPaidThisMonth } = getPaymentStatus();
-    const getNextDueFormatted = () => getNextUnpaidDueDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const getNextDueFormatted = () => formatDate(getNextUnpaidDueDate(), 'body');
 
     const isCurrentMonth = (dateString?: string) => {
         if (!dateString) return false;
@@ -384,7 +386,7 @@ export const ContributionsScreen: React.FC = () => {
                                         ) : (
                                             <View style={[styles.badge, styles.badgeNeutral]}>
                                                 <Icon name="clock" color="ink2" size="sm" />
-                                                <Text style={[styles.badgeText, { color: colors.ink2 }]}>{daysUntilPayment} {daysUntilPayment === 1 ? 'day' : 'days'} left</Text>
+                                                <Text style={[styles.badgeText, { color: colors.ink2 }]}>{pluralize(daysUntilPayment, 'day')} left</Text>
                                             </View>
                                         )}
                                         <Text style={styles.paymentTitle}>{paymentEnabled ? 'Payment due' : 'Upcoming due'}</Text>
