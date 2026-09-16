@@ -13,13 +13,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { toastError } from '../../utils/toastError';
+import { formatMoney } from '../../utils/formatMoney';
 import { api } from '../../services';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Button, BackButton, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
-import { formatCompactCurrency } from '../../utils';
-import { formatNumberInput, formatCompactNumber } from '../../utils/formatNumber';
+import { formatNumberInput } from '../../utils/formatNumber';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { updateUser } from '../../store/slices/authSlice';
@@ -152,7 +152,7 @@ export const AddGoalScreen: React.FC = () => {
         if (!target.trim() || targetAmount <= 0) { toast.error('Missing target', { description: 'Enter a target amount.' }); return; }
         if (achieveInMonths <= 0) { toast.error('Invalid duration', { description: 'Enter how long you\'ll save for.' }); return; }
         if (exceedsBudget) {
-            toast.error('Too high', { description: `Can't exceed ${formatCompactCurrency(availableForNewGoals ?? 0, currencySymbol)}/month available.` });
+            toast.error('Too high', { description: `Can't exceed ${formatMoney(availableForNewGoals ?? 0, { compact: true })}/month available.` });
             return;
         }
 
@@ -258,7 +258,7 @@ export const AddGoalScreen: React.FC = () => {
                         <View style={styles.budgetCard}>
                             <View>
                                 <Text style={styles.budgetLabel}>MONTHLY AVAILABLE</Text>
-                                <Text style={styles.budgetAmount}>{currencySymbol}{formatCompactNumber(availableForNewGoals)}</Text>
+                                <Text style={styles.budgetAmount}>{formatMoney(availableForNewGoals, { compact: true })}</Text>
                             </View>
                             <Text style={styles.budgetSub}>after your other goals</Text>
                         </View>
@@ -339,7 +339,7 @@ export const AddGoalScreen: React.FC = () => {
                     {exceedsBudget && (
                         <View style={styles.errorBanner}>
                             <Text style={styles.errorText}>
-                                Exceeds your {formatCompactCurrency(availableForNewGoals ?? 0, currencySymbol)}/month budget for new goals.
+                                Exceeds your {formatMoney(availableForNewGoals ?? 0, { compact: true })}/month budget for new goals.
                             </Text>
                         </View>
                     )}

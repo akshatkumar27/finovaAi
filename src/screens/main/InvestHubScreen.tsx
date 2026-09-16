@@ -5,6 +5,7 @@ import { useAppSelector } from '../../store/hooks';
 import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { Icon, IconName } from '../../components';
+import { formatMoney } from '../../utils/formatMoney';
 
 
 
@@ -84,7 +85,7 @@ export const InvestHubScreen: React.FC = () => {
                             <Text style={styles.assetSub}>{asset.sub}</Text>
                         </View>
                         <View style={{ alignItems: 'flex-end' }}>
-                            <Text style={styles.assetAmt}>{currencySymbol}{asset.amount.toLocaleString('en-IN')}</Text>
+                            <Text style={styles.assetAmt}>{formatMoney(asset.amount)}</Text>
                             <Text style={[styles.assetChange, { color: asset.gain ? colors.gain : colors.loss }]}>{asset.change}</Text>
                         </View>
                     </View>

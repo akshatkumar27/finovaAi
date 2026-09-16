@@ -11,9 +11,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { toastError } from '../../utils/toastError';
+import { formatMoney } from '../../utils/formatMoney';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, CommonActions } from '@react-navigation/native';
-import { formatCurrency } from '../../utils';
 import { api } from '../../services/api';
 import { notificationService } from '../../services/NotificationService';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
@@ -66,11 +66,11 @@ export const PersonalInfoScreen: React.FC = () => {
         { label: 'Age', value: user.age ? `${user.age}` : '—' },
     ];
     const financialRows = [
-        { label: 'Monthly income', value: financialData.monthlyIncome ? formatCurrency(financialData.monthlyIncome, currencySymbol) : '—' },
-        { label: 'Monthly expenses', value: financialData.monthlyExpenses ? formatCurrency(financialData.monthlyExpenses, currencySymbol) : '—' },
-        { label: 'Monthly EMI', value: financialData.monthlyEmi ? formatCurrency(financialData.monthlyEmi, currencySymbol) : '—' },
-        { label: 'EMI outstanding', value: financialData.emiOutstanding ? formatCurrency(financialData.emiOutstanding, currencySymbol) : '—' },
-        { label: 'Monthly investment', value: financialData.monthlyInvestment ? formatCurrency(financialData.monthlyInvestment, currencySymbol) : '—' },
+        { label: 'Monthly income', value: financialData.monthlyIncome ? formatMoney(financialData.monthlyIncome) : '—' },
+        { label: 'Monthly expenses', value: financialData.monthlyExpenses ? formatMoney(financialData.monthlyExpenses) : '—' },
+        { label: 'Monthly EMI', value: financialData.monthlyEmi ? formatMoney(financialData.monthlyEmi) : '—' },
+        { label: 'EMI outstanding', value: financialData.emiOutstanding ? formatMoney(financialData.emiOutstanding) : '—' },
+        { label: 'Monthly investment', value: financialData.monthlyInvestment ? formatMoney(financialData.monthlyInvestment) : '—' },
     ];
 
     return (

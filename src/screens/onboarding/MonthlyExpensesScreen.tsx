@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import { formatNumberInput } from '../../utils/formatNumber';
+import { formatMoney } from '../../utils/formatMoney';
 import { OnboardingAmountScreen } from './_OnboardingLayout';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
@@ -28,7 +29,7 @@ export const MonthlyExpensesScreen: React.FC = () => {
             return;
         }
         if (exceedsIncome) {
-            toast.error('Too high', { description: `Expenses can't exceed your income (${currencySymbol}${monthlyIncome.toLocaleString()}).` });
+            toast.error('Too high', { description: `Expenses can't exceed your income (${formatMoney(monthlyIncome)}).` });
             return;
         }
         dispatch(setFinancialData({ monthlyExpenses: value }));
@@ -44,8 +45,8 @@ export const MonthlyExpensesScreen: React.FC = () => {
             onAmountChange={(v) => setAmount(formatNumberInput(v))}
             chipPresets={PRESETS}
             onChipPress={(n) => setAmount(formatNumberInput(String(n)))}
-            error={exceedsIncome ? `Expenses can't exceed your income of ${currencySymbol}${monthlyIncome.toLocaleString()}.` : undefined}
-            footerHint={monthlyIncome > 0 ? `Income on record: ${currencySymbol}${monthlyIncome.toLocaleString()}` : undefined}
+            error={exceedsIncome ? `Expenses can't exceed your income of ${formatMoney(monthlyIncome)}.` : undefined}
+            footerHint={monthlyIncome > 0 ? `Income on record: ${formatMoney(monthlyIncome)}` : undefined}
             continueDisabled={exceedsIncome}
             onContinue={handleContinue}
         />

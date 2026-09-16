@@ -17,11 +17,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { ConfirmationModal, SkeletonLoader, BackButton, Icon, IconName } from '../../components';
 import api from '../../services/api';
-import { formatCompactCurrency } from '../../utils';
 import { useAppSelector } from '../../store/hooks';
 import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { parseISODate } from '../../utils/parseISODate';
+import { formatMoney } from '../../utils/formatMoney';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 type ContributionsRouteProp = RouteProp<MainStackParamList, 'Contributions'>;
@@ -236,7 +236,7 @@ export const ContributionsScreen: React.FC = () => {
         const newAmount = parseFloat(editModalValue);
         if (isNaN(newAmount)) { setEditError('Enter a valid amount'); return; }
         if (newAmount > monthlyContribution) {
-            setEditError(`Can't exceed ${formatCompactCurrency(monthlyContribution, currencySymbol)}`);
+            setEditError(`Can't exceed ${formatMoney(monthlyContribution, { compact: true })}`);
             return;
         }
         try {
@@ -261,7 +261,7 @@ export const ContributionsScreen: React.FC = () => {
         if (isSaving) return;
         setModalState({
             visible: true, type: 'warning', title: 'Confirm payment',
-            message: `Save ${formatCompactCurrency(editedContribution, currencySymbol)} toward "${goalName}"?`,
+            message: `Save ${formatMoney(editedContribution, { compact: true })} toward "${goalName}"?`,
             showCancelButton: true, onConfirm: saveContribution,
         });
     };
@@ -317,7 +317,7 @@ export const ContributionsScreen: React.FC = () => {
                             />
                         </View>
                         {editError ? <Text style={styles.modalErrorText}>{editError}</Text> : null}
-                        <Text style={styles.modalHint}>Max {formatCompactCurrency(monthlyContribution, currencySymbol)}</Text>
+                        <Text style={styles.modalHint}>Max {formatMoney(monthlyContribution, { compact: true })}</Text>
 
                         <View style={styles.modalButtons}>
                             <TouchableOpacity style={styles.modalCancel} onPress={handleCloseEditModal}>
@@ -363,11 +363,11 @@ export const ContributionsScreen: React.FC = () => {
                                 </View>
                                 <View style={{ alignItems: 'flex-end' }}>
                                     <Text style={styles.amountBig}>
-                                        {formatCompactCurrency(contributions.filter(c => c.status === 'paid').slice(-1)[0]?.amount || editedContribution, currencySymbol)}
+                                        {formatMoney(contributions.filter(c => c.status === 'paid').slice(-1)[0]?.amount || editedContribution, { compact: true })}
                                     </Text>
                                     {upcomingPayment && (
                                         <Text style={styles.paymentHint}>
-                                            Next: {formatCompactCurrency(editedContribution, currencySymbol)}
+                                            Next: {formatMoney(editedContribution, { compact: true })}
                                         </Text>
                                     )}
                                 </View>
@@ -393,7 +393,7 @@ export const ContributionsScreen: React.FC = () => {
 
                                     <View style={{ alignItems: 'flex-end' }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                            <Text style={styles.amountBig}>{formatCompactCurrency(editedContribution, currencySymbol)}</Text>
+                                            <Text style={styles.amountBig}>{formatMoney(editedContribution, { compact: true })}</Text>
                                             <TouchableOpacity onPress={() => setIsEditing(!isEditing)} activeOpacity={0.7} style={{ marginLeft: 8, marginTop: -4 }}>
                                                 <Icon name="pencil" color="ink3" size="md" />
                                             </TouchableOpacity>
@@ -442,8 +442,8 @@ export const ContributionsScreen: React.FC = () => {
                             <View style={[styles.progressFill, { width: `${progressPct}%` }]} />
                         </View>
                         <View style={styles.progressAmounts}>
-                            <Text style={styles.progressSaved}>{formatCompactCurrency(totalPaid, currencySymbol)} saved</Text>
-                            <Text style={styles.progressTarget}>of {formatCompactCurrency(targetAmount, currencySymbol)}</Text>
+                            <Text style={styles.progressSaved}>{formatMoney(totalPaid, { compact: true })} saved</Text>
+                            <Text style={styles.progressTarget}>of {formatMoney(targetAmount, { compact: true })}</Text>
                         </View>
 
                         <View style={styles.dividerH} />
@@ -454,7 +454,7 @@ export const ContributionsScreen: React.FC = () => {
                                 <Text style={styles.statLabel}>Completion</Text>
                             </View>
                             <View style={styles.statItem}>
-                                <Text style={styles.statValue}>{formatCompactCurrency(targetAmount, currencySymbol)}</Text>
+                                <Text style={styles.statValue}>{formatMoney(targetAmount, { compact: true })}</Text>
                                 <Text style={styles.statLabel}>Target</Text>
                             </View>
                             <View style={styles.statItem}>
@@ -463,7 +463,7 @@ export const ContributionsScreen: React.FC = () => {
                             </View>
                             <View style={styles.statItem}>
                                 <Text style={[styles.statValue, editedContribution !== monthlyContribution && { color: colors.accent }]}>
-                                    {formatCompactCurrency(editedContribution, currencySymbol)}
+                                    {formatMoney(editedContribution, { compact: true })}
                                 </Text>
                                 <Text style={styles.statLabel}>Monthly</Text>
                             </View>
@@ -484,7 +484,7 @@ export const ContributionsScreen: React.FC = () => {
                                         <View style={{ flex: 1 }}>
                                             <View style={styles.historyTopRow}>
                                                 <Text style={styles.historyMonth}>{item.monthKey}</Text>
-                                                <Text style={styles.historyAmount}>+{formatCompactCurrency(item.amount, currencySymbol)}</Text>
+                                                <Text style={styles.historyAmount}>+{formatMoney(item.amount, { compact: true })}</Text>
                                             </View>
                                             <View style={styles.historyBottomRow}>
                                                 <Text style={styles.historyDate}>{item.date}</Text>

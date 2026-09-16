@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner-native';
 import { toastError } from '../../utils/toastError';
+import { formatMoney } from '../../utils/formatMoney';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
@@ -33,7 +34,7 @@ export const MonthlyInvestmentScreen: React.FC = () => {
             return;
         }
         if (exceeds) {
-            toast.error('Too high', { description: `Can't exceed available (${currencySymbol}${available.toLocaleString()}).` });
+            toast.error('Too high', { description: `Can't exceed available (${formatMoney(available)}).` });
             return;
         }
         setSaving(true);
@@ -68,8 +69,8 @@ export const MonthlyInvestmentScreen: React.FC = () => {
             onAmountChange={(v) => setAmount(formatNumberInput(v))}
             chipPresets={PRESETS}
             onChipPress={(n) => setAmount(n === 0 ? '0' : formatNumberInput(String(n)))}
-            error={exceeds ? `Can't exceed available amount of ${currencySymbol}${available.toLocaleString()}.` : undefined}
-            footerHint={available > 0 ? `Available after essentials: ${currencySymbol}${available.toLocaleString()}` : undefined}
+            error={exceeds ? `Can't exceed available amount of ${formatMoney(available)}.` : undefined}
+            footerHint={available > 0 ? `Available after essentials: ${formatMoney(available)}` : undefined}
             continueLabel="Finish setup"
             continueDisabled={exceeds}
             continueLoading={saving}

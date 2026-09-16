@@ -18,6 +18,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { toast } from 'sonner-native';
 import { toastError } from '../../utils/toastError';
+import { formatMoney } from '../../utils/formatMoney';
 import { Button, BackButton, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { api } from '../../services';
@@ -139,7 +140,7 @@ export const EditGoalScreen: React.FC = () => {
         setTarget(formatted);
         const newTarget = parseInt(formatted.replace(/,/g, '')) || 0;
         if (newTarget > 0 && newTarget < savedAmount) {
-            setTargetError(`Target can't be less than saved (${currencySymbol}${savedAmount.toLocaleString()}).`);
+            setTargetError(`Target can't be less than saved (${formatMoney(savedAmount)}).`);
         } else { setTargetError(null); }
         if (newTarget > 0 && contributionAmount > newTarget) {
             setMonthlyContributionError('Contribution exceeds target.');
@@ -238,13 +239,13 @@ export const EditGoalScreen: React.FC = () => {
         if (!goalId) return;
         let ok = true;
         if (targetAmount <= 0 || targetAmount < savedAmount) {
-            setTargetError(`Target can't be less than saved (${currencySymbol}${savedAmount.toLocaleString()}).`);
+            setTargetError(`Target can't be less than saved (${formatMoney(savedAmount)}).`);
             ok = false;
         }
         if (contributionAmount <= 0) { setMonthlyContributionError('Enter a valid amount.'); ok = false; }
         else if (contributionAmount > targetAmount) { setMonthlyContributionError('Contribution exceeds target.'); ok = false; }
         if (netChange > availableForNewGoals) {
-            toast.error('Budget exceeded', { description: `Only ${currencySymbol}${availableForNewGoals.toLocaleString()} available for increases.` });
+            toast.error('Budget exceeded', { description: `Only ${formatMoney(availableForNewGoals)} available for increases.` });
             ok = false;
         }
         if (!ok) return;
@@ -381,7 +382,7 @@ export const EditGoalScreen: React.FC = () => {
                     {isBudgetExceeded && (
                         <View style={styles.errorBanner}>
                             <Text style={styles.errorBannerText}>
-                                Only {currencySymbol}{availableForNewGoals.toLocaleString()} available for increases.
+                                Only {formatMoney(availableForNewGoals)} available for increases.
                             </Text>
                         </View>
                     )}

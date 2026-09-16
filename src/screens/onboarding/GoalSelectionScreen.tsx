@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { toast } from 'sonner-native';
 import { toastError } from '../../utils/toastError';
+import { formatMoney } from '../../utils/formatMoney';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, BackButton, Icon, Loader } from '../../components';
@@ -128,13 +129,13 @@ export const GoalSelectionScreen: React.FC = () => {
                                         <View style={styles.iconWrap}><Icon name="target" color="accent" size="md" /></View>
                                         <View style={{ flex: 1 }}>
                                             <Text style={styles.cardTitle}>{text}</Text>
-                                            <Text style={styles.cardSub}>{insight.target_months} {insight.target_months === 1 ? 'month' : 'months'} · {currencySymbol}{monthly.toLocaleString()}/month</Text>
+                                            <Text style={styles.cardSub}>{insight.target_months} {insight.target_months === 1 ? 'month' : 'months'} · {formatMoney(monthly)}/month</Text>
                                         </View>
                                         <View style={[styles.check, selected && styles.checkOn]}>
                                             {selected && <Text style={styles.checkTick}>✓</Text>}
                                         </View>
                                     </View>
-                                    <Text style={styles.cardAmount}>{currencySymbol}{insight.amount.toLocaleString()}</Text>
+                                    <Text style={styles.cardAmount}>{formatMoney(insight.amount)}</Text>
                                     <Text style={styles.cardDesc}>{insight.description}</Text>
                                 </TouchableOpacity>
                             );

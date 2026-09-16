@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import { formatNumberInput } from '../../utils/formatNumber';
+import { formatMoney } from '../../utils/formatMoney';
 import { OnboardingAmountScreen } from './_OnboardingLayout';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import { RootState } from '../../store';
@@ -29,7 +30,7 @@ export const MonthlyEMIScreen: React.FC = () => {
             return;
         }
         if (exceeds) {
-            toast.error('Too high', { description: `EMI can't exceed available (${currencySymbol}${available.toLocaleString()}).` });
+            toast.error('Too high', { description: `EMI can't exceed available (${formatMoney(available)}).` });
             return;
         }
         dispatch(setFinancialData({ monthlyEmi: value }));
@@ -45,8 +46,8 @@ export const MonthlyEMIScreen: React.FC = () => {
             onAmountChange={(v) => setAmount(formatNumberInput(v))}
             chipPresets={PRESETS}
             onChipPress={(n) => setAmount(n === 0 ? '0' : formatNumberInput(String(n)))}
-            error={exceeds ? `EMI can't exceed your available amount of ${currencySymbol}${available.toLocaleString()}.` : undefined}
-            footerHint={available > 0 ? `Available after expenses: ${currencySymbol}${available.toLocaleString()}` : undefined}
+            error={exceeds ? `EMI can't exceed your available amount of ${formatMoney(available)}.` : undefined}
+            footerHint={available > 0 ? `Available after expenses: ${formatMoney(available)}` : undefined}
             continueDisabled={exceeds}
             onContinue={handleContinue}
         />

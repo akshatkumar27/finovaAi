@@ -15,6 +15,7 @@ import { Button, BackButton } from '../../components';
 import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { useAppSelector } from '../../store/hooks';
+import { formatMoney } from '../../utils/formatMoney';
 
 export type OnboardingAmountProps = {
     step: number;                        // 1..5
@@ -59,12 +60,6 @@ export const OnboardingAmountScreen: React.FC<OnboardingAmountProps> = ({
     const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
 
     const styles = useMemo(() => makeStyles(colors, typography), [colors, typography]);
-
-    const formatChip = (val: number) => {
-        if (val >= 100000) return `${(val / 100000).toFixed(val % 100000 === 0 ? 0 : 1)}L`;
-        if (val >= 1000) return `${(val / 1000).toFixed(0)}k`;
-        return `${val}`;
-    };
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -114,7 +109,7 @@ export const OnboardingAmountScreen: React.FC<OnboardingAmountProps> = ({
                         <View style={styles.chipRow}>
                             {chipPresets.map((raw, idx) => {
                                 const num = typeof raw === 'number' ? raw : parseInt(String(raw).replace(/,/g, ''), 10);
-                                const label = typeof raw === 'string' ? raw : `${currencySymbol}${formatChip(num)}`;
+                                const label = typeof raw === 'string' ? raw : formatMoney(num, { compact: true });
                                 const isActive = amount.replace(/,/g, '') === String(num);
                                 return (
                                     <TouchableOpacity

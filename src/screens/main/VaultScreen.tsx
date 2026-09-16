@@ -12,6 +12,7 @@ import { useAppSelector } from '../../store/hooks';
 import { useTheme, fontFor } from '../../theme';
 import { Palette } from '../../theme/palette';
 import { Icon, IconName } from '../../components';
+import { formatMoney } from '../../utils/formatMoney';
 
 
 
@@ -55,12 +56,12 @@ export const VaultScreen: React.FC = () => {
                     <Text style={styles.heroCap}>TOTAL LIQUID BALANCE</Text>
                     <View style={styles.amountRow}>
                         <Text style={styles.heroSymbol}>{currencySymbol}</Text>
-                        <Text style={styles.heroValue}>{total.toLocaleString('en-IN')}</Text>
+                        <Text style={styles.heroValue}>{formatMoney(total).slice(1)}</Text>
                     </View>
                     <View style={styles.heroFooter}>
                         <View style={{ flex: 1 }}>
                             <Text style={styles.footerCap}>MONTHLY YIELD</Text>
-                            <Text style={styles.footerVal}>+{currencySymbol}{monthlyYield.toLocaleString()}</Text>
+                            <Text style={styles.footerVal}>+{formatMoney(monthlyYield)}</Text>
                         </View>
                         <View style={styles.heroDivider} />
                         <View style={{ flex: 1, alignItems: 'flex-end' }}>
@@ -91,7 +92,7 @@ export const VaultScreen: React.FC = () => {
                                     <Text style={styles.acctName}>{a.name}</Text>
                                     <Text style={styles.acctSub}>{a.sub}</Text>
                                 </View>
-                                <Text style={styles.acctAmt}>{currencySymbol}{a.amount.toLocaleString('en-IN')}</Text>
+                                <Text style={styles.acctAmt}>{formatMoney(a.amount)}</Text>
                             </View>
                             {i < 2 && <View style={styles.divider} />}
                         </View>

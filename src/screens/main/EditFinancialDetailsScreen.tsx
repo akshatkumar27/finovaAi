@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { toast } from 'sonner-native';
 import { api } from '../../services/api';
 import { formatNumberInput } from '../../utils/formatNumber';
+import { formatMoney } from '../../utils/formatMoney';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { shallowEqual } from 'react-redux';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
@@ -143,7 +144,7 @@ export const EditFinancialDetailsScreen: React.FC = () => {
                             <Text style={styles.summaryCap}>AVAILABLE TO ALLOCATE</Text>
                             <View style={styles.summaryRow}>
                                 <Text style={styles.summarySymbol}>{currencySymbol}</Text>
-                                <Text style={styles.summaryValue}>{available.toLocaleString('en-IN')}</Text>
+                                <Text style={styles.summaryValue}>{formatMoney(available).slice(1)}</Text>
                                 <Text style={styles.summarySub}>/month</Text>
                             </View>
                             <View style={styles.summaryBar}>
@@ -158,8 +159,8 @@ export const EditFinancialDetailsScreen: React.FC = () => {
                             </View>
                             {available > 0 && (investment > 0 || unassigned > 0) && (
                                 <Text style={styles.summarySplit}>
-                                    {investment > 0 ? `${currencySymbol}${investment.toLocaleString('en-IN')} to investment · ` : ''}
-                                    {`${currencySymbol}${unassigned.toLocaleString('en-IN')} unassigned`}
+                                    {investment > 0 ? `${formatMoney(investment)} to investment · ` : ''}
+                                    {`${formatMoney(unassigned)} unassigned`}
                                 </Text>
                             )}
                         </View>

@@ -17,7 +17,7 @@ import { Loader, Icon } from '../../components';
 import { MainStackParamList } from '../../navigation/MainTabNavigator';
 import { toast } from 'sonner-native';
 import { api } from '../../services';
-import { formatCompactNumber } from '../../utils/formatNumber';
+import { formatMoney } from '../../utils/formatMoney';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { shallowEqual } from 'react-redux';
 import { setFinancialData } from '../../store/slices/financialDataSlice';
@@ -273,12 +273,12 @@ export const GoalPulseScreen: React.FC = () => {
                             <View style={styles.heroFooter}>
                                 <View style={{ flex: 1 }}>
                                     <Text style={styles.heroFooterCap}>TOTAL SAVED</Text>
-                                    <Text style={styles.heroFooterAmount}>{currencySymbol}{formatCompactNumber(totalSaved)}</Text>
+                                    <Text style={styles.heroFooterAmount}>{formatMoney(totalSaved, { compact: true })}</Text>
                                 </View>
                                 <View style={styles.heroDivider} />
                                 <View style={{ flex: 1, alignItems: 'flex-end' }}>
                                     <Text style={styles.heroFooterCap}>AVAILABLE</Text>
-                                    <Text style={styles.heroFooterAmount}>{currencySymbol}{formatCompactNumber(availableBudget)}</Text>
+                                    <Text style={styles.heroFooterAmount}>{formatMoney(availableBudget, { compact: true })}</Text>
                                 </View>
                             </View>
                         </View>
@@ -290,7 +290,7 @@ export const GoalPulseScreen: React.FC = () => {
                             <View style={styles.sectionHeadRow}>
                                 <Text style={styles.sectionHead}>SUGGESTED FOR YOU</Text>
                                 {goals.length === 0 && (
-                                    <Text style={styles.pill}>{currencySymbol}{formatCompactNumber(availableBudget)} available</Text>
+                                    <Text style={styles.pill}>{formatMoney(availableBudget, { compact: true })} available</Text>
                                 )}
                             </View>
 
@@ -310,7 +310,7 @@ export const GoalPulseScreen: React.FC = () => {
                                             <View key={idx} style={styles.suggestCard}>
                                                 <View style={styles.suggestIconWrap}><Icon name="target" color="accent" size="md" /></View>
                                                 <Text style={styles.suggestName} numberOfLines={2}>{text}</Text>
-                                                <Text style={styles.suggestAmount}>{currencySymbol}{insight.amount.toLocaleString()}</Text>
+                                                <Text style={styles.suggestAmount}>{formatMoney(insight.amount)}</Text>
                                                 <Text style={styles.suggestMonths}>{insight.target_months} {insight.target_months === 1 ? 'month' : 'months'}</Text>
                                                 <Text style={styles.suggestDesc} numberOfLines={2}>{insight.description}</Text>
                                                 <TouchableOpacity
@@ -362,7 +362,7 @@ export const GoalPulseScreen: React.FC = () => {
                                             <View style={{ flex: 1 }}>
                                                 <Text style={styles.goalName}>{goal.name}</Text>
                                                 <Text style={styles.goalSub}>
-                                                    {currencySymbol}{formatCompactNumber(goal.saved_amount)} of {currencySymbol}{formatCompactNumber(targetNum)}
+                                                    {formatMoney(goal.saved_amount, { compact: true })} of {formatMoney(targetNum, { compact: true })}
                                                 </Text>
                                             </View>
                                             <View style={{ alignItems: 'flex-end' }}>
