@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {
     View,
     Text,
@@ -7,7 +7,8 @@ import {
     Animated,
     Easing,
 } from 'react-native';
-import { colors, typography } from '../constants';
+import { typography } from '../constants';
+import { useTheme } from '../theme';
 import { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
 
 interface AnimatedMascotProps {
@@ -28,7 +29,82 @@ export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({
     arrowTopRatio = 0.40,
     customTooltipStyle
 }) => {
-    // Arrow vertical position: points to Fino's mouth, proportional to current mascot height
+    const { colors } = useTheme();
+    const styles = useMemo(
+        () =>
+            StyleSheet.create({
+                container: {
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                },
+                mascotContainer: {
+                    zIndex: 2,
+                },
+                mascotImage: {
+                    width: 100,
+                    height: 120,
+                },
+                tooltipContainer: {
+                    flex: 1,
+                    marginLeft: -10,
+                    position: 'relative',
+                    paddingTop: 0,
+                },
+                tooltipArrow: {
+                    position: 'absolute',
+                    left: 0,
+                    width: 0,
+                    height: 0,
+                    borderTopWidth: 10,
+                    borderBottomWidth: 10,
+                    borderRightWidth: 12,
+                    borderTopColor: 'transparent',
+                    borderBottomColor: 'transparent',
+                    borderRightColor: colors.borderStrong,
+                    zIndex: 1,
+                },
+                tooltipArrowInner: {
+                    position: 'absolute',
+                    left: 2,
+                    width: 0,
+                    height: 0,
+                    borderTopWidth: 8,
+                    borderBottomWidth: 8,
+                    borderRightWidth: 10,
+                    borderTopColor: 'transparent',
+                    borderBottomColor: 'transparent',
+                    borderRightColor: colors.surfaceAlt,
+                    zIndex: 2,
+                },
+                tooltipBubble: {
+                    marginLeft: 10,
+                    backgroundColor: colors.surfaceAlt,
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: colors.borderStrong,
+                    paddingHorizontal: 18,
+                    paddingVertical: 14,
+                    shadowColor: '#000',
+                    shadowOffset: {
+                        width: 0,
+                        height: 4,
+                    },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 6,
+                },
+                tooltipText: {
+                    color: colors.ink1,
+                    fontSize: typography.body,
+                    fontWeight: typography.medium,
+                    lineHeight: 20,
+                },
+            }),
+        [colors],
+    );
+
     const arrowTop = Math.round(mascotHeight * arrowTopRatio);
     const floatAnim = useRef(new Animated.Value(0)).current;
     const mascotSlideAnim = useRef(new Animated.Value(-150)).current;
@@ -36,18 +112,14 @@ export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({
     const tooltipScale = useRef(new Animated.Value(0.5)).current;
 
     useEffect(() => {
-        // Sequence: Mascot slides in first, then tooltip appears, then floating starts
         Animated.sequence([
-            // Step 1: Mascot slides in from left
             Animated.timing(mascotSlideAnim, {
                 toValue: 0,
                 duration: 600,
                 easing: Easing.out(Easing.back(1.2)),
                 useNativeDriver: true,
             }),
-            // Small delay before tooltip appears
             Animated.delay(100),
-            // Step 2: Tooltip fades in with scale
             Animated.parallel([
                 Animated.timing(tooltipOpacity, {
                     toValue: 1,
@@ -62,7 +134,6 @@ export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({
                 }),
             ]),
         ]).start(() => {
-            // Step 3: Start continuous floating animation
             Animated.loop(
                 Animated.sequence([
                     Animated.timing(floatAnim, {
@@ -82,7 +153,6 @@ export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({
         });
     }, []);
 
-    // Interpolate float animation for subtle up/down movement
     const floatTranslateY = floatAnim.interpolate({
         inputRange: [0, 1],
         outputRange: [0, -12],
@@ -97,7 +167,6 @@ export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({
                 },
             ]}
         >
-            {/* Mascot Image on the left */}
             <Animated.View
                 style={[
                     styles.mascotContainer,
@@ -113,7 +182,6 @@ export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({
                 />
             </Animated.View>
 
-            {/* Speech Bubble Tooltip */}
             <Animated.View
                 style={[
                     styles.tooltipContainer,
@@ -124,7 +192,6 @@ export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({
                     customTooltipStyle
                 ]}
             >
-                {/* Arrow pointing to mascot mouth — positioned at arrowTop px from top of tooltip */}
                 <View style={[styles.tooltipArrow, { top: arrowTop, marginTop: -10 }]} />
                 <View style={[styles.tooltipArrowInner, { top: arrowTop, marginTop: -8 }]} />
 
@@ -135,74 +202,3 @@ export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({
         </Animated.View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-    },
-    mascotContainer: {
-        zIndex: 2,
-    },
-    mascotImage: {
-        width: 100,
-        height: 120,
-    },
-    tooltipContainer: {
-        flex: 1,
-        marginLeft: -10,
-        position: 'relative',
-        paddingTop: 0,
-    },
-    tooltipArrow: {
-        position: 'absolute',
-        left: 0,
-        width: 0,
-        height: 0,
-        borderTopWidth: 10,
-        borderBottomWidth: 10,
-        borderRightWidth: 12,
-        borderTopColor: 'transparent',
-        borderBottomColor: 'transparent',
-        borderRightColor: colors.borderStrong,
-        zIndex: 1,
-    },
-    tooltipArrowInner: {
-        position: 'absolute',
-        left: 2,
-        width: 0,
-        height: 0,
-        borderTopWidth: 8,
-        borderBottomWidth: 8,
-        borderRightWidth: 10,
-        borderTopColor: 'transparent',
-        borderBottomColor: 'transparent',
-        borderRightColor: colors.elevatedBackground,
-        zIndex: 2,
-    },
-    tooltipBubble: {
-        marginLeft: 10,
-        backgroundColor: colors.elevatedBackground,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: colors.borderStrong,
-        paddingHorizontal: 18,
-        paddingVertical: 14,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 6,
-    },
-    tooltipText: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.medium,
-        lineHeight: 20,
-    },
-});

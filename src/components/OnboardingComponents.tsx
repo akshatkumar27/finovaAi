@@ -1,7 +1,106 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle } from 'react-native';
-import { colors, typography } from '../constants';
+import { typography } from '../constants';
+import { useTheme } from '../theme';
+import { Palette } from '../theme/palette';
 import { fontFor } from '../theme/tokens';
+
+const makeStyles = (colors: Palette) =>
+    StyleSheet.create({
+        option: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: colors.surface,
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 12,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        optionSelected: {
+            borderColor: colors.accent,
+            backgroundColor: colors.accentSoft,
+        },
+        icon: {
+            fontSize: 20,
+            marginRight: 12,
+        },
+        label: {
+            flex: 1,
+            color: colors.ink1,
+            fontSize: typography.body,
+            fontWeight: typography.medium,
+        },
+        labelSelected: {
+            color: colors.accent,
+        },
+        sublabel: {
+            color: colors.ink2,
+            fontSize: typography.caption,
+            marginLeft: 8,
+        },
+        checkmark: {
+            color: colors.accent,
+            fontSize: 18,
+            fontWeight: typography.bold,
+        },
+        chip: {
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 20,
+            backgroundColor: colors.surface,
+            borderWidth: 1,
+            borderColor: colors.border,
+            marginRight: 8,
+            marginBottom: 8,
+        },
+        chipSelected: {
+            backgroundColor: colors.accent,
+            borderColor: colors.accent,
+        },
+        chipLabel: {
+            color: colors.ink2,
+            fontSize: typography.bodySmall,
+            fontWeight: typography.medium,
+        },
+        chipLabelSelected: {
+            color: colors.accentInk,
+        },
+        counterContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        counterButton: {
+            width: 48,
+            height: 48,
+            borderRadius: 24,
+            backgroundColor: colors.surface,
+            borderWidth: 1,
+            borderColor: colors.border,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        counterButtonDisabled: {
+            opacity: 0.3,
+        },
+        counterButtonText: {
+            color: colors.ink1,
+            fontSize: 24,
+            fontFamily: fontFor('regular'),
+        },
+        counterValue: {
+            color: colors.ink1,
+            fontSize: 48,
+            fontWeight: typography.bold,
+            marginHorizontal: 32,
+        },
+    });
+
+const useStyles = () => {
+    const { colors } = useTheme();
+    return useMemo(() => makeStyles(colors), [colors]);
+};
 
 interface SelectOptionProps {
     icon?: string;
@@ -20,6 +119,7 @@ export const SelectOption: React.FC<SelectOptionProps> = ({
     onPress,
     style,
 }) => {
+    const styles = useStyles();
     return (
         <TouchableOpacity
             style={[styles.option, selected && styles.optionSelected, style]}
@@ -47,6 +147,7 @@ export const ChipOption: React.FC<ChipOptionProps> = ({
     selected,
     onPress,
 }) => {
+    const styles = useStyles();
     return (
         <TouchableOpacity
             style={[styles.chip, selected && styles.chipSelected]}
@@ -73,6 +174,7 @@ export const Counter: React.FC<CounterProps> = ({
     min = 0,
     max = 10,
 }) => {
+    const styles = useStyles();
     return (
         <TouchableOpacity style={styles.counterContainer}>
             <TouchableOpacity
@@ -93,94 +195,3 @@ export const Counter: React.FC<CounterProps> = ({
         </TouchableOpacity>
     );
 };
-
-const styles = StyleSheet.create({
-    option: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.cardBackground,
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    optionSelected: {
-        borderColor: colors.primary,
-        backgroundColor: colors.primary + '15',
-    },
-    icon: {
-        fontSize: 20,
-        marginRight: 12,
-    },
-    label: {
-        flex: 1,
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.medium,
-    },
-    labelSelected: {
-        color: colors.primary,
-    },
-    sublabel: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        marginLeft: 8,
-    },
-    checkmark: {
-        color: colors.primary,
-        fontSize: 18,
-        fontWeight: typography.bold,
-    },
-    chip: {
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 20,
-        backgroundColor: colors.cardBackground,
-        borderWidth: 1,
-        borderColor: colors.border,
-        marginRight: 8,
-        marginBottom: 8,
-    },
-    chipSelected: {
-        backgroundColor: colors.primary,
-        borderColor: colors.primary,
-    },
-    chipLabel: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium,
-    },
-    chipLabelSelected: {
-        color: colors.textPrimary,
-    },
-    counterContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    counterButton: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: colors.cardBackground,
-        borderWidth: 1,
-        borderColor: colors.border,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    counterButtonDisabled: {
-        opacity: 0.3,
-    },
-    counterButtonText: {
-        color: colors.textPrimary,
-        fontSize: 24,
-        fontFamily: fontFor('regular'),
-    },
-    counterValue: {
-        color: colors.textPrimary,
-        fontSize: 48,
-        fontWeight: typography.bold,
-        marginHorizontal: 32,
-    },
-});

@@ -1,15 +1,34 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { View, Image, StyleSheet, Animated, Easing } from 'react-native';
-import { colors } from '../constants';
+import { useTheme } from '../theme';
 
 interface MascotLoaderProps {
     size?: number;
 }
 
 export const MascotLoader: React.FC<MascotLoaderProps> = ({ size = 120 }) => {
+    const { colors } = useTheme();
+    const styles = useMemo(
+        () =>
+            StyleSheet.create({
+                container: {
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingTop: 20,
+                },
+                imageContainer: {
+                    zIndex: 2,
+                },
+                shadow: {
+                    backgroundColor: colors.accent,
+                    borderRadius: 100,
+                    zIndex: 1,
+                },
+            }),
+        [colors],
+    );
     const floatAnim = useRef(new Animated.Value(0)).current;
 
-    // Scale for shadow to make it shrink as mascot floats up
     const shadowScaleAnim = floatAnim.interpolate({
         inputRange: [-20, 0],
         outputRange: [0.6, 1],
@@ -62,20 +81,3 @@ export const MascotLoader: React.FC<MascotLoaderProps> = ({ size = 120 }) => {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingTop: 20,
-    },
-    imageContainer: {
-        zIndex: 2,
-    },
-    shadow: {
-        backgroundColor: colors.primary,
-        borderRadius: 100,
-        // marginTop: 10,
-        zIndex: 1,
-    },
-});

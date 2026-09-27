@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors, typography } from '../constants';
+import { typography } from '../constants';
+import { useTheme } from '../theme';
 
 interface FooterLinksProps {
     showAuthLink?: boolean;
@@ -13,6 +14,51 @@ export const FooterLinks: React.FC<FooterLinksProps> = ({
     authLinkType = 'signup',
     onAuthLinkPress,
 }) => {
+    const { colors } = useTheme();
+    const styles = useMemo(
+        () =>
+            StyleSheet.create({
+                container: {
+                    alignItems: 'center',
+                    paddingBottom: 24,
+                },
+                authLinkContainer: {
+                    flexDirection: 'row',
+                    marginBottom: 16,
+                },
+                authText: {
+                    color: colors.ink2,
+                    fontSize: typography.bodySmall,
+                },
+                authLink: {
+                    color: colors.accent,
+                    fontSize: typography.bodySmall,
+                    fontWeight: typography.semibold,
+                },
+                termsContainer: {
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: 16,
+                },
+                termsText: {
+                    color: colors.ink2,
+                    fontSize: typography.caption,
+                    letterSpacing: 0.5,
+                },
+                separator: {
+                    color: colors.ink2,
+                    marginHorizontal: 8,
+                },
+                divider: {
+                    width: 134,
+                    height: 4,
+                    backgroundColor: colors.border,
+                    borderRadius: 2,
+                },
+            }),
+        [colors],
+    );
+
     return (
         <View style={styles.container}>
             {showAuthLink && (
@@ -42,43 +88,3 @@ export const FooterLinks: React.FC<FooterLinksProps> = ({
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        alignItems: 'center',
-        paddingBottom: 24,
-    },
-    authLinkContainer: {
-        flexDirection: 'row',
-        marginBottom: 16,
-    },
-    authText: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-    },
-    authLink: {
-        color: colors.link,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.semibold,
-    },
-    termsContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    termsText: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        letterSpacing: 0.5,
-    },
-    separator: {
-        color: colors.textMuted,
-        marginHorizontal: 8,
-    },
-    divider: {
-        width: 134,
-        height: 4,
-        backgroundColor: colors.border,
-        borderRadius: 2,
-    },
-});

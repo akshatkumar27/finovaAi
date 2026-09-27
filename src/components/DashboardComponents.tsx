@@ -1,7 +1,405 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
-import { colors, typography, spacing } from '../constants';
+import { typography, spacing } from '../constants';
+import { useTheme } from '../theme';
+import { Palette } from '../theme/palette';
 import { useAppSelector } from '../store/hooks';
+
+const makeStyles = (colors: Palette) =>
+    StyleSheet.create({
+        card: {
+            backgroundColor: colors.surface,
+            borderRadius: 16,
+            padding: spacing.md,
+        },
+        gradientCard: {
+            backgroundColor: colors.accentSoft,
+        },
+        progressContainer: {
+            borderRadius: 4,
+            overflow: 'hidden',
+        },
+        progressFill: {
+            height: '100%',
+            borderRadius: 4,
+        },
+        statCard: {
+            backgroundColor: colors.surfaceAlt,
+            borderRadius: 8,
+            padding: spacing.sm,
+            alignItems: 'center',
+            flex: 1,
+        },
+        statLabel: {
+            color: colors.ink2,
+            fontSize: 10,
+            textTransform: 'uppercase',
+            marginBottom: 4,
+        },
+        statValue: {
+            color: colors.ink1,
+            fontWeight: typography.semibold,
+        },
+        accountRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: spacing.sm,
+        },
+        accountIcon: {
+            width: 40,
+            height: 40,
+            borderRadius: 8,
+            backgroundColor: colors.surfaceAlt,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: spacing.sm,
+        },
+        accountIconText: {
+            fontSize: 18,
+        },
+        accountInfo: {
+            flex: 1,
+        },
+        accountNameRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        accountName: {
+            color: colors.ink1,
+            fontSize: typography.bodySmall,
+            fontWeight: typography.medium,
+        },
+        accountSubtitle: {
+            color: colors.ink2,
+            fontSize: typography.caption,
+            marginTop: 2,
+        },
+        badge: {
+            paddingHorizontal: 6,
+            paddingVertical: 2,
+            borderRadius: 4,
+            marginLeft: 8,
+        },
+        badgeText: {
+            color: colors.accentInk,
+            fontSize: 8,
+            fontWeight: typography.bold,
+        },
+        accountAmount: {
+            color: colors.ink1,
+            fontSize: typography.body,
+            fontWeight: typography.semibold,
+        },
+        goalCard: {
+            backgroundColor: colors.surface,
+            borderRadius: 12,
+            padding: spacing.md,
+            marginBottom: spacing.sm,
+        },
+        goalHeader: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: spacing.sm,
+        },
+        goalIcon: {
+            width: 36,
+            height: 36,
+            borderRadius: 8,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: spacing.sm,
+        },
+        goalIconText: {
+            fontSize: 16,
+        },
+        goalInfo: {
+            flex: 1,
+        },
+        goalTitle: {
+            color: colors.ink1,
+            fontSize: typography.bodySmall,
+            fontWeight: typography.medium,
+        },
+        goalSubtitle: {
+            color: colors.ink2,
+            fontSize: typography.caption,
+        },
+        goalProgress: {
+            color: colors.ink1,
+            fontSize: typography.body,
+            fontWeight: typography.semibold,
+        },
+        aiCard: {
+            backgroundColor: colors.surface,
+            borderRadius: 8,
+            padding: spacing.sm,
+            borderLeftWidth: 3,
+            marginBottom: spacing.sm,
+        },
+        aiTitle: {
+            fontSize: typography.caption,
+            fontWeight: typography.semibold,
+            marginBottom: 4,
+        },
+        aiDescription: {
+            color: colors.ink2,
+            fontSize: typography.caption,
+            lineHeight: 18,
+        },
+        assetRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: colors.surface,
+            borderRadius: 12,
+            padding: spacing.md,
+            marginBottom: spacing.sm,
+        },
+        assetIcon: {
+            width: 44,
+            height: 44,
+            borderRadius: 10,
+            backgroundColor: colors.surfaceAlt,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: spacing.sm,
+        },
+        assetIconText: {
+            fontSize: 20,
+        },
+        assetInfo: {
+            flex: 1,
+        },
+        assetName: {
+            color: colors.ink1,
+            fontSize: typography.bodySmall,
+            fontWeight: typography.medium,
+        },
+        assetSubtitle: {
+            color: colors.ink2,
+            fontSize: typography.caption,
+            marginTop: 2,
+        },
+        assetValues: {
+            alignItems: 'flex-end',
+        },
+        assetValue: {
+            color: colors.ink1,
+            fontSize: typography.body,
+            fontWeight: typography.semibold,
+        },
+        assetChange: {
+            fontSize: typography.caption,
+            marginTop: 2,
+        },
+        combinedCard: {
+            backgroundColor: colors.surface,
+            borderRadius: 20,
+            padding: spacing.lg,
+            marginBottom: spacing.md,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        goalSection: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: spacing.md,
+        },
+        goalIconCircle: {
+            width: 48,
+            height: 48,
+            borderRadius: 24,
+            borderWidth: 2,
+            backgroundColor: 'transparent',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: spacing.md,
+        },
+        goalIconEmoji: {
+            fontSize: 22,
+        },
+        goalTitleLarge: {
+            color: colors.ink1,
+            fontSize: 17,
+            fontWeight: typography.semibold,
+            flex: 1,
+            marginRight: spacing.sm,
+        },
+        goalProgressPercent: {
+            color: colors.gain,
+            fontSize: typography.h3,
+            fontWeight: typography.bold,
+        },
+        goalProgressBar: {
+            height: 8,
+            backgroundColor: colors.border,
+            borderRadius: 99,
+            overflow: 'hidden',
+        },
+        goalProgressFill: {
+            height: '100%',
+            borderRadius: 99,
+        },
+        suggestionSection: {
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            marginTop: spacing.md,
+            backgroundColor: colors.surfaceAlt,
+            borderRadius: 12,
+            padding: spacing.md,
+        },
+        suggestionIconContainer: {
+            width: 28,
+            height: 28,
+            borderRadius: 8,
+            backgroundColor: colors.warnSoft,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: spacing.sm,
+        },
+        suggestionIcon: {
+            fontSize: 14,
+        },
+        suggestionContent: {
+            flex: 1,
+        },
+        suggestionTitle: {
+            color: colors.warn,
+            fontSize: typography.caption,
+            fontWeight: typography.bold,
+            letterSpacing: 0.5,
+            marginBottom: 4,
+        },
+        suggestionDescription: {
+            color: colors.ink2,
+            fontSize: typography.caption,
+            lineHeight: 18,
+        },
+        suggestionHighlight: {
+            color: colors.gain,
+            fontWeight: typography.semibold,
+        },
+        aiSuggestionCard: {
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            backgroundColor: colors.surface,
+            borderRadius: 12,
+            padding: spacing.md,
+            marginBottom: spacing.md,
+        },
+        aiIconContainer: {
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: spacing.sm,
+        },
+        aiIcon: {
+            fontSize: 16,
+        },
+        aiContent: {
+            flex: 1,
+        },
+        aiSuggestionTitle: {
+            fontSize: typography.caption,
+            fontWeight: typography.bold,
+            letterSpacing: 0.5,
+            marginBottom: 4,
+        },
+        aiSuggestionDescription: {
+            color: colors.ink2,
+            fontSize: typography.caption,
+            lineHeight: 18,
+        },
+        aiHighlight: {
+            color: colors.gain,
+            fontWeight: typography.semibold,
+        },
+        goalHeaderRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: spacing.xs,
+        },
+        editButton: {
+            backgroundColor: 'transparent',
+            borderWidth: 1,
+            borderColor: colors.border,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 10,
+        },
+        editButtonText: {
+            color: colors.ink2,
+            fontSize: typography.caption,
+            fontWeight: typography.medium,
+        },
+        achieveInText: {
+            color: colors.ink3,
+            fontSize: typography.caption,
+            marginBottom: 2,
+        },
+        goalAmountText: {
+            color: colors.ink1,
+            fontSize: typography.body,
+            fontWeight: typography.bold,
+            marginBottom: 2,
+            fontVariant: ['tabular-nums'],
+        },
+        goalAmountSaved: {
+            color: colors.ink2,
+            fontWeight: typography.medium,
+        },
+        progressRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: spacing.md,
+        },
+        progressBarContainer: {
+            flex: 1,
+            marginRight: spacing.sm,
+        },
+        goalProgressPercentNew: {
+            fontSize: typography.bodySmall,
+            fontWeight: typography.semibold,
+            minWidth: 40,
+            textAlign: 'right',
+            fontVariant: ['tabular-nums'],
+        },
+        aiSuggestionSection: {
+            marginBottom: spacing.md,
+        },
+        aiSuggestionLabel: {
+            color: colors.ink1,
+            fontSize: typography.bodySmall,
+            fontWeight: typography.semibold,
+            marginBottom: spacing.xs,
+        },
+        aiSuggestionText: {
+            color: colors.ink2,
+            fontSize: typography.caption,
+            lineHeight: 18,
+        },
+        askAiButton: {
+            backgroundColor: colors.accentSoft,
+            borderWidth: 1,
+            borderColor: colors.accent,
+            borderRadius: 12,
+            paddingVertical: spacing.sm,
+            paddingHorizontal: spacing.md,
+            alignItems: 'center',
+        },
+        askAiButtonText: {
+            color: colors.accent,
+            fontSize: typography.bodySmall,
+            fontWeight: typography.semibold,
+        },
+    });
+
+const useStyles = () => {
+    const { colors } = useTheme();
+    return useMemo(() => makeStyles(colors), [colors]);
+};
 
 interface CardProps {
     children: React.ReactNode;
@@ -10,6 +408,7 @@ interface CardProps {
 }
 
 export const Card: React.FC<CardProps> = ({ children, style, gradient = false }) => {
+    const styles = useStyles();
     return (
         <View style={[styles.card, gradient && styles.gradientCard, style]}>
             {children}
@@ -18,7 +417,7 @@ export const Card: React.FC<CardProps> = ({ children, style, gradient = false })
 };
 
 interface ProgressBarProps {
-    progress: number; // 0-100
+    progress: number;
     color?: string;
     backgroundColor?: string;
     height?: number;
@@ -26,16 +425,18 @@ interface ProgressBarProps {
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
     progress,
-    color = colors.primary,
-    backgroundColor = colors.border,
+    color,
+    backgroundColor,
     height = 8,
 }) => {
+    const { colors } = useTheme();
+    const styles = useStyles();
     return (
-        <View style={[styles.progressContainer, { height, backgroundColor }]}>
+        <View style={[styles.progressContainer, { height, backgroundColor: backgroundColor ?? colors.border }]}>
             <View
                 style={[
                     styles.progressFill,
-                    { width: `${Math.min(100, Math.max(0, progress))}%`, backgroundColor: color },
+                    { width: `${Math.min(100, Math.max(0, progress))}%`, backgroundColor: color ?? colors.accent },
                 ]}
             />
         </View>
@@ -52,13 +453,15 @@ interface StatCardProps {
 export const StatCard: React.FC<StatCardProps> = ({
     label,
     value,
-    valueColor = colors.textPrimary,
+    valueColor,
     small = false,
 }) => {
+    const { colors } = useTheme();
+    const styles = useStyles();
     return (
         <View style={styles.statCard}>
             <Text style={styles.statLabel}>{label}</Text>
-            <Text style={[styles.statValue, { color: valueColor, fontSize: small ? 14 : 16 }]}>
+            <Text style={[styles.statValue, { color: valueColor ?? colors.ink1, fontSize: small ? 14 : 16 }]}>
                 {value}
             </Text>
         </View>
@@ -80,8 +483,10 @@ export const AccountRow: React.FC<AccountRowProps> = ({
     subtitle,
     amount,
     badge,
-    badgeColor = '#22c55e',
+    badgeColor,
 }) => {
+    const { colors } = useTheme();
+    const styles = useStyles();
     return (
         <View style={styles.accountRow}>
             <View style={styles.accountIcon}>
@@ -91,7 +496,7 @@ export const AccountRow: React.FC<AccountRowProps> = ({
                 <View style={styles.accountNameRow}>
                     <Text style={styles.accountName}>{name}</Text>
                     {badge && (
-                        <View style={[styles.badge, { backgroundColor: badgeColor }]}>
+                        <View style={[styles.badge, { backgroundColor: badgeColor ?? colors.gain }]}>
                             <Text style={styles.badgeText}>{badge}</Text>
                         </View>
                     )}
@@ -116,13 +521,16 @@ export const GoalCard: React.FC<GoalCardProps> = ({
     title,
     progress,
     subtitle,
-    color = colors.primary,
+    color,
 }) => {
+    const { colors } = useTheme();
+    const styles = useStyles();
+    const resolvedColor = color ?? colors.accent;
     return (
         <View style={styles.goalCard}>
             <View style={styles.goalHeader}>
-                <View style={[styles.goalIconCircle, { borderColor: color }]}>
-                    <Text style={[styles.goalIconEmoji, { color: color }]}>{icon}</Text>
+                <View style={[styles.goalIconCircle, { borderColor: resolvedColor }]}>
+                    <Text style={[styles.goalIconEmoji, { color: resolvedColor }]}>{icon}</Text>
                 </View>
                 <View style={styles.goalInfo}>
                     <Text style={styles.goalTitle}>{title}</Text>
@@ -131,7 +539,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
                 <Text style={styles.goalProgressPercent}>{progress}%</Text>
             </View>
             <View style={styles.goalProgressBar}>
-                <View style={[styles.goalProgressFill, { width: `${progress}%` }]} />
+                <View style={[styles.goalProgressFill, { width: `${progress}%`, backgroundColor: resolvedColor }]} />
             </View>
         </View>
     );
@@ -157,9 +565,6 @@ interface GoalCardWithSuggestionProps {
 export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
     title,
     progress,
-    color = '#22c55e',
-    suggestionTitle,
-    suggestionDescription,
     achieveInMonths,
     targetAmount,
     savedAmount,
@@ -167,6 +572,8 @@ export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
     onAskAiPress,
     onCardPress,
 }) => {
+    const { colors } = useTheme();
+    const styles = useStyles();
     const currencySymbol = useAppSelector((state) => state.settings.appCurrency);
     const formatCurrency = (amount: number) => {
         if (amount >= 1000000000) {
@@ -181,12 +588,11 @@ export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
         return currencySymbol + amount.toString();
     };
 
-    // Progress color: teal when crushing it, brand blue on track, amber if just starting
     const progressFillColor = progress >= 75
-        ? colors.gainText
+        ? colors.gain
         : progress >= 40
-            ? colors.primary
-            : colors.warningText;
+            ? colors.accent
+            : colors.warn;
 
     return (
         <TouchableOpacity
@@ -194,7 +600,6 @@ export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
             onPress={onCardPress}
             activeOpacity={onCardPress ? 0.7 : 1}
         >
-            {/* Header Section with Title and Edit Button */}
             <View style={styles.goalHeaderRow}>
                 <Text style={styles.goalTitleLarge}>{title}</Text>
                 <TouchableOpacity style={styles.editButton} onPress={(e) => {
@@ -205,7 +610,6 @@ export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
                 </TouchableOpacity>
             </View>
 
-            {/* Timeline and Amount */}
             <View style={{ marginBottom: spacing.sm }}>
                 {targetAmount !== undefined && (
                     <Text style={styles.goalAmountText}>
@@ -221,7 +625,6 @@ export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
                 )}
             </View>
 
-            {/* Progress Bar with Percentage */}
             <View style={styles.progressRow}>
                 <View style={styles.progressBarContainer}>
                     <View style={[styles.goalProgressBar, { flex: 1 }]}>
@@ -231,15 +634,6 @@ export const GoalCardWithSuggestion: React.FC<GoalCardWithSuggestionProps> = ({
                 <Text style={[styles.goalProgressPercentNew, { color: progressFillColor }]}>{progress}%</Text>
             </View>
 
-            {/* AI Suggestion Section */}
-            {/* <View style={styles.aiSuggestionSection}>
-                <Text style={styles.aiSuggestionLabel}>{suggestionTitle || 'Ai suggestions'}</Text>
-                <Text style={styles.aiSuggestionText}>
-                    {suggestionDescription || 'No suggestions available at the moment.'}
-                </Text>
-            </View> */}
-
-            {/* Ask AI Button */}
             <TouchableOpacity style={styles.askAiButton} onPress={(e) => {
                 e.stopPropagation?.();
                 onAskAiPress?.();
@@ -263,10 +657,12 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
     description,
     highlight,
 }) => {
+    const { colors } = useTheme();
+    const styles = useStyles();
     const colors_map = {
-        suggestion: '#f59e0b',
-        strategy: '#3b82f6',
-        insight: '#22c55e',
+        suggestion: colors.warn,
+        strategy: colors.accent,
+        insight: colors.gain,
     };
     const accentColor = colors_map[type];
 
@@ -303,6 +699,8 @@ export const AssetRow: React.FC<AssetRowProps> = ({
     change,
     isPositive,
 }) => {
+    const { colors } = useTheme();
+    const styles = useStyles();
     return (
         <View style={styles.assetRow}>
             <View style={styles.assetIcon}>
@@ -314,404 +712,10 @@ export const AssetRow: React.FC<AssetRowProps> = ({
             </View>
             <View style={styles.assetValues}>
                 <Text style={styles.assetValue}>{value}</Text>
-                <Text style={[styles.assetChange, { color: isPositive ? '#22c55e' : '#ef4444' }]}>
+                <Text style={[styles.assetChange, { color: isPositive ? colors.gain : colors.loss }]}>
                     {change}
                 </Text>
             </View>
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    card: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 16,
-        padding: spacing.md,
-    },
-    gradientCard: {
-        backgroundColor: '#1a2744',
-    },
-    progressContainer: {
-        borderRadius: 4,
-        overflow: 'hidden',
-    },
-    progressFill: {
-        height: '100%',
-        borderRadius: 4,
-    },
-    statCard: {
-        backgroundColor: colors.inputBackground,
-        borderRadius: 8,
-        padding: spacing.sm,
-        alignItems: 'center',
-        flex: 1,
-    },
-    statLabel: {
-        color: colors.textMuted,
-        fontSize: 10,
-        textTransform: 'uppercase',
-        marginBottom: 4,
-    },
-    statValue: {
-        color: colors.textPrimary,
-        fontWeight: typography.semibold,
-    },
-    accountRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: spacing.sm,
-    },
-    accountIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: 8,
-        backgroundColor: colors.inputBackground,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
-    accountIconText: {
-        fontSize: 18,
-    },
-    accountInfo: {
-        flex: 1,
-    },
-    accountNameRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    accountName: {
-        color: colors.textPrimary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium,
-    },
-    accountSubtitle: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        marginTop: 2,
-    },
-    badge: {
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 4,
-        marginLeft: 8,
-    },
-    badgeText: {
-        color: colors.textPrimary,
-        fontSize: 8,
-        fontWeight: typography.bold,
-    },
-    accountAmount: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    goalCard: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 12,
-        padding: spacing.md,
-        marginBottom: spacing.sm,
-    },
-    goalHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: spacing.sm,
-    },
-    goalIcon: {
-        width: 36,
-        height: 36,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
-    goalIconText: {
-        fontSize: 16,
-    },
-    goalInfo: {
-        flex: 1,
-    },
-    goalTitle: {
-        color: colors.textPrimary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium,
-    },
-    goalSubtitle: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-    },
-    goalProgress: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    aiCard: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 8,
-        padding: spacing.sm,
-        borderLeftWidth: 3,
-        marginBottom: spacing.sm,
-    },
-    aiTitle: {
-        fontSize: typography.caption,
-        fontWeight: typography.semibold,
-        marginBottom: 4,
-    },
-    aiDescription: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        lineHeight: 18,
-    },
-    assetRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.cardBackground,
-        borderRadius: 12,
-        padding: spacing.md,
-        marginBottom: spacing.sm,
-    },
-    assetIcon: {
-        width: 44,
-        height: 44,
-        borderRadius: 10,
-        backgroundColor: colors.inputBackground,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
-    assetIconText: {
-        fontSize: 20,
-    },
-    assetInfo: {
-        flex: 1,
-    },
-    assetName: {
-        color: colors.textPrimary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.medium,
-    },
-    assetSubtitle: {
-        color: colors.textMuted,
-        fontSize: typography.caption,
-        marginTop: 2,
-    },
-    assetValues: {
-        alignItems: 'flex-end',
-    },
-    assetValue: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-    },
-    assetChange: {
-        fontSize: typography.caption,
-        marginTop: 2,
-    },
-    // Combined card styles
-    combinedCard: {
-        backgroundColor: colors.cardBackground,
-        borderRadius: 20,
-        padding: spacing.lg,
-        marginBottom: spacing.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    goalSection: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-    },
-    goalIconCircle: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        borderWidth: 2,
-        backgroundColor: 'transparent',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.md,
-    },
-    goalIconEmoji: {
-        fontSize: 22,
-    },
-    goalTitleLarge: {
-        color: colors.textPrimary,
-        fontSize: 17,
-        fontWeight: typography.semibold,
-        flex: 1,
-        marginRight: spacing.sm,
-    },
-    goalProgressPercent: {
-        color: '#22c55e',
-        fontSize: typography.h3,
-        fontWeight: typography.bold,
-    },
-    goalProgressBar: {
-        height: 8,
-        backgroundColor: colors.border,
-        borderRadius: 99,
-        overflow: 'hidden',
-    },
-    goalProgressFill: {
-        height: '100%',
-        borderRadius: 99,
-    },
-    suggestionSection: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        marginTop: spacing.md,
-        backgroundColor: colors.inputBackground,
-        borderRadius: 12,
-        padding: spacing.md,
-    },
-    suggestionIconContainer: {
-        width: 28,
-        height: 28,
-        borderRadius: 8,
-        backgroundColor: '#f59e0b20',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
-    suggestionIcon: {
-        fontSize: 14,
-    },
-    suggestionContent: {
-        flex: 1,
-    },
-    suggestionTitle: {
-        color: '#f59e0b',
-        fontSize: typography.caption,
-        fontWeight: typography.bold,
-        letterSpacing: 0.5,
-        marginBottom: 4,
-    },
-    suggestionDescription: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        lineHeight: 18,
-    },
-    suggestionHighlight: {
-        color: '#22c55e',
-        fontWeight: typography.semibold,
-    },
-    // Standalone AI card styles
-    aiSuggestionCard: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        backgroundColor: colors.cardBackground,
-        borderRadius: 12,
-        padding: spacing.md,
-        marginBottom: spacing.md,
-    },
-    aiIconContainer: {
-        width: 32,
-        height: 32,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.sm,
-    },
-    aiIcon: {
-        fontSize: 16,
-    },
-    aiContent: {
-        flex: 1,
-    },
-    aiSuggestionTitle: {
-        fontSize: typography.caption,
-        fontWeight: typography.bold,
-        letterSpacing: 0.5,
-        marginBottom: 4,
-    },
-    aiSuggestionDescription: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        lineHeight: 18,
-    },
-    aiHighlight: {
-        color: '#22c55e',
-        fontWeight: typography.semibold,
-    },
-    // New Goal Card styles
-    goalHeaderRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: spacing.xs,
-    },
-    editButton: {
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: colors.border,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 10,
-    },
-    editButtonText: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        fontWeight: typography.medium,
-    },
-    achieveInText: {
-        color: colors.textTertiary,
-        fontSize: typography.caption,
-        marginBottom: 2,
-    },
-    goalAmountText: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.bold,
-        marginBottom: 2,
-        fontVariant: ['tabular-nums'],
-    },
-    goalAmountSaved: {
-        color: colors.textSecondary,
-        fontWeight: typography.medium,
-    },
-    progressRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: spacing.md,
-    },
-    progressBarContainer: {
-        flex: 1,
-        marginRight: spacing.sm,
-    },
-    goalProgressPercentNew: {
-        // color set dynamically in component based on progress
-        fontSize: typography.bodySmall,
-        fontWeight: typography.semibold,
-        minWidth: 40,
-        textAlign: 'right',
-        fontVariant: ['tabular-nums'],
-    },
-    aiSuggestionSection: {
-        marginBottom: spacing.md,
-    },
-    aiSuggestionLabel: {
-        color: colors.textPrimary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.semibold,
-        marginBottom: spacing.xs,
-    },
-    aiSuggestionText: {
-        color: colors.textSecondary,
-        fontSize: typography.caption,
-        lineHeight: 18,
-    },
-    askAiButton: {
-        backgroundColor: colors.primaryDim,
-        borderWidth: 1,
-        borderColor: 'rgba(61,142,248,0.25)',
-        borderRadius: 12,
-        paddingVertical: spacing.sm,
-        paddingHorizontal: spacing.md,
-        alignItems: 'center',
-    },
-    askAiButtonText: {
-        color: colors.primary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.semibold,
-    },
-});

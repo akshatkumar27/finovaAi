@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TouchableOpacity, Text, StyleSheet, View, ViewStyle } from 'react-native';
-import { colors, typography, spacing } from '../constants';
+import { typography, spacing } from '../constants';
+import { useTheme } from '../theme';
 
 interface GoalCardProps {
     icon: string;
@@ -21,6 +22,91 @@ export const GoalCard: React.FC<GoalCardProps> = ({
     style,
     highlightedAmount,
 }) => {
+    const { colors } = useTheme();
+    const styles = useMemo(
+        () =>
+            StyleSheet.create({
+                card: {
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: colors.surface,
+                    borderRadius: 20,
+                    padding: spacing.md,
+                    marginBottom: spacing.md,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                },
+                cardSelected: {
+                    borderColor: colors.accent,
+                    backgroundColor: colors.accentSoft,
+                },
+                iconContainer: {
+                    width: 56,
+                    height: 56,
+                    borderRadius: 28,
+                    backgroundColor: colors.surfaceAlt,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: spacing.md,
+                },
+                icon: {
+                    fontSize: 28,
+                },
+                content: {
+                    flex: 1,
+                },
+                title: {
+                    color: colors.ink1,
+                    fontSize: typography.body,
+                    fontWeight: typography.semibold,
+                    flex: 1,
+                    marginRight: spacing.sm,
+                },
+                titleSelected: {
+                    color: colors.accent,
+                },
+                headerRow: {
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: spacing.xs,
+                },
+                amountBadge: {
+                    backgroundColor: colors.accentSoft,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: colors.accent,
+                },
+                amountText: {
+                    color: colors.accent,
+                    fontSize: typography.bodySmall,
+                    fontWeight: typography.bold,
+                },
+                description: {
+                    color: colors.ink2,
+                    fontSize: typography.bodySmall,
+                    lineHeight: 20,
+                },
+                checkContainer: {
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    backgroundColor: colors.accent,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginLeft: spacing.sm,
+                },
+                checkmark: {
+                    color: colors.accentInk,
+                    fontSize: 16,
+                    fontWeight: typography.bold,
+                },
+            }),
+        [colors],
+    );
+
     return (
         <TouchableOpacity
             style={[styles.card, selected && styles.cardSelected, style]}
@@ -49,83 +135,3 @@ export const GoalCard: React.FC<GoalCardProps> = ({
         </TouchableOpacity>
     );
 };
-
-const styles = StyleSheet.create({
-    card: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.cardBackground,
-        borderRadius: 20,
-        padding: spacing.md,
-        marginBottom: spacing.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    cardSelected: {
-        borderColor: colors.primary,
-        backgroundColor: colors.primary + '15',
-    },
-    iconContainer: {
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: colors.inputBackground,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: spacing.md,
-    },
-    icon: {
-        fontSize: 28,
-    },
-    content: {
-        flex: 1,
-    },
-    title: {
-        color: colors.textPrimary,
-        fontSize: typography.body,
-        fontWeight: typography.semibold,
-        flex: 1,
-        marginRight: spacing.sm,
-    },
-    titleSelected: {
-        color: colors.primary,
-    },
-    headerRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: spacing.xs,
-    },
-    amountBadge: {
-        backgroundColor: colors.primaryDim,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: 'rgba(61,142,248,0.25)',
-    },
-    amountText: {
-        color: colors.primary,
-        fontSize: typography.bodySmall,
-        fontWeight: typography.bold,
-    },
-    description: {
-        color: colors.textSecondary,
-        fontSize: typography.bodySmall,
-        lineHeight: 20,
-    },
-    checkContainer: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginLeft: spacing.sm,
-    },
-    checkmark: {
-        color: colors.textPrimary,
-        fontSize: 16,
-        fontWeight: typography.bold,
-    },
-});
