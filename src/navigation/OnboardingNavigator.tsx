@@ -9,6 +9,7 @@ import {
     GoalSelectionScreen,
     AddGoalScreen,
 } from '../screens/onboarding';
+import { useTheme } from '../theme';
 
 export type OnboardingData = {
     monthly_income?: number;
@@ -37,12 +38,13 @@ export type OnboardingStackParamList = {
 const Stack = createNativeStackNavigator<OnboardingStackParamList>();
 
 export const OnboardingNavigator: React.FC = () => {
+    const { colors } = useTheme();
     return (
         <Stack.Navigator
             initialRouteName="MonthlyIncome"
             screenOptions={{
                 headerShown: false,
-                contentStyle: { backgroundColor: '#0a0a14' },
+                contentStyle: { backgroundColor: colors.canvas },
                 animation: 'slide_from_right',
             }}
         >

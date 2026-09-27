@@ -5,6 +5,7 @@ import {
     SignupScreen,
     OTPVerificationScreen,
 } from '../screens/auth';
+import { useTheme } from '../theme';
 
 export type AuthStackParamList = {
     Login: undefined;
@@ -23,12 +24,13 @@ export type AuthStackParamList = {
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
 export const AuthNavigator: React.FC = () => {
+    const { colors } = useTheme();
     return (
         <Stack.Navigator
             initialRouteName="Login"
             screenOptions={{
                 headerShown: false,
-                contentStyle: { backgroundColor: '#0a0a14' },
+                contentStyle: { backgroundColor: colors.canvas },
                 animation: 'slide_from_right',
             }}
         >
